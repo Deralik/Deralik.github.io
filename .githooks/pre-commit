@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Privacy guard for a public repo. Blocks commits whose staged changes
+# contain phone-shaped strings, private-repo artifacts, or any string
+# listed in .privacy.local (gitignored, one string per line).
+# Activate once per clone: git config core.hooksPath .githooks
+set -u
+# .githooks is excluded — the guard's own word list lives there.
+staged() { git diff --cached -U0 --no-color -- . ':!.githooks'; }
+fail=0
+
+if staged | grep -Eqi '\+?1?[ .-]?\(?[0-9]{3}\)?[ .-]?[0-9]{3}[ .-]?[0-9]{4}'; then
+  echo "pre-commit: phone-shaped string in staged changes"; fail=1
+fi
+
+for w in contact.local tracker.toml companies.toml sf86 talking-points; do
+  if staged | grep -qi "$w"; then
+    echo "pre-commit: private-artifact reference staged: $w"; fail=1
+  fi
+done
+
+if [ -f .privacy.local ]; then
+  while IFS= read -r s; do
+    [ -n "$s" ] || continue
+    if staged | grep -Fq "$s"; then
+      echo "pre-commit: string from .privacy.local staged"; fail=1
+    fi
+  done < .privacy.local
+fi
+
+[ $fail -ne 0 ] && echo "pre-commit: blocked — fix the content; never --no-verify"
+exit $fail

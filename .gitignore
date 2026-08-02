@@ -1,0 +1,5 @@
+# Local-only privacy strings for the pre-commit hook (one per line):
+# put the real phone number etc. here so the hook can catch them without
+# the strings ever being committed themselves.
+.privacy.local
+.DS_Store
