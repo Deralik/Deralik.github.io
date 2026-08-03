@@ -22,29 +22,37 @@ mirrored real-world rows** (a real client project and at least two real
 subcontractor names) — every capture below was vetted frame-by-frame;
 two surfaces are withheld until those rows are cleaned or renamed.
 
+**Meliora naming rule: `<nn>` is the ID of the design doc covering the
+surface** (MelioraCRM `docs/design/NN_*.md`), so every capture traces to
+its spec. Multiple shots of one surface get a suffix after the doc slug.
+
 - [x] 01-dashboard — widget grid; fixture rows only
 - [ ] 02-leads — **captured but WITHHELD**: the won column shows the
       real client project + client name and a real sub. Clean the rows
       (or archive them out of Dev), then recapture.
-- [x] 03-projects-board — kanban across phases; all fixtures
-- [x] 04-schedule-tab — gantt with red blocking chain (Electrical →
-      Drywall → Tile floor), seed bars, milestone diamond, bank shelf
-- [x] 05-gantt-drag.gif — 5-frame state sequence: drag Tile floor out
-      (arrow re-routes AND unblocks — "2 blocked" → "1 blocked"), drag
-      back (restores). Honest but not fluid; a smooth screen-recorded
-      clip can supersede it for the site itself.
-- [x] 06-stage-drawer — blocked stage: dates, sub, "waiting on" note,
-      cost, punch list, tasks
-- [x] 07-finance-tab — milestone schedule + trade-grain cost build-up
-- [x] 08-change-orders — CO cascade lanes + RFI blocking a stage
-- [x] 09-files-tab — trade rail + typed document columns
-- [ ] 10-contractors — **captured but WITHHELD**: real sub names appear
-      beside [fixture]-tagged ones. Rename/remove them in Dev, recapture.
-- [x] 11-schedule-lens — cross-project axis (sparse window; could
+- [x] 03-projects — browse board, kanban across phases; all fixtures
+- [x] 06-project-schedule-tab — gantt with red blocking chain
+      (Electrical → Drywall → Tile floor), seed bars, milestone diamond,
+      bank shelf
+- [x] 06-project-schedule-tab-drag.gif — 5-frame state sequence: drag
+      Tile floor out (arrow re-routes AND unblocks — "2 blocked" →
+      "1 blocked"), drag back (restores). Honest but not fluid; a smooth
+      screen-recorded clip can supersede it for the site itself.
+- [x] 06-project-schedule-tab-drawer — blocked stage drawer: dates, sub,
+      "waiting on" note, cost, punch list, tasks
+- [x] 07-project-payments-tab — milestone schedule + trade-grain cost
+      build-up (the tab's UI label is "Finance"; doc 07 is authoritative)
+- [ ] 10-contractor-directory — **captured but WITHHELD**: real sub
+      names appear beside [fixture]-tagged ones. Rename/remove them in
+      Dev, recapture.
+- [x] 14-project-change-orders-tab — CO cascade lanes + RFI blocking a
+      stage
+- [x] 17-schedule-page — cross-project axis (sparse window; could
       recapture scrolled into a denser stretch)
-- [x] 12-finance-lens — margin trajectory + job economics
-- [x] 13-command-palette — jump-to/create state
-- [x] 14-tasks — typed portfolio workbench (bonus shot)
+- [x] 18-tasks-page — typed portfolio workbench
+- [x] 19-finance-page — margin trajectory + job economics
+- [x] 24-command-palette — jump-to/create state
+- [x] 25-files-and-trades — trade rail + typed document columns
 
 Note for final site curation: the project header in 04/06/etc. shows the
 fixture client's contact line (a reserved-fictional 555 phone number and

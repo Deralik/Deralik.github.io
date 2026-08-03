@@ -17,9 +17,9 @@ everything.
 
 ## B — Claude Design, Round 1: direction exploration
 (attach: BRIEF.md · the five assets/*/CONTEXT.md sheets · meliora
-01-dashboard, 04-schedule-tab, 06-stage-drawer, 12-finance-lens · okibi
-01-weekly, 03-welcome, 05-welcome-scene — more captures exist in
-assets/ if a later round wants them)
+01-dashboard, 06-project-schedule-tab, 06-project-schedule-tab-drawer,
+19-finance-page · okibi 01-weekly, 03-welcome, 05-welcome-scene — more
+captures exist in assets/ if a later round wants them)
 
 > I'm designing my portfolio site — the attached brief is authoritative;
 > the images are real artifacts from my projects, described below. I'm a
