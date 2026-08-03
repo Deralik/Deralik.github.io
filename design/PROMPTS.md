@@ -116,6 +116,50 @@ captures exist in assets/ if a later round wants them)
 >
 > I'll pick a direction (or a hybrid) and we'll iterate from there.
 
+## B2 — Round 1 inside the "Portfolio Design System" project
+(claude.ai/design; the project already holds all context — no attaching)
+
+**Opener (new chat in the project):**
+
+> Read README.md, then context/round-1-prompt.md, context/BRIEF.md,
+> context/system-invariants.md, and the five project sheets
+> (context/cinr.md, grt.md, meliora.md, okibi.md, splat.md); skim
+> reference/ for the product captures. Then execute
+> context/round-1-prompt.md with one change to its delivery: give me ONE
+> direction at a time — home page + cINR research page, with the type
+> pairing, palette as named hexes, the light/dark call, and the
+> signature moment named — and stop after each for my reaction before
+> the next. After my four, propose at least one direction of your own.
+> The product design docs in context/meliora-docs/ and
+> context/okibi-docs/ are background on my shipped work's polish bar —
+> do NOT imitate their languages; the portfolio must hold its own
+> identity beside them.
+
+**Steering during the round (patterns):**
+
+> Direction <X>: keep <element>, kill <element>, push <adjustment>.
+> Re-mock <page> only.
+
+> Merge <element of direction A> into <direction D>: one mock of home
+> showing how they coexist.
+
+> Show this direction at phone width before we judge it.
+
+> This is drifting toward <a MelioraOS look / a SaaS landing page>.
+> Re-read context/system-invariants.md and re-mock under the governing
+> principle: nothing moves or decorates unless it demonstrates something
+> true.
+
+**Closing the round (same chat, before leaving):**
+
+> Write a round summary as one markdown doc, nothing new in it — only
+> what happened: (1) directions shown, one line each; (2) decided — what
+> I approved, with the exact tokens (type pairing, palette hexes,
+> spacing base, motion rules) as they'd appear in a design-system file;
+> (3) rejected, with why; (4) open questions for the next round.
+
+Bring that summary back to Claude Code and run prompt D.
+
 ## C — Claude Design, later rounds
 
 > Continuing from last round (decisions so far are pasted below / in the
