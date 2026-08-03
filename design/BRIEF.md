@@ -21,6 +21,12 @@ engineers, GPU-company engineers, then recruiters routing to those people.
 - One signature visual moment is worth designing for (candidates: a
   full-bleed volume render as the research page hero; a live-scrubbing
   clip of the Meliora Gantt; later, the interactive demo).
+- **Governing motion principle (owner, 2026-08-02): nothing moves and
+  nothing decorates unless it demonstrates something true about the
+  work.** Every animation is evidence. Screenshots/clips are raw
+  material, not the presentation; distinctive motion and live or
+  abstract demonstrations carry the projects. Four candidate directions
+  + the exploration process live in design/iterations/01-2026-08-02.md.
 
 ## Page inventory (starting point — Claude Design may propose better)
 
@@ -32,7 +38,13 @@ engineers, GPU-company engineers, then recruiters routing to those people.
 5. **Okibi** — small, personal, correctness-focused.
 6. **SPLAT** — the learning-system story.
 7. **About / Resume** — short bio, spoken languages, resume PDF link
-   (email-only variant, provided file — never generated here).
+   (email-only variant, provided file — never generated here), and a
+   **publications block** (the EGPGV 2025 paper: title, venue, honorable
+   mention, arXiv + code links).
+
+The structure must accommodate future sections — more publications,
+talks, new projects — without a redesign; the design system should treat
+"add a section" as a first-class, boring operation.
 
 ## Vetted fact packs (the only claims the site may make)
 
@@ -76,11 +88,32 @@ tense).
 ## Demos — scoped honestly
 
 - **v1 (site launch):** stills and short screen-capture clips. Research
-  pages use existing renders (see `assets/shots.md` for disk locations);
-  Meliora gets a Gantt-interaction clip; Okibi a calendar-sync moment.
-- **v2 (post-launch project):** an interactive in-browser demo (WebGPU
-  volume raymarcher on a downsampled dataset, or a GRT cache visualizer).
-  Genuinely impressive, genuinely a project — the site never waits on it.
+  pages use renders of their own demo datasets (produced during demo
+  development — legacy research renders were rejected 2026-08-02 as
+  design anchors: they show content the site won't); Meliora gets an
+  interaction clip; Okibi a calendar-sync moment.
+- **Research demos (owner decision 2026-08-02): both research pages
+  present as small in-browser interactive demos on public,
+  redistributable datasets.** Each page designs a "demo slot" hero — the
+  poster/clip fills it first; demo stages replace it in place. Labels
+  always state exactly what is running; the site never waits on any
+  stage.
+  - **cINR demo** (dataset candidate: the temperature-distortion cube —
+    location pinned during demo work): stage 1 is a raymarcher over a
+    multi-resolution brick pyramid **precomputed directly from the raw
+    volume — small data needs no INR training** — visibly filling
+    coarse → fine while interactive, honestly labeled an illustration of
+    the pipeline, linking github.com/VIDILabs/cINR. Optional stage 2:
+    the brick source swaps to real INR decode (small model trained with
+    the actual cINR pipeline, WASM or WebGPU), at which point the demo
+    genuinely runs the paper's idea — slow neural decode made
+    interactive by a multi-res cache, the cache fill being the visible
+    demonstration.
+  - **GRT demo** (dataset candidate: the OpenVDB cloud bunny — verify
+    the sample-model license — or another small public dataset):
+    precompute what it needs from raw data; whatever the browser does
+    instead of the real system's OptiX gaussian ray tracing is labeled
+    as exactly that.
 
 ## Constraints
 

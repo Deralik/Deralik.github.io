@@ -7,7 +7,7 @@ Work top to bottom; check things off; log every design round in
 
 - [x] Repo scaffolding: CLAUDE.md workflow rules, design/ area, privacy
       pre-commit hook.
-- [ ] Activate the hook in this clone: `git config core.hooksPath .githooks`
+- [x] Activate the hook in this clone: `git config core.hooksPath .githooks`
 
 ## P1 — Asset pack
 
@@ -16,21 +16,31 @@ Meliora and Okibi need a logged-in browser (Claude drives via the Chrome
 extension, you supervise); research assets are copied from disk.
 
 - [ ] Meliora captures (Dev workspace seed data ONLY — never the customer
-      tenant): Gantt with dependencies visible, Gantt mid-drag clip,
-      projects view, one drawer.
-- [ ] Okibi captures (demo tab only): weekly view, a calendar-synced task,
-      the welcome page.
-- [ ] Research visuals copied + converted (EXR→PNG where needed) from the
-      paths in shots.md; pick 3–5 hero-quality renders.
+      tenant). *(2026-08-02: 11 stills + drag GIF captured from the local
+      dev instance; leads + contractors WITHHELD — Dev holds mirrored
+      real customer rows; clean, then recapture. shots.md has details.)*
+- [ ] Okibi captures (demo tab only — dev-only `?demo`). *(2026-08-02:
+      weekly, welcome, record, welcome-scene captured; calendar-sync not
+      representable in demo data — see shots.md.)*
+- [x] Per-project CONTEXT.md sheets in assets/<project>/ — the design-
+      round attachments: what each project is, looks like, how it behaves
+      (written 2026-08-02; legacy research renders copied then rejected
+      the same day as design anchors — see iterations/01).
+- [ ] Research demo-dataset visuals, produced with the demo work: cINR
+      temperature-distortion cube renders + LOD/refinement series; GRT
+      cloud-bunny (or alternative) renders; license check on any
+      downloaded dataset. These fill the demo-slot posters.
 - [ ] SPLAT: no visuals exist and none get faked — the page will be
       typographic. (Optional: one figure of the curriculum's stage ladder.)
-- [ ] Everything named consistently: `assets/<project>/<nn>-<slug>.<ext>`.
+- [x] Everything named consistently: `assets/<project>/<nn>-<slug>.<ext>`.
 
 ## P2 — Design rounds (Claude Design)
 
-- [ ] Round 1: paste PROMPTS.md → "Round 1" with BRIEF.md attached plus
-      4–6 best assets. Ask for 2–3 distinct directions, home + one
-      project page each.
+- [ ] Round 1: paste PROMPTS.md → prompt B with BRIEF.md attached plus
+      the asset set it lists. Mock all four agreed directions
+      (Convergence / Instrument / Five rooms / Abstract live index),
+      home + cINR page each, AND invite directions of the model's own —
+      hybrids expected to emerge. (Owner leaning: D.)
 - [ ] After each round: log shown / decided / rejected in
       `iterations/<nn>-<yyyy-mm-dd>.md`; fold agreed tokens into SYSTEM.md.
 - [ ] Iterate until home + research + one product page feel settled.
@@ -67,7 +77,8 @@ extension, you supervise); research assets are copied from disk.
 
 ## P6 — Stretch (post-launch)
 
-- [ ] Interactive demo: WebGPU volume raymarcher on a downsampled dataset
-      or a GRT cache visualizer. Its own project; the site never waits.
+- [ ] Interactive demos per BRIEF's staged plan (cINR multi-res brick
+      streaming; GRT dataset demo). Stage 1s may land near launch; each
+      replaces its page's demo-slot poster in place. The site never waits.
 - [ ] SPLAT page grows as the curriculum produces real artifacts
       (first convergence plots are the trigger).
