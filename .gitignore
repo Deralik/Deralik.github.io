@@ -3,3 +3,6 @@
 # the strings ever being committed themselves.
 .privacy.local
 .DS_Store
+node_modules/
+# Local-only truth copies + design-context binaries — never committed.
+design/local/

@@ -1,176 +1,60 @@
 # Session prompts
 
 Copy-paste starters. Each assumes zero prior context — the repo carries
-everything.
+everything; the machinery (hooks, `scripts/check.mjs`, `scripts/probe.mjs`)
+carries the protocol so the model doesn't have to remember it.
 
-## A — Portfolio work session (Claude Code, from this repo's root)
+## A — Work session (Claude Code, repo root)
 
-> Read CLAUDE.md, design/BRIEF.md, design/ROADMAP.md, and
-> design/assets/shots.md. We're in phase P<N>. Pick up the first unchecked
-> item and drive it. Rules that matter most: this repo is public and
-> nothing private enters it; project sibling repos are read-only sources;
-> Meliora captures use Dev-workspace seed data only and Okibi captures use
-> the demo tab; every claim on the site must come from BRIEF.md's fact
-> packs. For browser captures, I'm logged in — drive Chrome and I'll
-> supervise. Log any design decisions we make in design/iterations/ and
-> keep ROADMAP checkboxes current.
+> Read CLAUDE.md and design/ROADMAP.md; we're in the first phase with an
+> unchecked box — pick up its first item and drive it. Law lives in
+> design/: BRIEF (facts), CONTRACT (what each view must answer), SYSTEM
+> (design system), RULINGS (decisions), REVIEW (rubric). The hooks and
+> scripts enforce privacy and verification — trust the gates, and read
+> the owning file instead of recalling rules. Keep ROADMAP boxes and the
+> design/working/ ledger current as you go; log design decisions in
+> RULINGS with today's date.
 
-## B — Claude Design, Round 1: direction exploration
-(attach: BRIEF.md · the five assets/*/CONTEXT.md sheets · meliora
-01-dashboard, 06-project-schedule-tab, 06-project-schedule-tab-drawer,
-19-finance-page · okibi 01-weekly, 03-welcome, 05-welcome-scene — more
-captures exist in assets/ if a later round wants them)
+## B — Design round (claude.ai "Portfolio Design System" project)
 
-> I'm designing my portfolio site — the attached brief is authoritative;
-> the images are real artifacts from my projects, described below. I'm a
-> GPU & rendering engineer with published research (EGPGV 2025, honorable
-> mention) and shipped products; the audience is national-lab researchers
-> and defense/GPU-company engineers — people who judge how I think.
->
-> **Governing principle: on this site, nothing moves and nothing decorates
-> unless it demonstrates something true about the work.** Every animation
-> is evidence. Anything that could appear on a SaaS landing page is wrong.
->
-> Mock up ALL FOUR directions below (home page + the cINR research page
-> for each), then propose AT LEAST ONE direction of your own that none of
-> mine cover — hybrids and stranger ideas welcome, same principle applies.
-> Mockups are static, so annotate intended motion in captions.
->
-> **Direction A — "Convergence."** Everything I build converges: renderers
-> resolve noise → image, training converges, products went first-commit →
-> production in 47 days, releases 1 → 11, a curriculum climbs stages. The
-> site owns ONE signature control — a scrubber styled like a sample-count
-> axis — reused on every project hero with a different real meaning
-> (render samples, LOD level, build days, releases, curriculum stages).
-> Page transitions re-converge around a persistent shared element. Raw
-> material arrives from the site's own demo datasets and product
-> timelines later — this round, design the grammar, not the pixels.
->
-> **Direction B — "Instrument."** The site speaks the visual language of
-> measurement: figures as numbered plates with measured captions,
-> monospace numerals for every quantity, calibrated axis ticks as the only
-> ornament, full-bleed renders as dark plates between light reading
-> sections. Signature motif: any number on the site can draw a thin
-> provenance line to its source (paper section, benchmark CSV, changelog).
-> My real benchmark figures headline their own caveats ("no aggregate
-> winner") and sign themselves with a SHA-256 — that is the native tone:
-> honest to a fault. Keep it instrument, never newspaper nostalgia.
->
-> **Direction C — "Five rooms."** Home is one continuous walk through five
-> full-bleed atmospheres in fixed order — cINR's volume-render void, GRT's
-> field of gaussian splats, Meliora's construction-document surface,
-> Okibi's calendar light, SPLAT's graph paper — each derived from that
-> project's REAL material, never invented texture. Crossing a threshold
-> shifts the whole palette; a project page is its room expanded; at page
-> end the next room bleeds in.
->
-> **Direction D — "Abstract live index."** The home page has NO
-> screenshots or renders above the fold. Each project's marker is a small
-> kinetic sketch, all sharing one minimal aesthetic (monochrome + one
-> accent), each animating the project's core idea: cells streaming in and
-> sharpening around the cursor (cache paging); thousands of noisy splats
-> consolidating under a running update counter (matched quality, fewer
-> updates); a web of dependent bars reflowing when one moves; two
-> timelines exchanging events where a "data destroyed" lamp never lights;
-> a pose graph relaxing. Captioned honestly as illustrations. The real
-> renders and product UI live inside the pages. Mock the sketches as
-> stills with motion notes.
->
-> For every direction: name the type pairing (display / body / a
-> numerals-and-captions face), give the palette as named hex values with a
-> light/dark decision, and name the one signature moment. Layout must
-> anticipate: a publications block (the EGPGV 2025 paper), future sections
-> (talks, new projects) added without redesign, and — on BOTH research
-> pages (cINR, GRTCache) — a hero that is a DEMO SLOT: it ships as a
-> captured poster/clip of the demo's own dataset first and is later
-> replaced in place by the interactive in-browser demo, so design the
-> frame, caption, and controls chrome around that slot now.
->
-> Non-negotiables from the brief: research-first project order; no
-> marketing tone, no stock imagery, no invented numbers — every figure
-> and claim comes from the brief's fact packs; static-site friendly;
-> legible on a phone; honest labels on every demo, comparison, and
-> illustration.
->
-> **Attached context (deliberately no research renders):**
-> - BRIEF.md — authoritative; the only source of claims and numbers.
-> - Five CONTEXT.md sheets (cINR, GRTCache, Meliora, Okibi, SPLAT) —
->   what each project is, what it looks like, and how it behaves. The
->   research pages will present as interactive demos on small public
->   datasets, so design their slots (frame, caption, controls chrome,
->   poster state) from the sheets — do not fake dataset imagery, invent
->   UI the sheets don't describe, or lean on generic "tech" visuals.
->   Honest labeled placeholder blocks are correct wherever material is
->   pending.
-> - Meliora/Okibi UI screenshots (from assets/meliora/ + assets/okibi/):
->   real product surfaces on fixture/demo data — Meliora light "Classic"
->   theme, Okibi's warm dark ember language. Note the two products have
->   deliberately different design languages; the portfolio must hold its
->   own identity beside both. Okibi's welcome page is PUBLIC and worth
->   browsing live at okibi.app — scroll it: the "task mortality" day
->   simulation there is the bar for demonstration-not-decoration motion.
-> - Optionally attached by me from private repos (never committed to the
->   public portfolio repo): selected product design docs — e.g. Meliora's
->   UI primer and one or two area specs — when a round needs the
->   products' own design language at full depth.
->
-> I'll pick a direction (or a hybrid) and we'll iterate from there.
+> Read README.md and the context/ docs (BRIEF, system invariants, project
+> sheets). This round: <the specific section, figure, or refinement — one
+> scope>. Keep everything consistent with the settled skeleton and the
+> rulings; if you want to break a settled rule, say so explicitly and
+> why. Adjustments edit the existing section in place; a new canvas
+> section only for a genuinely new direction. Before we finish, write the
+> round summary: shown / decided (with exact tokens) / rejected (with
+> why) / open questions — nothing new invented in the summary.
 
-## B2 — Round 1 inside the "Portfolio Design System" project
-(claude.ai/design; the project already holds all context — no attaching)
+## C — Handoff import (Claude Code, after a design round hands work back)
 
-**Opener (new chat in the project):**
+> A design-round handoff is at <path>. Run the import gate before
+> anything enters the repo: (1) privacy sweep — text grep for
+> phone-shaped strings and private artifacts, PDF text extraction, JSON
+> walk (see scripts/check.mjs and design/handoff/IMPORT.md for
+> precedent); (2) reconcile every fact against design/BRIEF.md —
+> discrepancies are surfaced to me, never silently adopted; (3) merge new
+> rulings into design/RULINGS.md (owner rulings vs model notes — keep the
+> registers); (4) write design/iterations/<nn>-<date>.md. Only then stage
+> files. check.mjs must be green before commit; I push.
 
-> Read README.md, then context/round-1-prompt.md, context/BRIEF.md,
-> context/system-invariants.md, and the five project sheets
-> (context/cinr.md, grt.md, meliora.md, okibi.md, splat.md); skim
-> reference/ for the product captures. Then execute
-> context/round-1-prompt.md with one change to its delivery: give me ONE
-> direction at a time — home page + cINR research page, with the type
-> pairing, palette as named hexes, the light/dark call, and the
-> signature moment named — and stop after each for my reaction before
-> the next. After my four, propose at least one direction of your own.
-> The product design docs in context/meliora-docs/ and
-> context/okibi-docs/ are background on my shipped work's polish bar —
-> do NOT imitate their languages; the portfolio must hold its own
-> identity beside them.
+## D — Review session (fresh session or reviewer agent — never the author)
 
-**Steering during the round (patterns):**
+> Review <scope: the diff / a section / a demo> against design/REVIEW.md.
+> You did not write this; assume something is wrong and hunt for it, and
+> if it is genuinely clean say so plainly with what you checked — do not
+> invent nits. Findings: file:line, severity (launch-gating / should-fix
+> / refinement), concrete fix, and the CONTRACT question or BRIEF line it
+> violates. Drive the real page with scripts/probe.mjs — desktop widths
+> AND 390px mobile, both themes. Demos get the honesty lenses. Treat my
+> ideas as challengeable as anyone's.
 
-> Direction <X>: keep <element>, kill <element>, push <adjustment>.
-> Re-mock <page> only.
+## E — Freshness sweep (recurring; post-launch)
 
-> Merge <element of direction A> into <direction D>: one mock of home
-> showing how they coexist.
-
-> Show this direction at phone width before we judge it.
-
-> This is drifting toward <a MelioraOS look / a SaaS landing page>.
-> Re-read context/system-invariants.md and re-mock under the governing
-> principle: nothing moves or decorates unless it demonstrates something
-> true.
-
-**Closing the round (same chat, before leaving):**
-
-> Write a round summary as one markdown doc, nothing new in it — only
-> what happened: (1) directions shown, one line each; (2) decided — what
-> I approved, with the exact tokens (type pairing, palette hexes,
-> spacing base, motion rules) as they'd appear in a design-system file;
-> (3) rejected, with why; (4) open questions for the next round.
-
-Bring that summary back to Claude Code and run prompt D.
-
-## C — Claude Design, later rounds
-
-> Continuing from last round (decisions so far are pasted below / in the
-> attached SYSTEM.md). This round: <the specific pages or components to
-> refine>. Keep everything consistent with the agreed tokens; if you want
-> to break one, say so explicitly and why.
-
-## D — After any Claude Design round (back in Claude Code)
-
-> Round <N> of Claude Design is done. Here's what was shown and decided:
-> <paste / attach exports>. Write design/iterations/<nn>-<date>.md
-> (shown / decided / rejected / open questions), fold the agreed tokens
-> into design/SYSTEM.md, and flag anything that conflicts with CLAUDE.md
-> or BRIEF.md before it calcifies.
+> Run the freshness sweep in design/SOURCES.md: for each site section,
+> read its upstream sources since the recorded marker (sibling repos are
+> READ-ONLY), diff reality against what the site and BRIEF claim, and
+> produce one report: stale claims, new material worth adding, unchanged
+> sections — each with evidence and a proposed edit. I triage; nothing
+> changes on the site without my ruling. Update the sweep markers when
+> done.

@@ -1,0 +1,4 @@
+# design/working/ — the live cycle ledger lands here (one file per active
+# cycle: status keys ☐ ◐ ☑ ⚑, ☑ requires evidence, ends with "▶ NEXT
+# ACTION"). Read it first each session; update it after every step;
+# delete it when the cycle ships — durable content folds into design/.

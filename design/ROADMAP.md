@@ -1,84 +1,96 @@
-# Design → build roadmap
+# Roadmap
 
-Work top to bottom; check things off; log every design round in
-`iterations/`. Implementation does not start until P3 is locked.
+Work top to bottom; log rounds in `iterations/`; keep boxes current.
+History: P0–P2 of the original roadmap ran 2026-08-02 → 2026-08-18 (scaffold,
+asset philosophy, design rounds in the claude.ai project) and produced the
+depth-machine design handed off in `handoff/` — see `iterations/`.
 
-## P0 — Scaffold (done 2026-08-02)
+## S0 — State sync (2026-08-18)
 
-- [x] Repo scaffolding: CLAUDE.md workflow rules, design/ area, privacy
-      pre-commit hook.
-- [x] Activate the hook in this clone: `git config core.hooksPath .githooks`
+- [x] Handoff port-spec docs imported (`handoff/`), rulings log moved into
+      the repo (`RULINGS.md`), BRIEF fact packs updated (GRT manuscript
+      record; Meliora private beta + beta.11), CLAUDE.md drift fixed.
+- [x] Privacy findings recorded (`handoff/IMPORT.md`): résumé PDF in the
+      zip is NOT the email-only variant; `about-record.json` carries a
+      phone field to strip.
 
-## P1 — Asset pack
+## S1 — Protocol scaffolding (2026-08-18)
 
-Capture list and safety rules live in `assets/shots.md`. Human-in-the-loop:
-Meliora and Okibi need a logged-in browser (Claude drives via the Chrome
-extension, you supervise); research assets are copied from disk.
+- [x] CONTRACT.md (depth/section goals + questions), REVIEW.md (rubric),
+      SOURCES.md (freshness manifest), PROMPTS.md rewritten.
+- [x] Machinery: `scripts/check.mjs` (privacy/claims/links/token gates,
+      PDF text extraction), `scripts/probe.mjs` (screenshot matrix +
+      scripted interaction + console capture), `.claude/` (reviewer
+      agent, review/verify skills, session + post-edit hooks, denies),
+      CI workflow, pre-commit hook extended, CHANGELOG.md.
 
-- [ ] Meliora captures (Dev workspace seed data ONLY — never the customer
-      tenant). *(2026-08-02: 11 stills + drag GIF captured from the local
-      dev instance; leads + contractors WITHHELD — Dev holds mirrored
-      real customer rows; clean, then recapture. shots.md has details.)*
-- [ ] Okibi captures (demo tab only — dev-only `?demo`). *(2026-08-02:
-      weekly, welcome, record, welcome-scene captured; calendar-sync not
-      representable in demo data — see shots.md.)*
-- [x] Per-project CONTEXT.md sheets in assets/<project>/ — the design-
-      round attachments: what each project is, looks like, how it behaves
-      (written 2026-08-02; legacy research renders copied then rejected
-      the same day as design anchors — see iterations/01).
-- [ ] Research demo-dataset visuals, produced with the demo work: cINR
-      temperature-distortion cube renders + LOD/refinement series; GRT
-      cloud-bunny (or alternative) renders; license check on any
-      downloaded dataset. These fill the demo-slot posters.
-- [ ] SPLAT: no visuals exist and none get faked — the page will be
-      typographic. (Optional: one figure of the curriculum's stage ladder.)
-- [x] Everything named consistently: `assets/<project>/<nn>-<slug>.<ext>`.
+## S2 — Retrofit audit (fresh reviewers — before the port)
 
-## P2 — Design rounds (Claude Design)
+- [ ] Audit the handoff's About/cINR/GRT against CONTRACT.md questions,
+      REVIEW.md honesty lenses, and the skim test — desktop AND mobile,
+      both themes, driving the real skeleton via `probe.mjs`.
+- [ ] Verify what the demos actually compute (cINR: is the brick fill
+      real paging? GRT: PSNR meter measured or scripted?) — findings, not
+      assumptions.
+- [ ] Check the GRT record + rejection copy against the actual HPG
+      reviews and the manuscript (paths in SOURCES.md): the paraphrased
+      objection must match the summary review.
+- [ ] Output: punch list split into **launch-gating** (misleading
+      behavior, privacy, claim errors) vs **refinement** (design-round
+      material). Owner triages.
 
-- [ ] Round 1: paste PROMPTS.md → prompt B with BRIEF.md attached plus
-      the asset set it lists. Mock all four agreed directions
-      (Convergence / Instrument / Five rooms / Abstract live index),
-      home + cINR page each, AND invite directions of the model's own —
-      hybrids expected to emerge. (Owner leaning: D.)
-- [ ] After each round: log shown / decided / rejected in
-      `iterations/<nn>-<yyyy-mm-dd>.md`; fold agreed tokens into SYSTEM.md.
-- [ ] Iterate until home + research + one product page feel settled.
-      Expect 2–4 rounds; stop when rounds produce taste-tweaks, not
-      direction changes.
+## S3 — Production port
 
-## P3 — Lock the system
+- [ ] Port `site/` + safe uploads into the repo per `handoff/README.md`
+      production tasks 1–11 (theming toggle, scaffold removal, partition
+      trim, hash routing, deferred warm-starts, head/meta/favicon,
+      accessibility, tested widths).
+- [ ] Import-gate strips (`handoff/IMPORT.md`): résumé placeholder until
+      owner supplies email-only PDF; strip `identity.phone`; audit JSON
+      bookkeeping fields; harmonize `identity.title` to the ruled "GPU &
+      Machine Learning engineer". Compress portrait (1.8 MB) + Quality
+      Results.png.
+- [ ] Under-construction cards: band-2 slots titled MelioraOS / Okibi /
+      SPLAT in the existing empty-slot design language.
+- [ ] **GRT real data (launch gate):** nebula-class dataset converted
+      offline per `handoff/DATA-HANDOFF.md` (license verified, credited);
+      black-hole companion: feasibility check → owner picks labelled
+      analogue or drop. Honest comparison rule enforced (no synthetic
+      blend behind a comparison frame).
+- [ ] Stanford bunny credit line in cINR reference.
+- [ ] Launch-gating punch items from S2.
+- [ ] Reviews: /review on the port, probe matrix clean (no page errors,
+      all widths × themes), check.mjs green, claims extraction pass.
+      Owner may trigger /code-review ultra as the final gate.
 
-- [ ] SYSTEM.md complete: type scale, palette (light/dark if offered),
-      spacing, components (nav, project card, figure+caption, code block,
-      clip embed), motion rules.
-- [ ] Page blueprints: section-by-section outline per page, which asset
-      goes where.
-- [ ] Sanity pass against CLAUDE.md rules (positioning order, no
-      marketing tone, privacy).
+## S4 — Deploy
 
-## P4 — Implementation
+- [ ] Owner decision: rename repo to `Deralik.github.io` (root URL) or
+      keep `portfolio` + custom domain.
+- [ ] GitHub Pages on; final privacy sweep of served output; CHANGELOG
+      entry; owner copies the email-only resume PDF in; **owner pushes.**
+- [ ] Add the site URL to the resume header (private-repo side).
+- [ ] Cleanliness ruling: retire `design/handoff/` from HEAD once the
+      shipped site + SYSTEM.md supersede it (history keeps it).
 
-- [ ] Static site from SYSTEM.md + blueprints. Tech chosen at build time
-      by the implementing session — default bias: plain HTML/CSS (or
-      Astro if templating earns it), dependency-light, fast, readable
-      without JS.
-- [ ] Content written per page from BRIEF fact packs — no new claims.
-- [ ] Accessibility + phone pass.
+## Design lane (parallel, in the claude.ai project — import gate on every
+handoff)
 
-## P5 — Deploy
+- [ ] GRT refinement rounds (owner: "we will be refining it a lot").
+- [ ] MelioraOS section design (endorsed direction: the agent-workflow
+      loop figure; captures are reference only). Prereq when a round
+      wants fresh captures: owner cleans the two tainted Dev rows
+      (leads, contractors), then recapture per `assets/shots.md`.
+- [ ] Okibi section design (the app is the story; sync-conflict sandbox
+      is a page moment; vet the feature list first — RULINGS open item).
+- [ ] SPLAT section design (typographic; no faked visuals; grows when
+      the curriculum produces real artifacts).
+- [ ] cINR stage 2 (real INR decode, WASM/WebGPU) — post-launch.
 
-- [ ] Decide repo/domain: rename to `Deralik.github.io` for the root URL,
-      or keep `portfolio` + custom domain.
-- [ ] GitHub Pages live; hook active; final privacy sweep of the built
-      output (grep for phone-shaped strings before first push).
-- [ ] Then, from the private repo's side: resume PDF copied in, and the
-      site URL added to the resume header.
+## Maintenance (post-launch, recurring)
 
-## P6 — Stretch (post-launch)
-
-- [ ] Interactive demos per BRIEF's staged plan (cINR multi-res brick
-      streaming; GRT dataset demo). Stage 1s may land near launch; each
-      replaces its page's demo-slot poster in place. The site never waits.
-- [ ] SPLAT page grows as the curriculum produces real artifacts
-      (first convergence plots are the trigger).
+- [ ] Freshness sweep per `SOURCES.md` (~monthly, or after any project
+      milestone): models diff the live projects against the site and
+      propose updates; owner triages. First sweep sets the baselines.
+- [ ] About timeline stays true (new events, availability status).
+- [ ] CHANGELOG.md entry per release; owner pushes.

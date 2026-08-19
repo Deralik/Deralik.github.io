@@ -27,14 +27,19 @@ companies — people who read long technical write-ups and judge how I think.
 
 ## Content
 
-- Project order is positioning, not chronology: **published research
-  (cINR / EGPGV 2025) → GRTCache → SPLAT → Meliora → Okibi.** If the web
-  apps lead, I read as a full-stack developer — that's a bug.
-- Pages are long-form technical narrative — headings, figures, code where
-  it earns its place. The audience is evaluating judgment.
+- Project order is positioning, not chronology: research leads — **cINR
+  (EGPGV 2025) → GRTCache — then MelioraOS → Okibi → SPLAT** (owner
+  order, 2026-08-18). If the web apps lead, I read as a full-stack
+  developer — that's a bug.
+- The site is one page, three depths (D0 dashboard → D1 panel → D2
+  document). D0/D1 are skim-first; most readers only skim, and nothing
+  may mislead at the surface. D2 is the long-form technical narrative.
+  Each view answers the questions in `design/CONTRACT.md`.
 - SPLAT is described by what runs today (a curriculum), never the roadmap.
 - Every number on the site must be defensible; the fact packs in
   `design/BRIEF.md` are the vetted set — don't improvise new claims.
+  Demos carry honest labels; efficiency approximations must never produce
+  misleading behavior (`design/REVIEW.md` owns the rubric).
 
 ## Design direction (owner decision 2026-08-02, supersedes the seed's
 "write-ups over screenshots")
@@ -48,10 +53,41 @@ gradients'-sake, anything that reads as a SaaS landing page.
 
 ## Design workflow
 
-The site is designed before it is built. `design/` is the working area:
-`BRIEF.md` (what we're making and the vetted facts), `ROADMAP.md` (phases),
-`PROMPTS.md` (session + Claude Design prompts), `assets/` (captured
-visuals + `shots.md` capture list), `iterations/` (one log per design
-round), `SYSTEM.md` (the agreed design system — **the single source of
-truth for implementation; nothing ships that contradicts it**).
-Implementation starts only after SYSTEM.md is locked (ROADMAP P3).
+Design rounds run in the claude.ai "Portfolio Design System" project;
+everything durable lives here in `design/`, one owner per kind of truth:
+`BRIEF.md` (what we're making + the vetted facts) · `CONTRACT.md`
+(goals/questions per depth and section) · `RULINGS.md` (dated decision
+log: binding owner rulings vs advisory model notes) · `SYSTEM.md` (the
+design system in force — **nothing ships that contradicts it**) ·
+`REVIEW.md` (review rubric) · `SOURCES.md` (freshness manifest) ·
+`ROADMAP.md` (phases) · `PROMPTS.md` (cold-start session prompts) ·
+`handoff/` (frozen port spec) · `working/` (live cycle ledger, deleted
+when the cycle ships) · `iterations/` (round logs) · `assets/`
+(public-safe context sheets only) · `local/` (GITIGNORED: primary-source
+copies — papers, manuscript, reviews — and design-context captures;
+stable paths for sessions, never committed). The public tree stays
+clean: no design-context binaries, and structural files retire from
+HEAD when their phase ships.
+Restating one file's truth in another is a finding. Design → repo
+crossings go through the import gate: privacy sweep (text, PDFs, JSON
+walk), fact reconciliation against BRIEF, rulings merge, iterations
+entry — never "unzip and commit."
+
+## Working agreements
+
+- **Nothing is gospel.** Pressure-test the owner's ideas as adversarially
+  as your own — state the strongest concrete counterargument once before
+  executing; executing without voicing it is the failure. Once the owner
+  has heard it and ruled, stop re-litigating (RULINGS.md records it).
+- **Findings are leads.** Re-verify any subagent's finding first-hand
+  before acting on it.
+- **The user is not the render loop.** A visual change is not done until
+  its rendered output has been seen: `node scripts/probe.mjs --matrix`
+  (desktop widths, 390px mobile, both themes). Reviews always cover the
+  mobile experience.
+- **Release protocol:** `node scripts/check.mjs` green before every
+  commit (the pre-commit hook and CI run it too); a short CHANGELOG.md
+  entry per release; **the owner pushes — never push.**
+- The protocol is carried by machinery (hooks, gates, settings denies),
+  not by model memory. If a gate stayed silent, don't re-derive rules
+  from recollection — read the file that owns them.
