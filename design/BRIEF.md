@@ -98,10 +98,13 @@ user-owned Google Drive storage (CHANGELOG-sourced). Never "in
 production" — private beta. Screenshots: Dev-workspace seed data ONLY,
 and per RULINGS they are design-round reference, not site content.
 
-**Okibi (okibi.app).** Personal task manager shipped end to end; two-way
-Google Calendar sync designed so a sync conflict can never destroy user
-data ("absence is never evidence" deletion rule); 11 releases in its
-first seven weeks. Screenshots: demo tab only.
+**Okibi (okibi.app).** Personal task manager shipped end to end; the
+headline feature is task mortality — unfinished tasks burn away into a
+permanent record; the slogan is "A list that lets you forget"
+(owner-confirmed 2026-08-19). Two-way Google Calendar sync designed so
+a sync conflict can never destroy user data ("absence is never
+evidence" deletion rule); 11 releases in its first seven weeks.
+Screenshots: demo tab only.
 
 **SPLAT.** An agent-authored curriculum taking me from SE(3) state
 estimation to Gaussian-splatting SLAM — staged roadmap, written exams,

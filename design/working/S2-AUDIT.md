@@ -57,10 +57,37 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   presented 2025-06-02 Luxembourg City; co-author Qi Wu's publications
   page: "Best Paper Honorable Mentions, EGPGV 2025") → SOURCES.md.
 - ☑ Consolidated punch list below.
-- ⚑ Owner triage — decisions D1–D9 below block or shape S3.
+- ☑ Owner triage 2026-08-19 (results below). Two riders open: D7 author
+  line, D8 in-progress framing.
 
-▶ NEXT ACTION: owner answers D1–D9; then this file becomes the S3 port
-ledger (launch-gating + should-fix as work items).
+▶ NEXT ACTION: owner supplies the GRT author line + answers the
+in-progress question; port (S3) can start on everything else — this
+file is now the S3 port ledger.
+
+## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
+
+- D1 delegated → vendored dated snapshot (grid label "as of <date>";
+  freshness sweep refreshes). D2 → voice ruling: personal, lightly
+  funny, not corporate; "wannabe researcher" stays; owner-involved copy
+  pass added to S3 (About D0 bio, lede, + sections owner names).
+- D3 → real feature, now BRIEF-vetted (task mortality headline; "A
+  list that lets you forget"). G11 resolved: clause stays.
+- D4 → no JLPT held. G9 resolution: D0 renders "JP" bare; depth says
+  "intermediate — self-assessed ~N4 level; coursework JPN 001–003".
+- D5 → KEEP the HS line. G10 resolution: move out of transcript-facts,
+  mark "owner recollection — no HS transcript located".
+- D6 → tier reads "under construction".
+- D7 ⚑ OPEN: manuscript copy is anonymized ("ANONYMOUS AUTHOR(S), ID
+  1028" — verified); owner to supply the exact author line + order.
+  Until it lands, the data-empty slot ships removed, not invented.
+- D8 ⚑ OPEN: re-asked in plain terms (which of the five listed items
+  are actively being worked vs the manuscript's future-work ideas; is
+  equal-time comparison in the current sweep).
+- D9 → sourced (official conferral document, 11 Jun 2026). Block
+  header → "Academic record"; about-record gains the source note.
+- NEW S3 item S16: owner-voice copy pass (drafts by model, owner's
+  wording wins) — About D0 bio line, About lede, other sections owner
+  flags during the pass.
 
 ## Punch list
 

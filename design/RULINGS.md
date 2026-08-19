@@ -202,6 +202,41 @@ where phrased generally)
   (git history keeps them) — e.g. `design/handoff/` after the port
   lands; the captures moved out the day this was ruled.
 
+# Owner rulings — content & voice (2026-08-19, S2 triage)
+
+- **Voice**: the site's wording is personal, professional and mature
+  when needed but never corporate; light self-aware humor is deliberate
+  and good for the owner's image ("wannabe researcher" stays).
+  Reviewers must not flag owner-voice humor as register errors. Several
+  sections (About D0 bio line, About lede, and others the owner names)
+  get an owner-involved rewrite pass during S3 — models draft, the
+  owner's voice wins.
+- **Okibi headline (fact, confirmed)**: task mortality is the product's
+  headline feature — unfinished tasks burn away into a permanent
+  record; the slogan is "A list that lets you forget." → BRIEF pack
+  updated; the About strip clause stands, now mapped.
+- **Japanese**: no JLPT credential is held; ~N4 is self-assessment from
+  lessons/quizzes. D0 renders "JP" bare (space was the reason for
+  "N4"); depth carries "intermediate — self-assessed ~N4 level;
+  coursework JPN 001–003". No JLPT-shaped credential renders anywhere.
+- **High-school record**: KEPT — the owner considers it important
+  history most people don't have. It renders outside the
+  transcript-facts block, marked "owner recollection — no HS transcript
+  located" (~4.2 GPA, ~366 units).
+- **Slot tier**: **"under construction"** verbatim — friendlier and
+  more personal than "in design".
+- **Contribution grid** (owner delegated as a technical call; model
+  decision): vendored dated snapshot in about-record.json — no reader
+  IPs to a third party, matches the no-fetch posture; label becomes
+  "52 weeks · as of <date>"; the freshness sweep refreshes it.
+- **MS award date**: sourced — the owner holds the official conferral
+  document (graduated 11 Jun 2026). about-record gains the source note;
+  the reference block header becomes "Academic record" (mixed
+  transcript + conferral sources, no longer claiming transcript-only).
+- Pending riders: GRT author line (owner to supply — the manuscript
+  copy is anonymized); "in progress" section framing (owner
+  clarification requested).
+
 # Owner design directions — endorsed but unexplored
 
 - **MelioraOS**: an abstract figure of the owner's workflow loop with the

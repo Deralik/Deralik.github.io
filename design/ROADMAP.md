@@ -37,7 +37,9 @@ depth-machine design handed off in `handoff/` — see `iterations/`.
       vs both papers, digit-for-digit.
 - [x] Punch list produced: `working/S2-AUDIT.md` (G1–G11 launch-gating,
       D1–D9 owner decisions, S1–S15 should-fix, R1–R20 refinement).
-- [ ] Owner triage of D1–D9 → S2-AUDIT.md becomes the S3 port ledger.
+- [x] Owner triage 2026-08-19 → S2-AUDIT.md is now the S3 port ledger.
+      Two riders open there: GRT author line (D7), in-progress framing
+      (D8) — neither blocks the rest of the port starting.
 
 ## S3 — Production port
 
