@@ -1,7 +1,10 @@
-/* Skeleton — theme tokens.
-   Every colour and face the skeleton uses is named here and nowhere else, so a
-   whole visual direction is one block in this file. Switch with data-theme on
-   <html>; the scaffolding bar writes it.
+/* Theme tokens — production ships exactly TWO themes (owner ruling):
+   light = h-transit, dark = k-matrix. Default follows
+   prefers-color-scheme; the identity-line toggle writes a localStorage
+   override; an inline head script sets data-theme before first paint.
+   The five exploration themes live in the design project, not here.
+
+   Every colour and face the site uses is named here and NOWHERE else.
 
    Each theme owns TWO accent registers:
      --acc / --accw   one job only — RUNNING (a figure computing now)
@@ -11,73 +14,12 @@
 
    --band1 is the ONLY thing separating the two bands of the dashboard: no rule,
    no label, just a change of ground. It paints the checkable band and About,
-   which spans both; the asserted band keeps --paper. Tune it per theme; it can sit a hair off --paper or a long
-   way from it.
-
-   Adding a theme is one block in this file and nothing else — the runtime reads
-   the theme list out of this stylesheet, so no name is written twice.
-
-   Themes 2–4 were drawn at random rather than chosen, to keep the set from
-   converging on one taste. Palettes are unproven — that is the point of having
-   four of them. */
+   which spans both; the asserted band keeps --paper. */
 
 :root{
   --idl:54px;--rail:180px;--strip:34px;--about:252px;
   --t:.34s cubic-bezier(.4,0,.2,1); /* @kind other */
   --fs-floor:9.5px;
-}
-
-/* ── 1 · Paper — inherited from rounds 2–3, the only tested one ───────── */
-[data-theme="paper"]{
-  --paper:#F5F2EC;--mat:#E9E4DA;--band1:#E6DFCF;--hair:#C9C2B4;--absence:#8A8375;
-  --prose:#40392E;--ink:#191713;--well:#12100D;--onwell:#E4DFD4;
-  --acc:#B8156F;--accw:#FF57AE;
-  --disp:'Familjen Grotesk',system-ui,sans-serif; /* @kind font */--body:Alegreya,Georgia,serif; /* @kind font */--mono:'Azeret Mono',ui-monospace,monospace; /* @kind font */
-  --pa-1:#B8156F;--pa-2:#1E6F8C;--pa-3:#8C5A35;--pa-4:#E87530;--pa-5:#4A6B2A;--pa-6:#6B4FA8;--pa-7:#A33B2A;
-}
-
-/* ── 2 · Drafting — green-grey ground, violet accent ──────────────────── */
-[data-theme="drafting"]{
-  --paper:#E9ECE5;--mat:#DCE1D8;--band1:#D7DCCE;--hair:#B6BEB0;--absence:#7C8577;
-  --prose:#38402F;--ink:#161A12;--well:#10130E;--onwell:#DDE2D6;
-  --acc:#6B3FD4;--accw:#A98BFF;
-  --disp:Chivo,system-ui,sans-serif; /* @kind font */--body:Newsreader,Georgia,serif; /* @kind font */--mono:'DM Mono',ui-monospace,monospace; /* @kind font */
-  --pa-1:#6B3FD4;--pa-2:#1F6E7A;--pa-3:#8A6212;--pa-4:#B4442A;--pa-5:#3A6B3C;--pa-6:#5B4AA0;--pa-7:#96343F;
-}
-
-/* ── 3 · Well — dark ground. Note the collision it creates: §2i reserves
-   the dark rectangle for a renderer, so here the renderer's well has to be
-   darker than the ground and keep a hairline. Whether that still reads is an
-   open question this theme exists to test. ───────────────────────────── */
-[data-theme="well"]{
-  --paper:#14181A;--mat:#1C2124;--band1:#1E2427;--hair:#333B3F;--absence:#7C8A8F;
-  --prose:#B9C4C8;--ink:#E9EFF1;--well:#070A0B;--onwell:#E9EFF1;
-  --acc:#2BB8C9;--accw:#6FE6F2;
-  --disp:'Bricolage Grotesque',system-ui,sans-serif; /* @kind font */--body:Newsreader,Georgia,serif; /* @kind font */--mono:'Spline Sans Mono',ui-monospace,monospace; /* @kind font */
-  --pa-1:#2BB8C9;--pa-2:#7FB069;--pa-3:#D9A05B;--pa-4:#E8734A;--pa-5:#9B8AE6;--pa-6:#4FA3D1;--pa-7:#D96B8A;
-}
-
-/* ── 4 · Bureau — near-monochrome, amber accent ───────────────────────── */
-[data-theme="bureau"]{
-  --paper:#FBFAF8;--mat:#F0EEE9;--band1:#EFEADE;--hair:#D2CEC6;--absence:#8C877E;
-  --prose:#3A3630;--ink:#14120F;--well:#141210;--onwell:#EDEAE3;
-  --acc:#B87400;--accw:#FFB13D;
-  --disp:'Space Grotesk',system-ui,sans-serif; /* @kind font */--body:Newsreader,Georgia,serif; /* @kind font */--mono:'Spline Sans Mono',ui-monospace,monospace; /* @kind font */
-  --pa-1:#B87400;--pa-2:#5C6670;--pa-3:#7A6A55;--pa-4:#94502F;--pa-5:#4F6152;--pa-6:#6A5F7A;--pa-7:#8A4A4A;
-}
-
-/* ── 5 · Console (J) ─────────────────────────────────────────────────────
-   Palette read out of "Round 2 - J Console.html": cool near-black inks over a
-   violet-grey paper, violet accent. --prose and --accw are derived — J had no
-   token for a mid-weight prose tone or an on-dark accent. */
-[data-theme="j-console"]{
-  --paper:#F3F2F6;--mat:#E7E6EE;--band1:#E4E3EE;--hair:#D5D3DE;--absence:#75727F;
-  --prose:#43414F;--ink:#1A1A22;--well:#141420;--onwell:#EDECF2;
-  --acc:#875ADC;--accw:#A788F0;
-  --disp:Epilogue,system-ui,sans-serif; /* @kind font */
-  --body:'Radio Canada',system-ui,sans-serif; /* @kind font */
-  --mono:'Reddit Mono',ui-monospace,monospace; /* @kind font */
-  --pa-1:#875ADC;--pa-2:#3E7BC8;--pa-3:#2F8F7A;--pa-4:#B07A1F;--pa-5:#C4553C;--pa-6:#6B54B8;--pa-7:#A8437E;
 }
 
 /* ── 6 · Transit (H) ─────────────────────────────────────────────────────

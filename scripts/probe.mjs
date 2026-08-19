@@ -34,7 +34,7 @@ for (let i = 0; i < argv.length; i++) {
 
 const dir = path.resolve(opt('dir', '.'));
 const pageFile = opt('page', 'index.html');
-const lsKey = opt('ls-key', 'n-skeleton:theme');
+const lsKey = opt('ls-key', 'theme');
 const themes = opt('themes', 'h-transit,k-matrix').split(',');
 const out = opt('out', path.join(os.tmpdir(), 'portfolio-shots',
   new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)));

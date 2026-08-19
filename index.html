@@ -1,7 +1,13 @@
 <!doctype html>
-<html lang="en" data-theme="paper"><head><meta charset="utf-8">
+<html lang="en" data-theme="h-transit"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Skeleton</title>
+<script>/* theme before first paint: stored override, else system; the
+markup default above is the no-JS fallback */
+(()=>{const d=matchMedia('(prefers-color-scheme: dark)'),ap=()=>{let s=null;
+try{s=localStorage.getItem('theme')}catch(e){}
+document.documentElement.dataset.theme=(s==='h-transit'||s==='k-matrix')?s:(d.matches?'k-matrix':'h-transit')};
+ap();d.addEventListener('change',ap);})()</script>
 <link rel="stylesheet" href="css/skeleton-fonts.css">
 <link rel="stylesheet" href="css/skeleton-tokens.css">
 <link rel="stylesheet" href="css/skeleton.css">
@@ -13,7 +19,7 @@
 <div class="idl">
   <span class="nm" data-slot="name">Daniel Zavorotny</span><span class="dsc" data-slot="discipline">GPU &amp; Machine Learning engineer</span>
   <span class="sp"></span>
-  <span class="bit"><span class="em" data-slot="location">Sacramento, CA</span></span><span class="bit" data-slot="resume"><span data-resume-pending>résumé PDF</span></span>
+  <span class="bit"><span class="em" data-slot="location">Sacramento, CA</span></span><span class="bit" data-slot="resume"><span data-resume-pending>résumé PDF</span></span><span class="bit thm" id="thm" role="group" aria-label="Color theme"><button type="button" data-t="h-transit">light</button><i>/</i><button type="button" data-t="k-matrix">dark</button></span>
 </div>
 <nav class="mstrip" id="mstrip" aria-label="Projects"></nav>
 <div class="pbody" id="pbody" data-depth="0">
@@ -389,17 +395,6 @@
     </div>
   <div class="cwrap"><i class="cbar" id="cbar"></i></div>
   <div class="cread" id="cread"></div>
-</div>
-
-<div class="scaf" id="scaf">
-  <span class="tag">scaffolding</span>
-  <div class="grp"><label for="sel-theme">Theme</label><select id="sel-theme"></select></div>
-  <div class="grp"><label for="sel-part">Partition</label><select id="sel-part"></select></div>
-  <div class="grp"><label for="sel-view">Viewport</label><select id="sel-view"></select></div>
-  <div class="grp" style="min-width:260px"><label>Measured</label><span class="ro" id="ro">—</span></div>
-  <div class="grp"><label>Keys</label><span class="ro">click a field, then keep scrolling
-↑ ↓ depth · 1–7 open · esc panel · S hide</span></div>
-  <div class="grp" style="justify-content:flex-end"><button id="btn-hide">hide</button></div>
 </div>
 
 <script src="js/skeleton.js"></script>

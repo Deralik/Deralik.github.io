@@ -132,19 +132,14 @@ body.mob .drow{flex-direction:column;gap:14px}
 body.mob .cwrap,body.mob .cread{display:none}
 body.mob .foot{margin:20px 14px 0;flex-direction:column;gap:6px}
 body.mob .tap{display:flex;align-items:center;justify-content:center;min-height:44px}
-body.simmob{max-width:390px;border-right:1px solid var(--ink)}
-body.simmob .scaf{max-width:none;width:100vw}
 .mstrip{display:none;flex:none;overflow-x:auto;border-bottom:1px solid var(--hair);background:var(--paper);scrollbar-width:none}
 .mstrip::-webkit-scrollbar{display:none}
 .mstrip button{flex:none;min-height:44px;padding:0 14px;border:0;border-right:1px solid var(--hair);background:transparent;font:400 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--absence);cursor:pointer}
 .mstrip button[aria-current="true"]{color:var(--ink);background:var(--mat)}
 
-/* ── scaffolding — not part of the design. Press S to hide. ──────────── */
-.scaf{flex:none;height:126px;display:flex;align-items:stretch;background:var(--paper);border-top:1px solid var(--ink);font-family:var(--mono);max-width:100vw;overflow-x:auto}
-.scaf.off{display:none}
-body.mob .scaf{position:fixed;left:0;bottom:0;z-index:99;border-right:1px solid var(--ink)}
-.scaf .grp{display:flex;flex-direction:column;gap:3px;padding:7px 11px;border-right:1px solid var(--hair)}
-.scaf label{font:500 9px/1 var(--mono);font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--absence)}
-.scaf select,.scaf button{font:400 11px/1 var(--mono);color:var(--ink);background:var(--paper);border:1px solid var(--hair);padding:5px 6px;cursor:pointer}
-.scaf .ro{font:400 10px/1.45 var(--mono);color:var(--prose);max-width:38ch;white-space:pre-line;overflow:auto}
-.scaf .tag{font:500 9px/1 var(--mono);font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--absence);writing-mode:vertical-rl;padding:8px 5px;border-right:1px solid var(--hair)}
+/* ── theme toggle on the identity line — the active mode reads in --ink ── */
+.idl .thm{display:inline-flex;gap:5px;align-items:baseline}
+.idl .thm i{font-style:normal}
+.idl .thm button{font:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.idl .thm button.on{color:var(--ink)}
+.idl .thm button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}

@@ -67,11 +67,18 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   parity clean; gate green (grt-dir-core 2^32 divisor marked
   privacy-ok).
 
-▶ NEXT ACTION: fix waves — A: theming/toggle + scaffold removal +
-partition/font trim (tasks 2–4). B: hash routing, warm-start deferral,
-head/meta/favicon, Stanford credit (5–8). C: punch G2–G11 + S-items +
-cheap R-items. D: G1 — real dataset + real integrators (launch gate).
-Then full /review + matrix + a11y pass (task 9–10).
+- ☑ Wave A (2026-08-19): two-theme production setup — inline no-flash
+  head script (override key `theme`, else prefers-color-scheme, markup
+  default = no-JS fallback); light/dark toggle on the identity line;
+  5 exploration themes + scaffold bar + presets/viewport controls
+  removed; fonts trimmed to the 6 shipped families; skeleton.js
+  rewritten production-clean. Verified: toggle sets + persists across
+  reload, keyboard nav intact, matrix clean, gate green.
+
+▶ NEXT ACTION: Wave B — hash routing (#/cinr, #/grtcache/doc) +
+restore-on-load, warm-start deferral off first paint, head/meta/
+favicon/OG, Stanford bunny credit (tasks 5–8). Then Wave C (punch
+G2–G11 + S-items + cheap R), Wave D (G1 real data + integrators).
 
 ## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
 
