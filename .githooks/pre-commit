@@ -12,11 +12,12 @@ if staged | grep -Eqi '\+?1?[ .-]?\(?[0-9]{3}\)?[ .-]?[0-9]{3}[ .-]?[0-9]{4}'; t
   echo "pre-commit: phone-shaped string in staged changes"; fail=1
 fi
 
-for w in contact.local tracker.toml companies.toml sf86 talking-points; do
+while IFS= read -r w; do
+  case "$w" in ''|'#'*) continue ;; esac
   if staged | grep -qi "$w"; then
     echo "pre-commit: private-artifact reference staged: $w"; fail=1
   fi
-done
+done < "$(git rev-parse --show-toplevel)/.githooks/private-words.txt"
 
 if [ -f .privacy.local ]; then
   while IFS= read -r s; do
@@ -25,6 +26,11 @@ if [ -f .privacy.local ]; then
       echo "pre-commit: string from .privacy.local staged"; fail=1
     fi
   done < .privacy.local
+fi
+
+# Deeper sweep (whole tree incl. PDFs) when the gate script exists.
+if command -v node >/dev/null 2>&1 && [ -f scripts/check.mjs ]; then
+  node scripts/check.mjs --quiet || fail=1
 fi
 
 [ $fail -ne 0 ] && echo "pre-commit: blocked — fix the content; never --no-verify"

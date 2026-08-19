@@ -1,0 +1,9 @@
+# Private-artifact names blocked from the public repo. One per line.
+# Read by .githooks/pre-commit AND scripts/check.mjs — the single owner
+# of this list. Both scanners exclude .githooks/ so these lines never
+# trip the scans themselves.
+contact.local
+tracker.toml
+companies.toml
+sf86
+talking-points
