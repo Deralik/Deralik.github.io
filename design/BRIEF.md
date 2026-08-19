@@ -71,7 +71,10 @@ authorship of the underlying wavefront renderer.
 
 **GRTCache — second author (equal weight with the first author);
 manuscript submitted to HPG '26, not accepted, under revision — stated
-plainly on-site.** Rebuilt a neural radiance cache around ray-traced 3D
+plainly on-site.** Team (owner statement 2026-08-19): Angela Zhou and
+Daniel Zavorotny (equal contribution — she led the writing, he led the
+coding initially), mentored by David Bauer and Qi Wu; Kwan-Liu Ma
+directs the lab (final review). Rebuilt a neural radiance cache around ray-traced 3D
 Gaussians (CUDA/OptiX): an explicit, interpretable, world-space cache,
 benchmarked head-to-head against NRC and GSCache from one binary with
 matched termination (C = 0.03). Manuscript record — always labelled
@@ -79,12 +82,20 @@ on-site as "the manuscript's numbers, not yet peer-verified": cache
 ≈28 MB (ours) vs ≈382.7 MB (NRC) vs ≈423.9 MB (GSCache); peak VRAM
 5.1 / 3.2 / 6.4 GB in the same order; runtime slower than NRC, faster
 than GSCache; quality ≈ NRC, slightly behind GSCache. PCD init: 125k
-surface samples, MCMC cap 300k, init 1.37 s. Current work, no numbers
-yet: NEE machinery improved but NEE samples don't yet improve cache
-training; scene-scale cache in progress; OpenVDB datasets running, gains
-marginal so far; memory work and a broad empirical sweep with largely
-unchanged results. Do NOT claim: acceptance, an aggregate or speed win
-over NRC, or first authorship. (Supersedes the pre-manuscript "5× fewer
+surface samples, MCMC cap 300k, init 1.37 s. Current work (owner
+statement 2026-08-19, no new numbers): NEE implementation improved, and
+NEE-only training samples explored to the working conclusion that they
+may be fundamentally incompatible with the method — they provide
+different training targets; the 3DGRUT-inspired MCMC
+relocate/add heuristic may be incorrect for live training (it assumes
+pre-training from images); minor method improvements landed but the
+results' general trajectory matches the paper; actively exploring
+reconstruction-quality improvements; extension work: other data types
+(VDB, multi-object scene data); and a possible new story direction —
+a novel application or something exploiting the method's structural
+difference vs existing caches. Equal-time comparisons are NOT claimed
+as running. Do NOT claim: acceptance, an aggregate or speed win over
+NRC, or first authorship. (Supersedes the pre-manuscript "5× fewer
 updates / 11.7× less memory" line, 2026-08-18; a re-comb of the current
 research repo may refine these numbers later.)
 

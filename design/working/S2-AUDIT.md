@@ -60,9 +60,10 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
 - ☑ Owner triage 2026-08-19 (results below). Two riders open: D7 author
   line, D8 in-progress framing.
 
-▶ NEXT ACTION: owner supplies the GRT author line + answers the
-in-progress question; port (S3) can start on everything else — this
-file is now the S3 port ledger.
+▶ NEXT ACTION: S3.1 — land the skeleton in the repo (layout split,
+privacy strips, résumé links disabled until the email-only PDF arrives,
+image compression, probe parity + gates green, commit). Then fix waves
+G/S/R per this ledger.
 
 ## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
 
@@ -77,12 +78,14 @@ file is now the S3 port ledger.
 - D5 → KEEP the HS line. G10 resolution: move out of transcript-facts,
   mark "owner recollection — no HS transcript located".
 - D6 → tier reads "under construction".
-- D7 ⚑ OPEN: manuscript copy is anonymized ("ANONYMOUS AUTHOR(S), ID
-  1028" — verified); owner to supply the exact author line + order.
-  Until it lands, the data-empty slot ships removed, not invented.
-- D8 ⚑ OPEN: re-asked in plain terms (which of the five listed items
-  are actively being worked vs the manuscript's future-work ideas; is
-  equal-time comparison in the current sweep).
+- D7 ☑ (2026-08-19): team line supplied — Angela Zhou + Daniel
+  Zavorotny equal contribution; Bauer + Wu mentors; Ma lab director.
+  BRIEF + RULINGS carry it; reference slot fills in the fix wave,
+  role-honest form (no fabricated formal order).
+- D8 ☑ (2026-08-19): owner's statement vetted into BRIEF; in-progress
+  section rewritten from it in the fix wave — manuscript future-work
+  items out, NEE-incompatibility conclusion + MCMC heuristic finding +
+  quality work + VDB/scene extension in; equal-time NOT claimed.
 - D9 → sourced (official conferral document, 11 Jun 2026). Block
   header → "Academic record"; about-record gains the source note.
 - NEW S3 item S16: owner-voice copy pass (drafts by model, owner's

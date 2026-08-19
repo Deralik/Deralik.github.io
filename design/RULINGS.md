@@ -233,9 +233,19 @@ where phrased generally)
   document (graduated 11 Jun 2026). about-record gains the source note;
   the reference block header becomes "Academic record" (mixed
   transcript + conferral sources, no longer claiming transcript-only).
-- Pending riders: GRT author line (owner to supply — the manuscript
-  copy is anonymized); "in progress" section framing (owner
-  clarification requested).
+- **GRT team line (2026-08-19, closes the author rider)**: Angela Zhou
+  and Daniel Zavorotny, equal contribution; David Bauer and Qi Wu,
+  mentors; Kwan-Liu Ma, lab director (final review). The site presents
+  it in that role-honest form — it does not fabricate a formal author
+  order for an unpublished paper. Facts: BRIEF GRT pack.
+- **"In progress" section (2026-08-19, closes the framing rider)**:
+  rewritten from the owner's dated statement in BRIEF (NEE
+  incompatibility conclusion; MCMC heuristic finding; trajectory
+  unchanged; reconstruction-quality work active; VDB + multi-object
+  extension; possible new story direction). The manuscript's
+  future-work items (EMA, volume-native termination, StochasticSplats)
+  are NOT presented as in progress. Equal-time comparisons are not
+  claimed as running — the honest absence stands.
 
 # Owner design directions — endorsed but unexplored
 
