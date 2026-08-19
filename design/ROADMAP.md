@@ -24,20 +24,20 @@ depth-machine design handed off in `handoff/` — see `iterations/`.
       agent, review/verify skills, session + post-edit hooks, denies),
       CI workflow, pre-commit hook extended, CHANGELOG.md.
 
-## S2 — Retrofit audit (fresh reviewers — before the port)
+## S2 — Retrofit audit (done 2026-08-19 — four parallel reviewer lanes)
 
-- [ ] Audit the handoff's About/cINR/GRT against CONTRACT.md questions,
-      REVIEW.md honesty lenses, and the skim test — desktop AND mobile,
-      both themes, driving the real skeleton via `probe.mjs`.
-- [ ] Verify what the demos actually compute (cINR: is the brick fill
-      real paging? GRT: PSNR meter measured or scripted?) — findings, not
-      assumptions.
-- [ ] Check the GRT record + rejection copy against the actual HPG
-      reviews and the manuscript (paths in SOURCES.md): the paraphrased
-      objection must match the summary review.
-- [ ] Output: punch list split into **launch-gating** (misleading
-      behavior, privacy, claim errors) vs **refinement** (design-round
-      material). Owner triages.
+- [x] Audit vs CONTRACT/REVIEW/skim, desktop + mobile, both themes,
+      via probe. (Core verdict: D0 truthful, budgets hold, mechanics
+      pass; 11 launch-gating fixes found, all cheap but one.)
+- [x] Demos verified at code level: cINR cache + GRT training are
+      GENUINE computation; one piece of theater (hero seam) as
+      DATA-HANDOFF disclosed; PSNR meter measured (of the cache field).
+- [x] Rejection copy checked vs the actual reviews: MIS-TRACED —
+      rewrite required (punch G7). Quantitative record verified exact
+      vs both papers, digit-for-digit.
+- [x] Punch list produced: `working/S2-AUDIT.md` (G1–G11 launch-gating,
+      D1–D9 owner decisions, S1–S15 should-fix, R1–R20 refinement).
+- [ ] Owner triage of D1–D9 → S2-AUDIT.md becomes the S3 port ledger.
 
 ## S3 — Production port
 

@@ -17,6 +17,10 @@ stable paths for every session, never committed.
 - **cINR paper**: `cINR_2025.pdf` + `pgv20251153.pdf` (EGPGV
   camera-ready); public mirror arxiv.org/abs/2504.18001. Authors:
   D. Zavorotny (UC Davis), Q. Wu (NVIDIA), D. Bauer, K.-L. Ma (UC Davis).
+  Award + presentation publicly corroborated (checked 2026-08-19):
+  egpgv.org/2025/program (2025-06-02, Luxembourg City) and Qi Wu's
+  publications page — "Best Paper Honorable Mentions, EGPGV 2025"
+  (wilsoncernwq.github.io/publications).
 - **GRT manuscript**: `Gaussian_Raytracing_Enabled_Radiance_Caching.pdf`
   — UNPUBLISHED, under revision.
 - **HPG '26 reviews**: `grt_cache_reviews.md` (paper1028; summary + 4
