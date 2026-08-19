@@ -1,0 +1,150 @@
+/* Skeleton — structure. No colour literals in this file: every one is a token
+   from skeleton-tokens.css, so a theme swap cannot miss anything here. */
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;overflow:hidden}
+a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--absence)}
+a:hover{border-bottom-color:var(--ink)}
+.em{color:var(--absence)}
+.sp{flex:1}
+
+/* ── identity line — every surface, every depth ───────────────────────── */
+.idl{display:flex;align-items:baseline;gap:14px;height:var(--idl);padding:0 24px;border-bottom:1px solid var(--hair);flex:none}
+.idl .nm{font:600 20px/var(--idl) var(--disp);letter-spacing:-.015em}
+.idl .dsc,.idl .bit{font:400 10.5px/var(--idl) var(--mono);letter-spacing:.06em;color:var(--absence)}
+
+/* ── the panel ────────────────────────────────────────────────────────── */
+.pbody{position:relative;flex:1;overflow:hidden}
+.fl{position:absolute;overflow:hidden;background:var(--paper);border-right:1px solid var(--hair);border-bottom:1px solid var(--hair);cursor:pointer;transition:top var(--t),height var(--t),left var(--t),width var(--t)}
+.fl[data-band="1"],.fl[data-band="span"]{background:var(--band1)}
+.fl.opened{transition-delay:0s!important;z-index:2;background:var(--mat)}
+.fl[hidden]{display:none}
+/* affordance: anything clickable answers the pointer with a quiet ink wash */
+.fl::after{content:"";position:absolute;inset:0;background:var(--ink);opacity:0;transition:opacity .18s;pointer-events:none;z-index:3}
+.fl:hover:not(.opened)::after{opacity:.05}
+body.mob .fl::after{display:none}
+.face{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;transition:opacity .2s;pointer-events:none}
+.fl[data-face="panel"] .face-panel,.fl[data-face="rail"] .face-rail,.fl[data-face="strip"] .face-strip,.fl[data-face="doc"] .face-doc{opacity:1;pointer-events:auto}
+.face-panel{padding:13px 12px;display:flex;flex-direction:column}
+.face-rail{padding:12px;display:flex;flex-direction:column;gap:7px}
+.face-strip{padding:0 11px;display:flex;align-items:center;gap:9px}
+.face-doc{overflow:hidden;background:var(--paper)}
+.pbody[data-depth="2"] .fl.opened .face-doc{overflow-y:auto;overscroll-behavior:contain}
+@media (prefers-reduced-motion:reduce){.fl,.face{transition:none!important}}
+
+/* The two bands are separated by a change of ground and nothing else — no rule,
+   no label. So the asserted tint is the whole of the signal: it is its own token
+   per theme rather than borrowed from --mat, and a theme can make the transition
+   as strong or as quiet as it likes without moving any other surface. */
+.fl[data-band="1"]{border-bottom:0}
+
+/* commit meter — visible only while a reader is spending a commitment */
+.cwrap{position:absolute;left:0;top:0;bottom:0;width:3px;display:flex;align-items:flex-end;opacity:0;transition:opacity .2s;z-index:6;pointer-events:none}
+.cbar{width:100%;height:0;background:var(--ink)}
+.cread{position:absolute;left:12px;bottom:10px;font:500 var(--fs-floor)/1 var(--mono);font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--ink);background:var(--paper);border:1px solid var(--hair);padding:5px 7px;z-index:6;pointer-events:none}
+.cread:empty{display:none}
+
+/* ── field anatomy ────────────────────────────────────────────────────── */
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-bottom:10px;flex:none}
+.head h3{margin:0;font:600 19px/1 var(--disp);letter-spacing:-.012em}
+.head .tier,.chip{font:400 var(--fs-floor)/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
+.head .tag{font:500 var(--fs-floor)/1 var(--mono);font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--prose);border:1px solid var(--hair);padding:4px 6px}
+.chip.run{color:var(--acc)}
+
+/* a slot is an honest hole: it says what goes there and holds nothing else */
+.slot{position:relative;border:1px dashed var(--hair);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;padding:10px;min-height:0;overflow:hidden}
+.slot .k{font:500 var(--fs-floor)/1.3 var(--mono);font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--absence)}
+.slot .n{font:400 var(--fs-floor)/1.45 var(--mono);letter-spacing:.03em;color:var(--absence);max-width:34ch}
+.slot::before{content:"";position:absolute;left:0;top:0;width:14px;border-top:2px solid var(--pa,var(--acc))}
+.slot.well{background:var(--well);border-style:solid;border-color:var(--well)}
+.slot.well .k,.slot.well .n{color:var(--absence)}
+.slot.grow{flex:1 1 45%;min-height:56px}
+.qs{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;flex:none}
+.q{font:400 10.5px/1.5 var(--mono);color:var(--absence)}
+.q b{font-weight:400;color:var(--ink)}
+.pz{margin:8px 0 0;font:400 13.5px/1.45 var(--body);color:var(--prose);text-wrap:pretty;flex:none}
+.fcap{margin:10px 0 0;padding-top:8px;border-top:1px solid var(--hair);display:grid;grid-template-columns:1fr;gap:0;flex:none}
+.fcap dt{font:500 var(--fs-floor)/1.45 var(--mono);font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--absence);margin-top:6px}
+.fcap dt:first-child{margin-top:0}
+.fcap dd{margin:0;font:400 var(--fs-floor)/1.45 var(--mono);color:var(--prose)}
+.bot{margin-top:auto}
+/* The levels are cumulative: each one keeps everything the level below dropped.
+   Level 5 is the floor N stated — a title, a tier and one quantity — so the
+   quantities come back when the figure goes. */
+.fl[data-dense] .fcap{display:none}
+.fl[data-dense="2"] .pz,.fl[data-dense="3"] .pz,.fl[data-dense="4"] .pz,.fl[data-dense="5"] .pz{display:none}
+.fl[data-dense="3"] .qs,.fl[data-dense="4"] .qs{display:none}
+.fl[data-dense="4"] .tag,.fl[data-dense="5"] .tag{display:none}
+.fl[data-dense="5"] .slot{display:none}
+.fl[data-dense="5"] .qs{display:flex}
+.fl[data-dense="5"] .q:not(:first-of-type){display:none}
+
+/* rail + strip faces */
+.face-rail h4,.face-strip h4{margin:0;font:600 14px/1.1 var(--disp);letter-spacing:-.01em}
+.face-strip h4{font-size:12.5px}
+.face-rail .t,.face-strip .t{font:400 var(--fs-floor)/1.4 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--absence)}
+.face-rail .v{margin-top:auto;font:400 15px/1 var(--mono);color:var(--absence)}
+.face-rail .k{margin-top:4px;font:400 var(--fs-floor)/1.35 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
+
+/* ── the document (depth 2) ───────────────────────────────────────────── */
+.retp{display:flex;align-items:center;gap:15px;padding:10px 24px;border-bottom:1px solid var(--hair);background:var(--mat);flex:none}
+.retp .bk{font:500 10.5px/1 var(--mono);font-weight:500;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--hair);background:var(--paper);padding:9px 11px;min-height:34px;display:flex;align-items:center}
+.retp .sl{font:400 10.5px/1 var(--mono);color:var(--absence)}
+.retp .secs{display:flex;gap:12px}
+.retp .secs span{font:400 var(--fs-floor)/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
+.retp .secs span.on{color:var(--ink)}
+.dh{padding:22px 32px 0}
+.dh h1{margin:0;font:600 40px/1.04 var(--disp);letter-spacing:-.028em}
+.dh .lede{margin:8px 0 0;font:400 16px/1.5 var(--body);color:var(--prose);max-width:60ch;text-wrap:pretty}
+.dsec{margin:26px 32px 0;padding-top:14px;border-top:1px solid var(--hair)}
+.dsec:last-of-type{padding-bottom:32px}
+.sech{font:500 var(--fs-floor)/1 var(--mono);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--absence);margin-bottom:13px}
+.drow{display:flex;gap:24px;align-items:stretch}
+.dcol{flex:1;display:flex;flex-direction:column}
+.big{display:flex;flex-wrap:wrap;gap:18px 34px}
+.big .v{font:400 30px/1 var(--mono);letter-spacing:-.015em;color:var(--absence)}
+.big .k{margin-top:6px;font:400 var(--fs-floor)/1.35 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
+.pcap{margin:11px 0 0;display:grid;grid-template-columns:70px 1fr;gap:3px 11px}
+.pcap dt{font:500 var(--fs-floor)/1.5 var(--mono);font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
+.pcap dd{margin:0;font:400 10.5px/1.5 var(--mono);color:var(--prose)}
+.foot{margin:26px 24px 0;padding:13px 0 20px;border-top:1px solid var(--hair);display:flex;gap:18px;font:400 10px/1.4 var(--mono);letter-spacing:.07em;color:var(--absence);text-transform:uppercase}
+
+/* ── mobile — permanently depth 2. No dashboard, strip always on top. ─── */
+body.mob{overflow:auto}
+body.mob .idl{height:auto;padding:12px 14px;flex-wrap:wrap;gap:4px 12px;position:sticky;top:0;background:var(--paper);z-index:8}
+body.mob .idl .nm{font:600 18px/1.2 var(--disp);width:100%}
+body.mob .idl .dsc,body.mob .idl .bit{line-height:1.4}
+body.mob .pbody{overflow:visible;flex:none}
+body.mob .mstrip{display:flex;position:sticky;top:var(--mtop,44px);z-index:7}
+body.mob .fl{position:static!important;width:auto!important;height:auto!important;border-right:0;transition:none}
+body.mob .fl:not(.opened){display:none}
+body.mob .fl.opened .face{position:static;opacity:1;pointer-events:auto;width:auto;height:auto}
+body.mob .fl.opened .face-panel,body.mob .fl.opened .face-rail,body.mob .fl.opened .face-strip{display:none}
+body.mob .face-doc{overflow:visible!important}
+body.mob .retp{position:static;flex-wrap:wrap;gap:9px 12px;padding:9px 14px}
+body.mob .retp .bk{display:none}
+body.mob .dh{padding:16px 14px 0}
+body.mob .dh h1{font-size:28px}
+body.mob .dh .lede{font-size:14.5px}
+body.mob .dsec{margin:20px 14px 0}
+body.mob .drow{flex-direction:column;gap:14px}
+body.mob .cwrap,body.mob .cread{display:none}
+body.mob .foot{margin:20px 14px 0;flex-direction:column;gap:6px}
+body.mob .tap{display:flex;align-items:center;justify-content:center;min-height:44px}
+body.simmob{max-width:390px;border-right:1px solid var(--ink)}
+body.simmob .scaf{max-width:none;width:100vw}
+.mstrip{display:none;flex:none;overflow-x:auto;border-bottom:1px solid var(--hair);background:var(--paper);scrollbar-width:none}
+.mstrip::-webkit-scrollbar{display:none}
+.mstrip button{flex:none;min-height:44px;padding:0 14px;border:0;border-right:1px solid var(--hair);background:transparent;font:400 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--absence);cursor:pointer}
+.mstrip button[aria-current="true"]{color:var(--ink);background:var(--mat)}
+
+/* ── scaffolding — not part of the design. Press S to hide. ──────────── */
+.scaf{flex:none;height:126px;display:flex;align-items:stretch;background:var(--paper);border-top:1px solid var(--ink);font-family:var(--mono);max-width:100vw;overflow-x:auto}
+.scaf.off{display:none}
+body.mob .scaf{position:fixed;left:0;bottom:0;z-index:99;border-right:1px solid var(--ink)}
+.scaf .grp{display:flex;flex-direction:column;gap:3px;padding:7px 11px;border-right:1px solid var(--hair)}
+.scaf label{font:500 9px/1 var(--mono);font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--absence)}
+.scaf select,.scaf button{font:400 11px/1 var(--mono);color:var(--ink);background:var(--paper);border:1px solid var(--hair);padding:5px 6px;cursor:pointer}
+.scaf .ro{font:400 10px/1.45 var(--mono);color:var(--prose);max-width:38ch;white-space:pre-line;overflow:auto}
+.scaf .tag{font:500 9px/1 var(--mono);font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--absence);writing-mode:vertical-rl;padding:8px 5px;border-right:1px solid var(--hair)}

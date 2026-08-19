@@ -39,7 +39,10 @@ for (const f of textFiles) {
   let body; try { body = readFileSync(f, 'utf8'); } catch { continue; }
   body.split('\n').forEach((line, i) => {
     if (line.includes('privacy-ok')) return;
-    if (PHONE.test(line)) hard.push(`${f}:${i + 1}: phone-shaped string`);
+    /* doi.org lines: DOI suffixes are phone-shaped; exempt from the
+       phone scan only — word/local scans below still run on them */
+    if (!line.includes('doi.org') && PHONE.test(line))
+      hard.push(`${f}:${i + 1}: phone-shaped string`);
     for (const w of PRIVATE_WORDS) if (line.toLowerCase().includes(w)) hard.push(`${f}:${i + 1}: private-artifact reference "${w}"`);
     for (const s of localStrings) if (line.includes(s)) hard.push(`${f}:${i + 1}: string from .privacy.local`);
   });

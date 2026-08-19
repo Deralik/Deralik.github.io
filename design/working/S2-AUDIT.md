@@ -60,10 +60,18 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
 - ☑ Owner triage 2026-08-19 (results below). Two riders open: D7 author
   line, D8 in-progress framing.
 
-▶ NEXT ACTION: S3.1 — land the skeleton in the repo (layout split,
-privacy strips, résumé links disabled until the email-only PDF arrives,
-image compression, probe parity + gates green, commit). Then fix waves
-G/S/R per this ledger.
+- ☑ S3.1 landed (2026-08-19): skeleton in repo — /index.html + css/ js/
+  data/ img/; identity.phone stripped; résumé links → spans
+  (data-resume-pending; restore to /DZResume.pdf when owner copies the
+  email-only PDF — new item S17); portrait 1.8MB→133KB; probe matrix
+  parity clean; gate green (grt-dir-core 2^32 divisor marked
+  privacy-ok).
+
+▶ NEXT ACTION: fix waves — A: theming/toggle + scaffold removal +
+partition/font trim (tasks 2–4). B: hash routing, warm-start deferral,
+head/meta/favicon, Stanford credit (5–8). C: punch G2–G11 + S-items +
+cheap R-items. D: G1 — real dataset + real integrators (launch gate).
+Then full /review + matrix + a11y pass (task 9–10).
 
 ## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
 

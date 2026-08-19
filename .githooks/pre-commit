@@ -8,7 +8,11 @@ set -u
 staged() { git diff --cached -U0 --no-color -- . ':!.githooks'; }
 fail=0
 
-if staged | grep -Eqi '\+?1?[ .-]?\(?[0-9]{3}\)?[ .-]?[0-9]{3}[ .-]?[0-9]{4}'; then
+# Exempt from the phone scan only: lines marked privacy-ok (legit
+# 10-digit constants) and lines carrying DOI links (10.xxxx/… numbers
+# are phone-shaped). Same two hatches live in scripts/check.mjs.
+if staged | grep -v 'privacy-ok' | grep -v 'doi\.org' \
+   | grep -Eqi '\+?1?[ .-]?\(?[0-9]{3}\)?[ .-]?[0-9]{3}[ .-]?[0-9]{4}'; then
   echo "pre-commit: phone-shaped string in staged changes"; fail=1
 fi
 

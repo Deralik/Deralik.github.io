@@ -81,7 +81,9 @@ matched termination (C = 0.03). Manuscript record — always labelled
 on-site as "the manuscript's numbers, not yet peer-verified": cache
 ≈28 MB (ours) vs ≈382.7 MB (NRC) vs ≈423.9 MB (GSCache); peak VRAM
 5.1 / 3.2 / 6.4 GB in the same order; runtime slower than NRC, faster
-than GSCache; quality ≈ NRC, slightly behind GSCache. PCD init: 125k
+than GSCache; quality ≈ NRC, slightly behind GSCache — D0 trend phrasing: "~10×
+smaller cache, quality held" (conservative vs the actual 13.7×/15.1×
+ratios; RULINGS-sanctioned). PCD init: 125k
 surface samples, MCMC cap 300k, init 1.37 s. Current work (owner
 statement 2026-08-19, no new numbers): NEE implementation improved, and
 NEE-only training samples explored to the working conclusion that they
