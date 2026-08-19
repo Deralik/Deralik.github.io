@@ -1,7 +1,10 @@
 # Asset capture list
 
-Naming: `assets/<project>/<nn>-<slug>.<ext>`. Curate hard — 3–5 great
-images per project beat fifteen adequate ones.
+Captures are DESIGN-ROUND CONTEXT ONLY — they never carry the site
+(RULINGS 1) and never enter the public tree. They land in
+`design/local/assets/<project>/<nn>-<slug>.<ext>` (gitignored; existing
+sets moved there 2026-08-18) and sync to the claude.ai design project.
+Curate hard — 3–5 great images per project beat fifteen adequate ones.
 
 ## Safety rules (repeat of CLAUDE.md — they matter)
 

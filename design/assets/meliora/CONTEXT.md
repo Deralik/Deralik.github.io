@@ -3,7 +3,7 @@
 ## What it is (vetted facts — BRIEF.md is authoritative)
 
 Construction-management platform (melioraos.com) built solo — 50k+ lines
-— from first commit to a general contractor using it in production in
+— from first commit to a general contractor using it in private beta in
 47 days. The distinctive story is the disciplined agent-driven process:
 design docs as source of truth, automated quality gates, tests pinned to
 a hand-written financial spec, adversarial review.
@@ -78,5 +78,7 @@ per-excerpt owner decision.
 
 ## Status
 
-Captures pending (browser session ready). Until then this sheet is the
-Meliora attachment for design rounds.
+12 captures taken 2026-08-02 (design/local/assets/meliora — gitignored;
+also synced to the claude.ai design project). Two surfaces withheld
+until tainted Dev rows are cleaned (../shots.md). This sheet plus the
+captures are the Meliora attachments for design rounds.

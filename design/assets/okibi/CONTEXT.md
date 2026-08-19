@@ -34,5 +34,7 @@ tab only — never personal task data**; list in ../shots.md.
 
 ## Status
 
-Screenshots pending (browser capture session). Until then this sheet is
-the Okibi attachment for design rounds.
+4 captures taken 2026-08-02 (design/local/assets/okibi — gitignored;
+also synced to the claude.ai design project). Calendar-sync is not
+capturable from demo data (../shots.md). This sheet plus the captures
+are the Okibi attachments for design rounds.
