@@ -89,7 +89,12 @@ function apply(){
      transitional squeeze come back */
   clearTimeout(apply._dq);
   const td=parseFloat(CS.getPropertyValue('--t'))||0;
-  if(td)apply._dq=setTimeout(dense,td*1000+60);
+  /* while the geometry animates, canvas loops hold their last frame
+     (window.__morph) — per-frame redraws during a layout transition are
+     what makes morphs stutter */
+  window.__morph=true;body.classList.add('morphing');
+  if(td)apply._dq=setTimeout(()=>{window.__morph=false;body.classList.remove('morphing');dense()},td*1000+60);
+  else{window.__morph=false;body.classList.remove('morphing')}
   pbody.dataset.depth=depth;
   syncHash();
 }
@@ -213,7 +218,10 @@ addEventListener('keydown',e=>{
      would be a fake affordance */
   if((e.key==='Enter'||e.key===' ')&&tg&&tg.classList&&tg.classList.contains('fl')&&tg.dataset.face!=='doc'){
     e.preventDefault(); open=tg.dataset.k; depth=1; pbody.classList.remove('to1','to2'); apply(); return}
-  if(e.key==='ArrowDown'){e.preventDefault(); if(depth===0){open=proj()[0].k;depth=1;apply()}else cross(1)}
+  if(e.key==='ArrowDown'){e.preventDefault(); if(depth===0){
+    const af=document.activeElement;
+    open=(af&&af.classList&&af.classList.contains('fl')&&af.dataset.k!=='about')?af.dataset.k:proj()[0].k;
+    depth=1;apply()}else cross(1)}
   if(e.key==='ArrowUp'){e.preventDefault(); cross(-1)}
   if(e.key==='Escape'){depth=0;open=null;apply()}
   const n=parseInt(e.key,10);

@@ -107,6 +107,19 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   says "start unrecorded") · R4/hero-spp + chipline "compared in place"
   wording — Wave D owns the hero's honesty rebuild.
 
+- ☑ Owner reactive rounds (2026-08-21/22), all probe-verified: toggle →
+  segmented sliding switch pixel-pinned to the text (both widths);
+  cache-busting ?v=2 + no-store dev server (stale-mix root cause);
+  portrait P3→sRGB + tint grade; About header rework (portrait fills
+  band, bio adjacent, elastic middle, symmetric padding, rside
+  space-between, integer heatmap cells); JP (~N4) both depths; bunny =
+  ONE persistent render migrating card↔demo (mode-aware renderer,
+  chase-FLIP with monotonic clamp — trace-clean both directions); morph
+  performance (window.__morph/body.morphing loop-holds, debounced
+  refits — avg ~17ms frames); ArrowDown honors focused card; probe
+  gained trace/frames steps. Riders for owner return: portrait grade is
+  a taste knob; black-hole companion decision comes with Wave D.
+
 ▶ NEXT ACTION: Wave D — G1: nebula dataset offline conversion
 (handoff/DATA-HANDOFF.md sources, license check, ≤64³ quantized JS
 module), real n-spp tracer + real cache-terminated integrator sharing

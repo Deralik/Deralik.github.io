@@ -156,6 +156,11 @@ body.mob .tap{display:flex;align-items:center;justify-content:center;min-height:
 .idl .thm button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.idl .thm button::before,.thm .tc{transition:none}}
 
+/* returning to the dashboard, the outgoing document snaps away fast — its
+   full-size content (the About portrait especially) must not linger large
+   inside the shrinking card */
+.pbody[data-depth="0"] .face-doc{opacity:0;transition:opacity .07s}
+
 /* ── interactive parts read as interactive (owner ruling 2026-08-21) ── */
 .retp .bk{cursor:pointer}
 .retp .bk:hover{color:var(--ink)}

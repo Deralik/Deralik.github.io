@@ -263,6 +263,36 @@ where phrased generally)
   derivative for the web is converted to sRGB at export (a dropped
   profile reads as a sickly green cast — found 2026-08-21).
 
+# Owner rulings — reactive rounds (2026-08-22)
+
+- **Persistent render across depths (cINR, pattern for future demos)**:
+  the bunny is ONE component at every depth — it migrates card ↔ demo
+  slot with a glide, never disappears/reappears. Card mode = same
+  render, LoD locked, cache muted (no emission, no flashes, band1
+  ground); demo mode = everything live. One saved view.
+- **Motion quality bar**: depth morphs must be monotonic (no transient
+  bulge/dip of any element) and jank-free. Mechanisms in force: canvas
+  loops hold their last frame during morphs (window.__morph +
+  body.morphing), layout re-fits debounce past the morph, wrap
+  breakpoints are held during morphs, migrations use a monotonic-
+  clamped chase. VERIFY with `probe trace:ms,selector` (per-frame rects
+  + jank counts) — eyeballing transitions is not verification.
+- **About header composition**: the portrait fills the band's height
+  (width follows the photo's aspect); the bio sits adjacent to the
+  portrait (it is about the person); the elastic space lives between
+  bio and the contact column; padding symmetric; the contact column
+  distributes to fill its height (grid at the bottom edge); heatmap
+  cells and gaps are integer-px so spacing reads even. Band scales
+  from viewport units (container units animate during morphs).
+- **Japanese**: shown as "JP (~N4)" at BOTH depths — the site's ~
+  approximation grammar carries "about this level" honestly in one
+  character; no "self-assessed" prose (supersedes the 2026-08-19 JP
+  wording; still no bare "N4": a held-credential reading stays off).
+- **Keyboard**: ArrowDown at D0 opens the FOCUSED card (falls back to
+  the first project).
+- **Workflow**: commits batch at meaningful checkpoints, not per tweak
+  (owner). Dev serving is always no-store.
+
 # Owner design directions — endorsed but unexplored
 
 - **MelioraOS**: an abstract figure of the owner's workflow loop with the

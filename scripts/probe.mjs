@@ -109,6 +109,39 @@ if (flag('matrix')) {
     else if (cmd === 'hover') await page.hover(rest.replace(/^css=/, ''));
     else if (cmd === 'ls') { const [k, v] = rest.split('='); await page.evaluate(([k2, v2]) => localStorage.setItem(k2, v2), [k, v]); }
     else if (cmd === 'reload') { await page.reload({ waitUntil: 'load' }); await settle(page); }
+    else if (cmd === 'trace') {
+      /* trace:ms[,selector] — sample every rAF for ms: frame pacing (jank)
+         + watched elements' rects (overshoot/bulge detection). Start it
+         right after the step that triggers the transition. */
+      const ci = rest.indexOf(','), ms = +(ci < 0 ? rest : rest.slice(0, ci)) || 500, sel = ci < 0 ? null : rest.slice(ci + 1);
+      const tr = await page.evaluate(([ms2, sel2]) => new Promise(res => {
+        const els = sel2 ? [...document.querySelectorAll(sel2)] : [];
+        const t0 = performance.now(); const S = []; let last = t0;
+        const f = t => { const rec = { t: Math.round(t - t0), dt: +(t - last).toFixed(1) }; last = t;
+          els.forEach((el, i) => { const r = el.getBoundingClientRect(); rec['r' + i] = [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; });
+          S.push(rec); if (t - t0 < ms2) requestAnimationFrame(f); else res(S); };
+        requestAnimationFrame(f); }), [ms, sel]);
+      const dts = tr.slice(1).map(s => s.dt);
+      if (dts.length) {
+        const avg = (dts.reduce((a, b) => a + b, 0) / dts.length).toFixed(1), worst = Math.max(...dts).toFixed(1), jank = dts.filter(d => d > 32).length;
+        console.log(`trace: ${tr.length} frames / ${tr[tr.length - 1].t}ms · avg ${avg}ms · worst ${worst}ms · janky(>32ms): ${jank}`);
+      }
+      if (sel) Object.keys(tr[0]).filter(k => k.startsWith('r')).forEach(k => {
+        const areas = tr.map(s => s[k][2] * s[k][3]);
+        const a0 = areas[0], a1 = areas[areas.length - 1], mx = Math.max(...areas), mn = Math.min(...areas);
+        const hi = Math.max(a0, a1) || 1, lo = Math.min(a0, a1);
+        const flag = mx > hi * 1.08 ? ` OVERSHOOT +${Math.round((mx / hi - 1) * 100)}%` : mn < lo * .92 && lo > 0 ? ` UNDERSHOOT -${Math.round((1 - mn / lo) * 100)}%` : ' clean';
+        console.log(`trace ${k} [${sel}]: ${JSON.stringify(tr[0][k])} → ${JSON.stringify(tr[tr.length - 1][k])} · peak area ${Math.round(mx / hi * 100)}% of endpoint ·${flag}`);
+      });
+    }
+    else if (cmd === 'frames') {
+      /* frames:ms,name — burst screenshots (~10-15fps) for a filmstrip review */
+      const [fms, fname] = rest.split(','); const t1 = Date.now(); let fi = 0;
+      while (Date.now() - t1 < (+fms || 600)) {
+        await page.screenshot({ path: path.join(out, `${fname || 'frame'}-${String(fi++).padStart(2, '0')}.png`) });
+      }
+      console.log(`frames: ${fi} shots → ${path.join(out, (fname || 'frame') + '-*.png')}`);
+    }
     else if (cmd === 'wait') await page.waitForTimeout(+rest);
     else if (cmd === 'shot') await shoot(page, rest);
     else if (cmd === 'shotel') { const [sel, name] = rest.split(','); await page.locator(sel).screenshot({ path: path.join(out, name + '.png') }); console.log('shot: ' + path.join(out, name + '.png')); }

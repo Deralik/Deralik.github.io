@@ -1,16 +1,16 @@
 /* About section, skeleton port — every value a token; structure only.
    Timeline/header rules extracted verbatim from the accepted mock. */
-.ahdr{display:flex;gap:22px;padding:15px 24px 13px;border-bottom:1px solid var(--hair);background:var(--band1);flex:none;align-items:stretch}
+.ahdr{display:flex;gap:clamp(20px,2vw,34px);padding:18px 24px;border-bottom:1px solid var(--hair);background:var(--band1);flex:none;align-items:stretch}
 .ahdr .tblock{flex:none;width:146px}
 .ahdr h3{margin:0;font:600 24px/1 var(--disp);letter-spacing:-.015em}
 .ahdr .tier{display:block;margin-top:6px;font:400 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
 .ahdr .bioslot{flex:1;border:1px dashed var(--hair);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;padding:8px}
 .ahdr .bioslot .k{font:500 9.5px/1.4 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--absence)}
 .ahdr .bioslot .n{font:400 9.5px/1.45 var(--mono);color:var(--absence);max-width:44ch}
-.ahdr .rside{flex:none;width:330px;display:flex;flex-direction:column;gap:6px}
+.ahdr .rside{margin-left:auto;flex:0 1 clamp(300px,24vw,540px);min-width:280px;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
 .ahdr .stat,.face-panel .stat{font:500 10px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink);border:1px solid var(--hair);background:var(--paper);padding:8px 9px;display:flex;gap:10px;align-items:center}
 .ahdr .stat i,.face-panel .stat i{width:7px;height:7px;background:var(--acc);display:block;flex:none}
-.ahdr .crow{display:grid;grid-template-columns:1fr;gap:4px;font:400 10px/1.4 var(--mono);color:var(--absence)}
+.ahdr .crow{display:grid;grid-template-columns:1fr;gap:5px;font:400 10.5px/1.45 var(--mono);color:var(--absence)}
 .ahdr .crow span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:8px;align-items:baseline}
 .ahdr .crow b{flex:none;width:72px}
 .ahdr .crow b{font-weight:400;color:var(--ink)}
@@ -77,16 +77,20 @@
 .gut2 label{font:500 9.5px/1 var(--mono);font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--absence)}
 .gut2 span{font:400 9.5px/1.4 var(--mono);color:var(--absence)}
 .gut2 span b{font-weight:500;color:var(--prose)}
-.ahdr .pslot2{width:92px;flex:none}
-.ahdr .bio{flex:1;margin:0;font:400 12px/1.6 var(--body);color:var(--prose);text-wrap:pretty;max-width:72ch}
+/* the header band: the portrait fills the band's full height (its width
+   follows the photo's aspect), the bio sits tight beside it, and the
+   elastic space lives between bio and the right column. Viewport units,
+   not container units — the face's width animates during depth morphs. */
+.ahdr .pslot2{flex:none;align-self:stretch;min-width:92px}
+.ahdr .bio{flex:0 1 auto;margin:0;font:400 clamp(13px,.8vw,15px)/1.62 var(--body);color:var(--prose);text-wrap:pretty;max-width:72ch}
 .gh{margin-top:2px}
 .gh label{display:flex;justify-content:space-between;align-items:baseline;font:500 8.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--absence);margin-bottom:5px}
 .gh label a{color:var(--ink);border-bottom:1px solid var(--absence)}
 .gh label a:hover{border-bottom-color:var(--ink)}
 .gh em{font-style:normal;color:var(--absence)}
-.ghgrid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,6px);grid-auto-columns:6px;gap:1.5px}
+.ghgrid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,6px);grid-auto-columns:6px;gap:2px}
 .ghgrid i{display:block;background:var(--ink)}
-.ghgrid.sm{grid-template-rows:repeat(7,6px);grid-auto-columns:6px;gap:1.5px;margin-top:3px}
+.ghgrid.sm{grid-template-rows:repeat(7,6px);grid-auto-columns:6px;gap:2px;margin-top:3px}
 .ghnote{font:400 8.5px/1.4 var(--mono);color:var(--absence)}
 .ac{display:flex;flex-direction:column;gap:5px;font:400 10px/1.5 var(--mono);color:var(--absence)}
 .ac b{font-weight:400;color:var(--ink);display:inline-block;width:62px}
@@ -106,7 +110,7 @@
 /* skeleton-context adjustments */
 .fl a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--absence)}
 .fl a:hover{border-bottom-color:var(--ink)}
-.ahdr{padding:16px 20px 14px}
+.ahdr{padding:18px 24px}
 .face-doc .tl{height:560px;margin:0;flex:none;cursor:default}
 .tlnote{padding:30px;font:400 10px/1.6 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--absence)}
 .tlfoot{margin-top:4px;padding-bottom:2px;display:flex;flex-wrap:wrap;gap:4px 16px;font:400 var(--fs-floor)/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--absence)}
@@ -117,11 +121,16 @@
 .afig label{font:500 var(--fs-floor)/1 var(--mono);font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
 #about-micro{position:relative;flex:0 1 300px;min-height:110px}
 .afig .hint{font:400 var(--fs-floor)/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--absence)}
-/* narrow-doc behavior: the band wraps, the portrait never towers */
-.ahdr .pslot2{max-height:176px}
+/* narrow-doc behavior: the band wraps (container query below) */
+/* mid-morph the face's width sweeps through the wrap breakpoint — hold the
+   compact unwrapped layout until the geometry settles, or the portrait
+   blows up to the transient band for a few frames */
+body.morphing .ahdr{flex-wrap:nowrap}
+body.morphing .ahdr .pslot2{align-self:flex-start;height:200px;min-width:0}
 .face-doc{container-type:inline-size}
 @container (max-width:1000px){
  .ahdr{flex-wrap:wrap}
+ .ahdr .pslot2{align-self:flex-start;height:200px}
  .ahdr .rside{width:100%}
  .ahdr .bio{flex:1 1 calc(100% - 120px);max-width:none}
 }
@@ -155,6 +164,7 @@
 .vbd .ev u{display:inline-block;width:12ch;text-decoration:none;white-space:pre}
 body.mob .refwrap{grid-template-columns:1fr;gap:20px;padding:16px 0 8px}
 body.mob .ahdr{flex-wrap:wrap}
+ .ahdr .pslot2{align-self:flex-start;height:200px}
 body.mob .ahdr .rside{width:100%}
 .vlane{position:absolute;width:1px;background:var(--hair)}
 .vlanelab{position:absolute;transform:translateX(-50%);font:400 8.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--absence);white-space:nowrap;background:var(--paper);padding:2px 3px;z-index:2}
@@ -166,7 +176,7 @@ body.mob .ahdr .rside{width:100%}
 /* D0 panel: portrait + the vertical two-lane record (mock E, merged) */
 .aport{flex:0 0 auto;height:200px;margin:12px 0;background:var(--mat);overflow:hidden}
 .aport img{display:block;width:100%;height:100%;object-fit:cover}
-.pslot2 img{display:block;width:100%;height:auto;max-height:176px;object-fit:cover}
+.pslot2 img{display:block;height:100%;width:auto;object-fit:cover}
 .fl[data-dense] .aport{display:none} /* the portrait sheds first; the line and record stay */
 #about-vrec{position:relative;flex:1 1 auto;min-height:150px}
 #about-vrec canvas{position:absolute;inset:0;width:100%;height:100%;display:block}

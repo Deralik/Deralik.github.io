@@ -52,6 +52,9 @@ const mix2=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
 
 function bunny(cv,opts){
   const emitOn=!!(opts&&opts.onBricks);let emitTick=0;
+  /* 'card' (D0): fixed LoD, cache muted — the same render, settings locked.
+     'demo': emission feeds the cache map, LoD control live. */
+  let mode=(opts&&opts.mode)||'demo';
   if(!L2)return;
   /* focus rule: ONE bunny computes at a time — the last one touched
      (the demo slot by default: it feeds the cache map). Others freeze. */
@@ -64,8 +67,14 @@ function bunny(cv,opts){
   let W=0,H=0,dpr=1;
   function size(){const r=cv.getBoundingClientRect();if(!r.width)return;
     dpr=Math.min(devicePixelRatio||1,1.25);W=r.width;H=r.height; /* ponytail: 1.25 DPR cap — CPU march cost scales with pixels; raise if 2× displays warrant */
-    cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
-  size();addEventListener('resize',size);RO(cv,size);
+    cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+    /* a buffer reset wipes the frame; repaint NOW — during depth morphs the
+       slot resizes every frame, so this is what keeps the glide live-rendered */
+    if(drewOnce)try{draw(performance.now())}catch(e){}}
+  /* debounced: during depth morphs the slot resizes every frame — refit
+     once the box settles; mid-morph, CSS stretches the last buffer */
+  const sizeSoon=()=>{clearTimeout(st._szq);st._szq=setTimeout(size,90)};
+  size();addEventListener('resize',sizeSoon);RO(cv,sizeSoon);
   /* coarse pointers keep vertical page scroll; horizontal drag still turns */
   cv.style.touchAction=matchMedia('(pointer:coarse)').matches?'pan-y':'none';
   cv.style.cursor='grab';
@@ -90,6 +99,7 @@ function bunny(cv,opts){
     if(opts&&opts.onState){const run=!RM&&st.vis&&!!W&&!st.paused&&window.__cinrFocus===cv;
       if(run!==st.lastRun){st.lastRun=run;try{opts.onState(run)}catch(e){}}}
     if(!st.vis||!W)return;
+    if(window.__morph&&drewOnce)return; /* hold the frame; the morph stretches it */
     const focused=window.__cinrFocus===cv;
     if(st.paused&&drewOnce&&!st.down&&now-st.zoomT>400)return; /* Animation · off — direct drags still draw */
     if(RM&&drewOnce&&!st.down&&now-st.zoomT>400)return;
@@ -110,9 +120,9 @@ function bunny(cv,opts){
     const c=Math.cos(yaw),s=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
     const rot=(x,y,z)=>{const X=c*x+s*z,Zr=-s*x+c*z;return [X,cp*y-sp*Zr,sp*y+cp*Zr]};
     const scale=Math.min(.42*H,.44*W)*(CAMZ-RAD)/(1.9*RAD)*st.zoom,f=1.9,cx=W/2,cy=H/2;
-    const zk=(st.zoom-1)*.5+st.lodBias,CT2=.32-zk,CT1=-.28-zk;
+    const zk=(st.zoom-1)*.5+(mode==='card'?0:st.lodBias),CT2=.32-zk,CT1=-.28-zk;
     ctx.clearRect(0,0,W,H);
-    const PAPER=rgb((opts&&opts.ground)||'--paper'),INKC=rgb('--ink'),MID=rgb('--absence');
+    const PAPER=rgb(mode==='card'?'--band1':((opts&&opts.ground)||'--paper')),INKC=rgb('--ink'),MID=rgb('--absence');
     const rn=FACES.map(F=>rot(F[4],F[5],F[6]));
     const rv=[0,1,2].map(L=>{const h=1/NS[L];return VTX.map(v=>rot(v[0]*h,v[1]*h,v[2]*h))});
     /* shade LUT: 6 faces × fog bands, built once per frame */
@@ -140,10 +150,10 @@ function bunny(cv,opts){
     if(ord.length!==bn){ord.length=bn;for(let q=0;q<bn;q++)ord[q]=q*6}
     else for(let q=0;q<bn;q++)ord[q]=q*6;
     ord.sort((x,y)=>buf[y+3]-buf[x+3]);
-    if(emitOn&&(emitTick++&1)===0){const em=new Float64Array(bn*3);let w2=0;
+    if(emitOn&&mode==='demo'&&(emitTick++&1)===0){const em=new Float64Array(bn*3);let w2=0;
       for(let q=0;q<bn;q++){const o=ord[q];em[w2++]=buf[o+5];em[w2++]=buf[o+4];em[w2++]=buf[o+3]}
       opts.onBricks(em)}
-    const ACC=emitOn&&opts.fresh&&opts.anyFresh&&opts.anyFresh()?paOf(cv):null;
+    const ACC=emitOn&&mode==='demo'&&opts.fresh&&opts.anyFresh&&opts.anyFresh()?paOf(cv):null;
     for(let q=0;q<bn;q++){
       const o=ord[q],X=buf[o],Y=buf[o+1],Z=buf[o+2],d=buf[o+3],L=buf[o+4];
       const corners=rv[L];
@@ -163,6 +173,7 @@ function bunny(cv,opts){
   requestAnimationFrame(frame);
   return {
     toggle(){st.paused=!st.paused;if(!st.paused){st.last=0;window.__cinrFocus=cv}if(opts&&opts.onState)opts.onState(!st.paused);return !st.paused},
+    setMode(m){if(m!==mode){mode=m;st.zoomT=performance.now()}},
     reset(){st.zoom=Z0;st.drag=0;st.dy=0;st.rel=0;st.zoomT=performance.now()},
     setLod(b){st.lodBias=b;st.zoomT=performance.now()},
     getView(){return {zoom:st.zoom,lod:st.lodBias}},

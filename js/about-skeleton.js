@@ -603,8 +603,9 @@ function drawVRec(S,rec){
          column; the D0 grid keeps its fixed 26-week size */
       const sm=g3.classList.contains('sm');
       const wk=sm?26:52;
-      if(!sm){const w=g3.clientWidth||330,cell=Math.max(3.5,(w-(wk-1)*1.5)/wk);
-        g3.style.gridTemplateRows='repeat(7,'+cell.toFixed(2)+'px)';g3.style.gridAutoColumns=cell.toFixed(2)+'px'}
+      /* integer cells + integer gap: fractional cells render uneven gaps */
+      if(!sm){const gp=2,w=g3.clientWidth||330,cell=Math.max(4,Math.floor((w-(wk-1)*gp)/wk));
+        g3.style.gridTemplateRows='repeat(7,'+cell+'px)';g3.style.gridAutoColumns=cell+'px';g3.style.gap=gp+'px'}
       g3.innerHTML='';
       const days=j.contributions.slice(-wk*7);
       const pad=new Date(days[0].date+'T00:00:00').getDay();

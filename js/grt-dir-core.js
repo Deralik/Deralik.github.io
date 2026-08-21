@@ -10,7 +10,7 @@ function loop(el,fn){let on=true,frac=1,fc=0,lastMeasure=0,lastRun=performance.n
 const io=new IntersectionObserver(e=>{on=e[0].isIntersecting},{rootMargin:'150px'});io.observe(el);
 if(RMQ.matches||RMQ.addEventListener){el.addEventListener('pointerenter',()=>eng=true);
 el.addEventListener('pointerleave',()=>eng=false);el.addEventListener('pointerdown',()=>eng=true)}
-function f(t){const still=RMQ.matches&&t>2600&&!eng;
+function f(t){const still=(RMQ.matches&&t>2600&&!eng)||window.__morph;
 if(on&&!still){
 if(t-lastMeasure>800){const r=el.getBoundingClientRect();frac=r.width<130?4:r.width<270?2:1;lastMeasure=t}
 if(fc++%frac===0){const dt=Math.min(.08,(t-lastRun)/1000);lastRun=t;fn(t/1000,dt)}}
