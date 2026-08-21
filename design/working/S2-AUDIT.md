@@ -354,3 +354,16 @@ publicly corroborated.
   4 TFs × 2 axes); hero defaults to crab pending owner dataset pick.
   Supernova confirmed illegible (dense crust) — heptane + mechhand are
   the strong candidates.
+
+- ◐ External data hunt (2026-08-21): Open SciVis (klacansky.com + cdn)
+  unreachable from this network — retry list: full-res supernova,
+  magnetic_reconnection 512³, hydrogen_atom. Gaia Sky NGC2000 pack
+  fetched + inspected: its "volumetric nebulae" are 8 Shadertoy-derived
+  GLSL shaders (Helix, Crab, Cat's Eye, Box, Butterfly, Hourglass,
+  Ring, Trifid) — LICENSE CC-BY-NC-SA (⚑ owner call before any
+  shipping); decals are CC-0 2D imagery. A quick density-port preview
+  failed (their look needs the exact adaptive marcher) — only worth
+  building if the license is accepted. Black hole: no public GRMHD
+  dumps found; options for owner: run a public GRMHD code ourselves
+  (real, redistributable, ~a day), keep the labelled analogue, or
+  pursue archive/author access.
