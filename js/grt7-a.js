@@ -5,9 +5,9 @@
    trained cache and the pixel is the cache's own splatted answer — its
    residual error is genuine and fades as it trains. Both sides share one
    brief temporal accumulation and one luminance-matched exposure. */
-(()=>{const{fit,loop,tok,star}=GRT;const{Cam2}=GRT2;const{box,RayAnim,CamView}=GRT6;const{NebVol,RealVol,CField,Meter,frustum}=GRT7;
-const KO={super:{s0:.036,sv:.013,lsMin:-4.1,lsMax:-1.9,sMul:.86,relocLs:Math.log(.045)},crab:{s0:.038,sv:.014,lsMin:-4.0,lsMax:-1.8,sMul:.88,relocLs:Math.log(.048)},bh:{s0:.024,sv:.009,lsMin:-4.6,lsMax:-2.5,sMul:.78,relocLs:Math.log(.03)}};
-const NDEF={super:3400,crab:3000,bh:4200};
+(()=>{const{fit,loop,tok,star}=GRT;const{Cam2}=GRT2;const{box,RayAnim,CamView}=GRT6;const{NebVol,RealVol,GaiaVol,CField,Meter,frustum}=GRT7;
+const KO={butterfly:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},hourglass:{s0:.036,sv:.013,lsMin:-4.1,lsMax:-1.9,sMul:.86,relocLs:Math.log(.045)},ring:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},super:{s0:.036,sv:.013,lsMin:-4.1,lsMax:-1.9,sMul:.86,relocLs:Math.log(.045)},crab:{s0:.038,sv:.014,lsMin:-4.0,lsMax:-1.8,sMul:.88,relocLs:Math.log(.048)},bh:{s0:.024,sv:.009,lsMin:-4.6,lsMax:-2.5,sMul:.78,relocLs:Math.log(.03)}};
+const NDEF={butterfly:3200,hourglass:3000,ring:3200,super:3400,crab:3000,bh:4200};
 class R7{
 constructor(cv,o={}){this.cv=cv;this.o=o;this.az=.9;this.vols={};
 this.cam=new Cam2(cv,.65,.28,4.6);this.cam.auto=.12;this._img=null;this.now=0;
@@ -28,7 +28,7 @@ cv.style.cursor=this.nearSeam(e)?'col-resize':'grab'});
 const up=()=>{if(this.seamDrag){this.seamDrag=false;this.seamUntil=this.now+4}
 if(this.imgDrag){this.imgDrag=false;this.holdUntil=this.now+1.0;this.cv.style.cursor='grab'}};
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-this.setVol('crab');
+this.setVol('butterfly');
 loop(cv,(t,dt)=>this.frame(t,dt))}
 inImg(e){const b=this.cv.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,R=this._img;return!!(R&&mx>=R[0]&&mx<=R[0]+R[2]&&my>=R[1]&&my<=R[1]+R[3])}
 nearSeam(e){const b=this.cv.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,R=this._img;
@@ -37,7 +37,7 @@ eyeAt(a,p){p=p||0;const hr=Math.cos(p);return[2.1*hr*Math.cos(a),.5+.28*Math.sin
 eyeCur(){return this.eyeAt(this.oa+this.uY,this.uP)}
 setLight(){this.vol.light=[1.3*Math.cos(this.az),1.05,1.3*Math.sin(this.az)]}
 setVol(kind){this.kind=kind;this.field=null;
-this.vol=this.vols[kind]||(this.vols[kind]=(kind==='super'&&window.GRT_SUPERNOVA)?new RealVol(33):new NebVol(kind,33));
+this.vol=this.vols[kind]||(this.vols[kind]=(kind==='super'&&window.GRT_SUPERNOVA)?new RealVol(33):(window.GRTNEB&&window.GRTNEB[kind])?new GaiaVol(kind,33):new NebVol(kind,33));
 if(this.vol.em<.99)this.setLight();this.vol.rebuild();
 const n=NDEF[kind];if(this.o.nEl)this.o.nEl.value=n;
 this.st=this.vol.stipple(520);this.field=new CField(this.vol,n,9,KO[kind]);

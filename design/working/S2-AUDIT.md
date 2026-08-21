@@ -372,3 +372,11 @@ publicly corroborated.
   (design/local/volshots/gaia-*.png). Path to the hero: bake the
   density shell to a grid (cache trains on it) + their palette as the
   truth TF. ⚑ BLOCKED on the CC-BY-NC-SA license call.
+
+- ☑ Nebula picks wired (2026-08-21): grt-nebulae.js density ports
+  (zero payload, runtime eval), GaiaVol RG=40 pure-emission, thickened
+  density band (official shells are march-invisible at .01), palettes
+  after their computeColor. Butterfly + Ring verified strong; hourglass
+  adequate (rim structure softer). Supernova stays as option 4.
+  Open SciVis reachable over HTTP (https broken) — triage fetches now
+  possible.

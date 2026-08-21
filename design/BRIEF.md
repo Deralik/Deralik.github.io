@@ -147,13 +147,16 @@ behavior, and every demo's label states exactly what is running (owner,
   temperature-distortion cube is the dataset candidate) — at which point
   the demo genuinely runs the paper's idea.
 - **GRT demo (launch gate, owner 2026-08-18 — MET 2026-08-20):** ships on
-  REAL volume data: the Open SciVis "supernova" (John M. Blondin, NCSU —
-  the same dataset the research repo benchmarks on), 8³ box-filtered to
-  54³ and vendored (js/grt-vol-supernova.js carries the provenance
-  header); credited in the page's reference block. RIDER: re-verify the
-  Open SciVis license text before deploy (the site was unreachable at
-  build time). The crab-like and black-hole volumes remain, labelled
-  "— analogue" at the control (owner may drop the black hole). The hero
+  the hero's volumes are the owner's picks (2026-08-21): Butterfly,
+  Hourglass, and Ring — nebula density models from Gaia Sky's NGC2000
+  catalog (Toni Sagristà, ZAH Heidelberg; after Shadertoy work by
+  izutionix), CC BY-NC-SA accepted by the owner WITH CREDIT, ported as
+  density functions (js/grt-nebulae.js) and rendered entirely by this
+  site's own pipeline — labelled as models, never as observations.
+  A fourth option stays: the REAL Open SciVis "supernova" (John M.
+  Blondin, NCSU — the research repo's own benchmark volume, vendored
+  54³, js/grt-vol-supernova.js). RIDER: Open SciVis reachable over
+  http only — re-verify its license text before deploy. The hero
   comparison is real computation: right of the seam, an unbiased 1-spp
   Monte Carlo estimator of the radiance integral (its noise is genuine
   variance, accumulating); left, rays terminate into the trained cache

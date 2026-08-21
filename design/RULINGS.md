@@ -361,3 +361,13 @@ replaced in place.
 All applied 2026-08-18: GRT fact pack rewritten from the manuscript
 record; "production" → "private beta"; MelioraOS beta.11 release fact
 added.
+
+# Owner rulings — hero datasets (2026-08-21)
+
+- **Gaia Sky nebula models accepted, with credit** (CC BY-NC-SA;
+  Shadertoy-derived). Picks: **Butterfly, Hourglass, Ring**. Ported as
+  density functions only; rendering/lighting/training are the site's
+  own pipeline; on-page credit in the GRT reference block. Labelled
+  models, never observations. Supersedes the strict real-data-only
+  hero framing (2026-08-18) — the real supernova stays as the fourth,
+  "real data" option.
