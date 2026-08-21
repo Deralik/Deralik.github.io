@@ -120,12 +120,27 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   gained trace/frames steps. Riders for owner return: portrait grade is
   a taste knob; black-hole companion decision comes with Wave D.
 
-▶ NEXT ACTION: Wave D — G1: nebula dataset offline conversion
-(handoff/DATA-HANDOFF.md sources, license check, ≤64³ quantized JS
-module), real n-spp tracer + real cache-terminated integrator sharing
-one tone map, honest gap; black-hole companion feasibility → owner
-picks labelled analogue or drop. Then S16 owner copy pass + final
-review (all six lenses, fresh reviewer) → S4 deploy.
+- ☑ Wave D core (2026-08-22, autonomous): G1 CLEARED. Real data: Open
+  SciVis supernova (Blondin — the research repo's own benchmark volume,
+  vendored from its local copy; 432³→54³ box-filtered uint8, 205KB
+  module with provenance header; RealVol trilinear subclass feeds the
+  shared radiance pipeline, so seeding/lighting/training all run on
+  real structure). Honest hero: right = unbiased 1-spp HT estimator
+  (full march computes EXPOSURE only), accumulating (.85 EMA — slow
+  convergence IS the story); left = the cache's own 2× splat raster,
+  luminance-matched (calib clamped, disclosed); energy-preserving
+  footprint floor; smooth-vs-pixelated blits mirror
+  continuous-vs-discrete estimators; labels "1 SPP, TERMINATED INTO
+  IT"/"1 SPP, ACCUMULATING"; chipline + reference + foot rewritten;
+  synthetic blend/exp4 deleted. Buttons: Supernova — real data (default)
+  · Crab-like — analogue · Black hole — analogue. Verified: PSNR climbs
+  (~17 dB), both themes, mobile stacked, matrix clean.
+  RIDERS for owner: (a) Open SciVis license text re-verify before
+  deploy (site unreachable at build); (b) drop-or-keep the black-hole
+  analogue; (c) hero look/feel taste pass.
+
+▶ NEXT ACTION: review-agent findings (tooling + code) → re-verify,
+fix, commit. Then S16 owner copy pass + final all-lens review → S4.
 
 ## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
 

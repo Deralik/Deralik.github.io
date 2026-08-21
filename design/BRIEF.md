@@ -145,15 +145,20 @@ behavior, and every demo's label states exactly what is running (owner,
   model trained with the actual cINR pipeline, WASM or WebGPU; the
   temperature-distortion cube is the dataset candidate) — at which point
   the demo genuinely runs the paper's idea.
-- **GRT demo (launch gate, owner 2026-08-18):** ships on REAL volume data
-  — a nebula-class public dataset with structure the cache can visibly
-  learn, converted offline per design/handoff/DATA-HANDOFF.md (licenses
-  verified, credited on-page). The "black hole" companion volume gets a
-  real-data feasibility check with options presented before launch
-  (labelled procedural analogue, or dropped). No with/without comparison
-  ships unless the difference shown is real output of the shown
-  computation — the exploration's hand-tuned synthetic blend does not
-  survive to production (DATA-HANDOFF flags the specifics).
+- **GRT demo (launch gate, owner 2026-08-18 — MET 2026-08-22):** ships on
+  REAL volume data: the Open SciVis "supernova" (John M. Blondin, NCSU —
+  the same dataset the research repo benchmarks on), 8³ box-filtered to
+  54³ and vendored (js/grt-vol-supernova.js carries the provenance
+  header); credited in the page's reference block. RIDER: re-verify the
+  Open SciVis license text before deploy (the site was unreachable at
+  build time). The crab-like and black-hole volumes remain, labelled
+  "— analogue" at the control (owner may drop the black hole). The hero
+  comparison is real computation: right of the seam, an unbiased 1-spp
+  Monte Carlo estimator of the radiance integral (its noise is genuine
+  variance, accumulating); left, rays terminate into the trained cache
+  and the pane is the cache's own splat render (its error is the real
+  residual, fading with training); one luminance-matched exposure,
+  disclosed on-page. The old synthetic blend is gone.
 
 ## Constraints
 

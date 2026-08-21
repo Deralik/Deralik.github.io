@@ -205,8 +205,8 @@ body{overflow:auto}
         <div class="dh"><h1 data-slot="doc-title">GRTCache</h1><p class="lede" data-slot="lede">A radiance cache you can look at — the volume's light field held in world-space gaussians, trained while it renders.</p><p class="covq">~10× smaller cache, quality held · on par with NRC — not yet faster · HPG '26 not accepted · revising</p></div>
         <div class="dsec" style="border-top:0;padding-top:0;margin-top:16px">
           <div class="gfw" style="height:540px" data-slot="figure"><canvas id="grt-cv-hero"></canvas></div>
-          <div class="chipline">the render, compared in place at matched 4 spp — with the cache left of the seam, without it right; converged reference inset · drag the seam · drag the render to move the camera · grab the world to turn it</div>
-          <div class="chr"><span class="btn on" id="grt-v0">Crab-like remnant</span><span class="btn" id="grt-v1">Black hole</span><span class="btn" id="grt-reset">Reset — shell cast</span><label>Gaussians<input type="range" id="grt-n" min="800" max="5200" step="200" value="3000"></label><label><span id="grt-azl">Light azimuth</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="0.9"></label><span class="ro2" id="grt-ro">—</span></div>
+          <div class="chipline">the render at 1 spp — left of the seam each ray terminates into the trained cache; right, raw path samples of the field (both briefly accumulated, one shared exposure); converged reference inset · drag the seam · drag the render to move the camera · grab the world to turn it</div>
+          <div class="chr"><span class="btn on" id="grt-v0">Supernova — real data</span><span class="btn" id="grt-v1">Crab-like — analogue</span><span class="btn" id="grt-v2">Black hole — analogue</span><span class="btn" id="grt-reset">Reset — shell cast</span><label>Gaussians<input type="range" id="grt-n" min="800" max="5200" step="200" value="3400"></label><label><span id="grt-azl">Light azimuth</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="0.9"></label><span class="ro2" id="grt-ro">—</span></div>
         </div>
         <div class="dsec"><div class="sech">The method</div>
           <div class="drow" style="gap:20px">
@@ -268,11 +268,12 @@ body{overflow:auto}
               <p class="refm">The NRC comparison is our implementation, consistent with Müller et al. 2021.</p>
               <p class="refm">The training scheme and termination heuristic are NRC's, adapted — the representation and its MCMC optimization are the contribution.</p></div>
             <div><p class="refk">The demonstration</p>
-              <p class="refm">Every figure computes in this page on procedural volumes — trained live by the method's optimization loop against a known radiance field; not the paper's ray-estimated targets, renderer, or data.</p>
-              <p class="refm">The with/without sweep mocks the estimator's variance; the real integrator replaces it when built.</p></div>
+              <p class="refm">Every figure computes in this page. The hero's seam compares real estimators at 1 spp: right, unbiased path samples of the volume's radiance field — the noise is genuine variance; left, rays terminate into the trained cache and the pixel is the cache's own splatted answer — the error is its genuine residual, fading as it trains. One luminance-matched exposure; nothing blended or sculpted.</p>
+              <p class="refm">The supernova is real data — J. M. Blondin's simulation, via the Open SciVis Datasets collection, decimated to 54³ for the browser. The other volumes are procedural analogues, labelled as such.</p>
+              <p class="refm">Training regresses the known radiance field with the method's optimization loop — not the paper's ray-estimated targets, renderer, or scale.</p></div>
           </div>
         </div>
-        <div class="foot"><span data-slot="foot">demo: procedural volumes, computed here · measurements: the manuscript's, one RTX 4090</span><span class="sp"></span><span>depth is scroll</span></div>
+        <div class="foot"><span data-slot="foot">demo: a real supernova volume + procedural analogues, computed here · measurements: the manuscript's, one RTX 4090</span><span class="sp"></span><span>depth is scroll</span></div>
       </div>
     </div>
     <div class="fl" data-k="f3" data-label="MelioraOS" tabindex="0" aria-label="MelioraOS">
@@ -328,6 +329,7 @@ body{overflow:auto}
 <script src="js/cinr-trace.js?v=2"></script>
 <script src="js/cinr-figs.js?v=2"></script>
 <script src="js/cinr-skeleton.js?v=2"></script>
+<script src="js/grt-vol-supernova.js?v=2"></script>
 <script src="js/grt-dir-core.js?v=2"></script>
 <script src="js/grt2-core.js?v=2"></script>
 <script src="js/grt6-core.js?v=2"></script>

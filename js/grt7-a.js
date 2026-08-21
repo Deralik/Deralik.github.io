@@ -1,13 +1,13 @@
-/* 7a — the render, explained. Hero = a seam sweep at MATCHED 4 spp, one
-   renderer: both sides are the same low-res MC march buffer. Right: raw path
-   tracing — truth integral × mean of 4 exponential samples. Left: the cache
-   answers after the first scatter — its actual splatted prediction (bias
-   included, tone-calibrated to the march) with the primary-hit variance kept
-   at reduced amplitude. Neither side is converged; the gap is variance, not
-   a faked perfect image. */
-(()=>{const{fit,loop,tok,star}=GRT;const{Cam2}=GRT2;const{box,RayAnim,CamView}=GRT6;const{NebVol,CField,Meter,frustum}=GRT7;
-const KO={crab:{s0:.038,sv:.014,lsMin:-4.0,lsMax:-1.8,sMul:.88,relocLs:Math.log(.048)},bh:{s0:.024,sv:.009,lsMin:-4.6,lsMax:-2.5,sMul:.78,relocLs:Math.log(.03)}};
-const NDEF={crab:3000,bh:4200};
+/* 7a — the render, explained. Hero = a seam at 1 spp, both sides REAL:
+   right, an unbiased Monte Carlo estimator of the volume's radiance
+   integral (one uniformly-sampled step per ray per frame — the noise is
+   the estimator's own variance); left, the ray terminates into the
+   trained cache and the pixel is the cache's own splatted answer — its
+   residual error is genuine and fades as it trains. Both sides share one
+   brief temporal accumulation and one luminance-matched exposure. */
+(()=>{const{fit,loop,tok,star}=GRT;const{Cam2}=GRT2;const{box,RayAnim,CamView}=GRT6;const{NebVol,RealVol,CField,Meter,frustum}=GRT7;
+const KO={super:{s0:.036,sv:.013,lsMin:-4.1,lsMax:-1.9,sMul:.86,relocLs:Math.log(.045)},crab:{s0:.038,sv:.014,lsMin:-4.0,lsMax:-1.8,sMul:.88,relocLs:Math.log(.048)},bh:{s0:.024,sv:.009,lsMin:-4.6,lsMax:-2.5,sMul:.78,relocLs:Math.log(.03)}};
+const NDEF={super:3400,crab:3000,bh:4200};
 class R7{
 constructor(cv,o={}){this.cv=cv;this.o=o;this.az=.9;this.vols={};
 this.cam=new Cam2(cv,.65,.28,4.6);this.cam.auto=.12;this._img=null;this.now=0;
@@ -28,7 +28,7 @@ cv.style.cursor=this.nearSeam(e)?'col-resize':'grab'});
 const up=()=>{if(this.seamDrag){this.seamDrag=false;this.seamUntil=this.now+4}
 if(this.imgDrag){this.imgDrag=false;this.holdUntil=this.now+1.0;this.cv.style.cursor='grab'}};
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-this.setVol('crab');
+this.setVol(window.GRT_SUPERNOVA?'super':'crab');
 loop(cv,(t,dt)=>this.frame(t,dt))}
 inImg(e){const b=this.cv.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,R=this._img;return!!(R&&mx>=R[0]&&mx<=R[0]+R[2]&&my>=R[1]&&my<=R[1]+R[3])}
 nearSeam(e){const b=this.cv.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,R=this._img;
@@ -37,19 +37,20 @@ eyeAt(a,p){p=p||0;const hr=Math.cos(p);return[2.1*hr*Math.cos(a),.5+.28*Math.sin
 eyeCur(){return this.eyeAt(this.oa+this.uY,this.uP)}
 setLight(){this.vol.light=[1.3*Math.cos(this.az),1.05,1.3*Math.sin(this.az)]}
 setVol(kind){this.kind=kind;this.field=null;
-this.vol=this.vols[kind]||(this.vols[kind]=new NebVol(kind,33));
+this.vol=this.vols[kind]||(this.vols[kind]=(kind==='super'&&window.GRT_SUPERNOVA)?new RealVol(33):new NebVol(kind,33));
 if(this.vol.em<.99)this.setLight();this.vol.rebuild();
 const n=NDEF[kind];if(this.o.nEl)this.o.nEl.value=n;
 this.st=this.vol.stipple(520);this.field=new CField(this.vol,n,9,KO[kind]);
 this.anim=new RayAnim(this.vol,this.field,83);this.anim.eyeRef=()=>this.eyeCur();
 if(this.o.azl)this.o.azl.textContent=this.vol.em>=.99?'Transfer function':'Light azimuth';
 if(this.acc){this.acc.fill(0);this.cacc2.fill(0)}this.mx=.6;this.calib=1;this._cd=null;this._ps=undefined;this.meter.hist=[]}
-exp4(){return-(Math.log(1-Math.random())+Math.log(1-Math.random())+Math.log(1-Math.random())+Math.log(1-Math.random()))/4}
 march(iw,ih,t){const RW=96,RH=Math.max(24,Math.round(RW*ih/iw));
 if(!this.nzc||this.nzH!==RH){this.nzc=document.createElement('canvas');this.nzc.width=RW;this.nzc.height=RH;this.nzH=RH;this.nzg=this.nzc.getContext('2d');this.nzd=this.nzg.createImageData(RW,RH);this.acc=new Float32Array(RW*RH*3);
-this.czc=document.createElement('canvas');this.czc.width=RW;this.czc.height=RH;this.czg=this.czc.getContext('2d',{willReadFrequently:true});this.czd=this.czg.createImageData(RW,RH);this.cacc2=new Float32Array(RW*RH*3)}
+/* the cache pane rasters at 2× — its splat render is continuous, unlike
+   the per-pixel sample side, and deserves its real soft-field look */
+this.czc=document.createElement('canvas');this.czc.width=RW*2;this.czc.height=RH*2;this.czg=this.czc.getContext('2d',{willReadFrequently:true});this.czd=this.czg.createImageData(RW*2,RH*2);this.cacc2=new Float32Array(RW*RH*12)}
 const F=this.field;
-if(!this._cd||this.frameN%2===0){F.drawCacheImage(this.czg,this.view,0,0,RW,RH,t);this._cd=this.czg.getImageData(0,0,RW,RH).data}
+if(!this._cd||this.frameN%2===0){F.drawCacheImage(this.czg,this.view,0,0,RW*2,RH*2,t);this._cd=this.czg.getImageData(0,0,RW*2,RH*2).data}
 const cd=this._cd;
 const v=this.vol,G=v.grid,R=v.RG,f=this.view.f,e=this.view.eye,fw=this.view.fwd,rt=this.view.right,up=this.view.up;
 const D=this.nzd.data,A=this.acc,D2=this.czd.data,A2=this.cacc2,sc=1/(this.mx||.6),cal=this.calib;
@@ -59,29 +60,38 @@ for(let i=0;i<RW;i++){const vx=((i+.5)/RW*iw-iw/2)/(ih*f);
 let dx=fw[0]+vx*rt[0]+vy*up[0],dy=fw[1]+vx*rt[1]+vy*up[1],dz=fw[2]+vx*rt[2]+vy*up[2];
 const nn=1/Math.hypot(dx,dy,dz);dx*=nn;dy*=nn;dz*=nn;
 const bq=e[0]*dx+e[1]*dy+e[2]*dz,cq=e[0]*e[0]+e[1]*e[1]+e[2]*e[2]-2.25,disc=bq*bq-cq,o=(j*RW+i)*3,q=(j*RW+i)*4;
-let Ir=0,Ig=0,Ib=0;
-if(disc>0){const t0=-bq-Math.sqrt(disc),t1=-bq+Math.sqrt(disc),M=16,dt=(t1-t0)/M;
+/* right — REAL 1 spp: one uniformly-sampled step, Horvitz-Thompson
+   weighted (value × M·dt) — an unbiased estimate of the integral. The
+   full march runs too, but ONLY to fix the exposure (a stable tone
+   scale is not information about the estimate); the pixels shown are
+   the noisy estimate, accumulating. */
+let Ir=0,Ig=0,Ib=0,Fr=0,Fg=0,Fb=0;
+if(disc>0){const t0=-bq-Math.sqrt(disc),t1=-bq+Math.sqrt(disc),M=16,dt=(t1-t0)/M,kS=(Math.random()*M)|0;
 for(let k=0;k<M;k++){const tt=t0+(k+.5)*dt,p0=e[0]+dx*tt,p1=e[1]+dy*tt,p2=e[2]+dz*tt;
 if(p0<=-1||p0>=1||p1<=-1||p1>=1||p2<=-1||p2>=1)continue;
 const i2=(p0+1)/2*R|0,j2=(p1+1)/2*R|0,k2=(p2+1)/2*R|0,o2=((k2*R+j2)*R+i2)*3;
-Ir+=G[o2]*dt;Ig+=G[o2+1]*dt;Ib+=G[o2+2]*dt}}
-const lu=(Ir+Ig+Ib)/3;if(lu>mx)mx=lu;
-const tr=Math.pow(Math.min(2,Ir*sc),.85)*235,tg=Math.pow(Math.min(2,Ig*sc),.85)*235,tb=Math.pow(Math.min(2,Ib*sc),.85)*235;
-const cr=Math.max(0,cd[q]-10)*cal,cg=Math.max(0,cd[q+1]-13)*cal,cb2=Math.max(0,cd[q+2]-17)*cal;
-sumT+=(tr+tg+tb);sumC+=Math.max(0,cd[q]-10)+Math.max(0,cd[q+1]-13)+Math.max(0,cd[q+2]-17);
-/* right — raw PT, 4 spp: full variance on the whole integral */
-const E=this.exp4();
-A[o]=A[o]*.5+.5*tr*E;A[o+1]=A[o+1]*.5+.5*tg*E;A[o+2]=A[o+2]*.5+.5*tb*E;
+Fr+=G[o2]*dt;Fg+=G[o2+1]*dt;Fb+=G[o2+2]*dt;
+if(k===kS){const w2=dt*M;Ir=G[o2]*w2;Ig=G[o2+1]*w2;Ib=G[o2+2]*w2}}}
+const lu=(Fr+Fg+Fb)/3;if(lu>mx)mx=lu;
+const tr=Math.pow(Math.min(4,Ir*sc),.85)*235,tg=Math.pow(Math.min(4,Ig*sc),.85)*235,tb=Math.pow(Math.min(4,Ib*sc),.85)*235;
+/* slow accumulation: 1 spp/frame converging over a couple of seconds IS
+   the story — path tracing is slow without the cache */
+A[o]=A[o]*.85+.15*tr;A[o+1]=A[o+1]*.85+.15*tg;A[o+2]=A[o+2]*.85+.15*tb;
+sumT+=Math.pow(Math.min(4,Fr*sc),.85)*235+Math.pow(Math.min(4,Fg*sc),.85)*235+Math.pow(Math.min(4,Fb*sc),.85)*235;
 D[q]=Math.min(255,10+A[o]);D[q+1]=Math.min(255,13+A[o+1]);D[q+2]=Math.min(255,17+A[o+2]);D[q+3]=255;
-/* left — cache after first scatter: the IMAGE is still the data, never the
-   splats — the cache only speeds convergence: variance cut hard, plus a soft
-   bias term from the cache's actual residual error that fades as it trains */
-const E2=this.exp4();
-const bk=.3,sr=tr+(cr-tr)*bk,sg2=tg+(cg-tg)*bk,sb=tb+(cb2-tb)*bk,k2v=.85+.15*E2;
-A2[o]=A2[o]*.5+.5*Math.max(0,sr)*k2v;A2[o+1]=A2[o+1]*.5+.5*Math.max(0,sg2)*k2v;A2[o+2]=A2[o+2]*.5+.5*Math.max(0,sb)*k2v;
-D2[q]=Math.min(255,10+A2[o]);D2[q+1]=Math.min(255,13+A2[o+1]);D2[q+2]=Math.min(255,17+A2[o+2]);D2[q+3]=255}}
+}}
+/* left — the ray terminates into the cache: the pane is the cache's own
+   splat render (2× raster), luminance-matched to the estimator side (one
+   exposure); its error is the cache's real residual, fading as it trains —
+   nothing is blended or sculpted */
+const W2=RW*2,H2=RH*2;
+for(let j=0;j<H2;j++)for(let i=0;i<W2;i++){const q=(j*W2+i)*4,o=(j*W2+i)*3;
+const cr=Math.max(0,cd[q]-10)*cal,cg=Math.max(0,cd[q+1]-13)*cal,cb2=Math.max(0,cd[q+2]-17)*cal;
+sumC+=cr+cg+cb2;
+A2[o]=A2[o]*.5+.5*Math.min(255,cr);A2[o+1]=A2[o+1]*.5+.5*Math.min(255,cg);A2[o+2]=A2[o+2]*.5+.5*Math.min(255,cb2);
+D2[q]=Math.min(255,10+A2[o]);D2[q+1]=Math.min(255,13+A2[o+1]);D2[q+2]=Math.min(255,17+A2[o+2]);D2[q+3]=255}
 this.mx=mx;
-const tgt=sumC>1?Math.max(.3,Math.min(4,sumT/sumC)):1;this.calib=this.calib*.9+.1*tgt;
+const tgt=sumC>1?Math.max(.3,Math.min(4,sumT*4/(sumC/Math.max(1e-6,cal)))):1;this.calib=Math.max(.3,Math.min(4,this.calib*.9+.1*tgt));
 this.nzg.putImageData(this.nzd,0,0);this.czg.putImageData(this.czd,0,0)}
 frame(t,dt){const f=fit(this.cv);if(!f)return;const{g,w,h}=f;this.frameN++;this.now=t;const F=this.field;
 g.fillStyle=this.cw;g.fillRect(0,0,w,h);if(!F)return;
@@ -108,20 +118,22 @@ else{const split=w*.55;x0=12;y0=12;iw=split-24;ih=h-46;
 this._img=[x0,y0,iw,ih];
 this.march(iw,ih,t);
 const bx=x0+this.su*iw;
+/* right: pixelated blit — discrete per-pixel samples look like what they
+   are; left: smooth blit — the cache's splat render is continuous */
 g.imageSmoothingEnabled=false;
 g.save();g.beginPath();g.rect(bx,y0,x0+iw-bx,ih);g.clip();g.drawImage(this.nzc,x0,y0,iw,ih);g.restore();
-g.save();g.beginPath();g.rect(x0,y0,bx-x0,ih);g.clip();g.drawImage(this.czc,x0,y0,iw,ih);g.restore();
 g.imageSmoothingEnabled=true;
+g.save();g.beginPath();g.rect(x0,y0,bx-x0,ih);g.clip();g.drawImage(this.czc,x0,y0,iw,ih);g.restore();
 g.strokeStyle='rgba(228,223,212,.65)';g.lineWidth=1;g.beginPath();g.moveTo(bx+.5,y0);g.lineTo(bx+.5,y0+ih);g.stroke();
 g.fillStyle='rgba(228,223,212,.65)';g.fillRect(bx-4,y0+ih/2-9,9,18);g.fillStyle=GRT.figWell;g.fillRect(bx-1.5,y0+ih/2-5,1,10);g.fillRect(bx+1.5,y0+ih/2-5,1,10);
 g.strokeStyle='rgba(228,223,212,.25)';g.strokeRect(x0+.5,y0+.5,iw-1,ih-1);
 const iv=stack?[104,74]:[150,105];
 F.drawTruthImage(g,this.view,x0+iw-iv[0]-12,y0+10,iv[0],iv[1]);g.strokeRect(x0+iw-iv[0]-12.5,y0+9.5,iv[0]+1,iv[1]+1);
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;
-g.fillText(GRT.elide(g,stack?'THE TRUTH FIELD':'REFERENCE — THE TRUTH FIELD',iv[0]+10),x0+iw-iv[0]-12,y0+iv[1]+23);
+g.fillText(GRT.elide(g,'THE TRUTH FIELD',iv[0]+10),x0+iw-iv[0]-12,y0+iv[1]+23);
 g.fillText(this.imgDrag?'CAMERA — IN YOUR HAND':held||off?'CAMERA — RETURNING TO ORBIT':'CAMERA — ORBITING',x0+8,y0+16);
-g.fillText(GRT.elide(g,stack?'WITH CACHE — 4 SPP':'WITH THE CACHE — 4 SPP',iw*.48),x0+8,y0+ih-10);
-const wl=GRT.elide(g,stack?'WITHOUT — 4 SPP':'WITHOUT — 4 SPP PATH TRACING',iw*.48);g.fillText(wl,x0+iw-8-g.measureText(wl).width,y0+ih-10);
+g.fillText(GRT.elide(g,stack?'WITH CACHE — 1 SPP':'WITH THE CACHE — 1 SPP, TERMINATED INTO IT',iw*.48),x0+8,y0+ih-10);
+const wl=GRT.elide(g,stack?'WITHOUT — 1 SPP':'WITHOUT — 1 SPP, ACCUMULATING',iw*.48);g.fillText(wl,x0+iw-8-g.measureText(wl).width,y0+ih-10);
 g.fillText(GRT.elide(g,'THE RENDER — DRAG THE SEAM TO COMPARE · DRAG ELSEWHERE TO MOVE THE CAMERA',iw),x0,y0+ih+14);
 const pr=this.cam.proj(),S=Math.min(rw,wh)*.60,cx=rx+rw/2,cy=wy+wh*.52,px=p=>{const q=pr(p);return[cx+q[0]*S,cy-q[1]*S,q[2]]};
 g.save();g.beginPath();g.rect(rx,wy,rw,wh);g.clip();

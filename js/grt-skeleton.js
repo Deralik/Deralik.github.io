@@ -18,7 +18,7 @@ function init(){
 panel($('grt-cv-panel'));
 const hero=$('grt-cv-hero');
 if(hero){const R7=new GRT7A(hero,{ui:$('grt-ro'),azl:$('grt-azl'),nEl:$('grt-n')});
-const vb=[['grt-v0','crab'],['grt-v1','bh']];
+const vb=[['grt-v0','super'],['grt-v1','crab'],['grt-v2','bh']];
 for(const[id,k]of vb){const el=$(id);if(el)el.onclick=()=>{R7.setVol(k);for(const[id2]of vb)$(id2).classList.toggle('on',id2===id)}}
 const rs=$('grt-reset');if(rs)rs.onclick=()=>R7.field.alloc(R7.field.N);
 const n=$('grt-n');if(n)n.oninput=e=>R7.field.setN(+e.target.value,performance.now()/1000);

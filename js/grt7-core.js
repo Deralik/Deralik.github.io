@@ -65,9 +65,9 @@ function frustum(g,px,eye,view,amax,bmax,len,col){const ep=px(eye);g.strokeStyle
 for(const sa of[-1,1])for(const sb of[-1,1]){const d=view.ray(sa*amax,sb*bmax),q=px([eye[0]+d[0]*len,eye[1]+d[1]*len,eye[2]+d[2]*len]);g.moveTo(ep[0],ep[1]);g.lineTo(q[0],q[1])}g.stroke()}
 /* NebVol — four colour datasets, dense by design: emission + single scatter,
    RGB radiance grid. kinds: helix · crab · cloud · burst. */
-const PAL={helix:[[.30,.80,.72],[.62,.74,.50],[1,.40,.22]],crab:[[.45,.62,1],[.88,.84,.72],[1,.45,.30]],tornado:[[.36,.28,.20],[.70,.57,.42],[.93,.83,.68]],burst:[[.28,.27,.28],[.85,.34,.14],[1,.86,.55]],bh:[[.45,.08,.03],[1,.45,.12],[1,.92,.75]],hyd:[[.14,.20,.45],[.30,.80,.72],[1,.88,.60]],stars:[[.8,.85,1],[1,1,1],[1,.8,.6]]};
-const EM={helix:.38,crab:.45,tornado:.12,burst:.10,bh:1,hyd:.32,stars:1};
-const EMS={helix:0,crab:0,tornado:0,burst:.85,bh:0,hyd:0,stars:0};
+const PAL={helix:[[.30,.80,.72],[.62,.74,.50],[1,.40,.22]],crab:[[.45,.62,1],[.88,.84,.72],[1,.45,.30]],tornado:[[.36,.28,.20],[.70,.57,.42],[.93,.83,.68]],burst:[[.28,.27,.28],[.85,.34,.14],[1,.86,.55]],bh:[[.45,.08,.03],[1,.45,.12],[1,.92,.75]],hyd:[[.14,.20,.45],[.30,.80,.72],[1,.88,.60]],stars:[[.8,.85,1],[1,1,1],[1,.8,.6]],super:[[.16,.30,.70],[.95,.52,.22],[1,.95,.82]]};
+const EM={helix:.38,crab:.45,tornado:.12,burst:.10,bh:1,hyd:.32,stars:1,super:.5};
+const EMS={helix:0,crab:0,tornado:0,burst:.85,bh:0,hyd:0,stars:0,super:0};
 class NebVol{
 constructor(kind,seed){this.kind=kind;this.r=rng(seed||7);this.RG=24;this.grid=new Float32Array(this.RG**3*3);this.gmax=1;this.light=[1.15,1.05,.45];this.pal=PAL[kind];this.em=EM[kind];this.ems=EMS[kind];this.tf=.5;
 this.knots=[];const nk=kind==='crab'?14:kind==='helix'?10:0;
@@ -132,6 +132,24 @@ const d=[tg[0]-o[0],tg[1]-o[1],tg[2]-o[2]],L=Math.hypot(d[0],d[1],d[2]);
 for(let s=0;s<60;s++){const u=s/60*L,p=[o[0]+d[0]/L*u,o[1]+d[1]/L*u,o[2]+d[2]/L*u];if(this.sig(p[0],p[1],p[2])>.07)return[p[0]+(this.r()-.5)*.05,p[1]+(this.r()-.5)*.05,p[2]+(this.r()-.5)*.05]}}
 return[(this.r()*2-1)*.4,(this.r()*2-1)*.4,(this.r()*2-1)*.4]}
 }
+/* RealVol — the vendored REAL dataset (js/grt-vol-supernova.js carries the
+   provenance header): density is trilinear-sampled from the decimated grid;
+   lighting, palette, seeding, and the radiance rebuild are the shared
+   NebVol pipeline, so the cache trains on real structure. */
+class RealVol extends NebVol{
+constructor(seed){super('super',seed);
+const D=window.GRT_SUPERNOVA,bin=atob(D.b64),n=D.n;this.dn=n;
+const g=new Float32Array(n*n*n);for(let i=0;i<g.length;i++)g[i]=bin.charCodeAt(i)/255;this.dg=g}
+dsamp(x,y,z){const n=this.dn,g=this.dg,fx=(x+1)/2*(n-1),fy=(y+1)/2*(n-1),fz=(z+1)/2*(n-1);
+if(fx<0||fy<0||fz<0||fx>n-1||fy>n-1||fz>n-1)return 0;
+const i=fx|0,j=fy|0,k=fz|0,u=fx-i,v=fy-j,w=fz-k,i1=Math.min(i+1,n-1),j1=Math.min(j+1,n-1),k1=Math.min(k+1,n-1);
+const at=(I,J,K)=>g[(K*n+J)*n+I];
+const c00=at(i,j,k)*(1-u)+at(i1,j,k)*u,c10=at(i,j1,k)*(1-u)+at(i1,j1,k)*u,
+      c01=at(i,j,k1)*(1-u)+at(i1,j,k1)*u,c11=at(i,j1,k1)*(1-u)+at(i1,j1,k1)*u;
+return (c00*(1-v)+c10*v)*(1-w)+(c01*(1-v)+c11*v)*w}
+sig(x,y,z){const v=this.dsamp(x,y,z);return v>.03?(v-.03)*1.7:0}
+spec(x,y,z){const v=this.dsamp(x,y,z);return Math.max(0,Math.min(1,(v-.1)/.55))}
+}
 /* CField — gaussians that learn RGB radiance. Soft splats only (no outlines);
    a gaussian flashes when a training sample updates it. */
 function makeBase(){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,1,32,32,31);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.42,'rgba(255,255,255,.42)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.beginPath();g.arc(32,32,31,0,6.283);g.fill();return c}
@@ -187,8 +205,12 @@ drawCacheImage(g,view,x0,y0,w,h,now){const fpx=h*view.f;g.save();g.beginPath();g
 g.fillStyle=GRT.figWell;g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
 for(let i=0;i<this.N;i++){const lum=(this.cr[i]+this.cg[i]+this.cb[i])/3,a=Math.min(.85,lum*1.35);if(a<.02)continue;
 const pr=view.proj([this.gx[i],this.gy[i],this.gz[i]]);if(!pr)continue;
-const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=Math.exp(this.ls[i])*pr[2]*fpx*this.opt.sMul;
-g.globalAlpha=a;g.drawImage(this.sprFor(this.cr[i],this.cg[i],this.cb[i]),sx-sz,sy-sz,sz*2,sz*2)}
+const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,szr=Math.exp(this.ls[i])*pr[2]*fpx*this.opt.sMul,
+/* energy-preserving footprint floor: at the hero's low-res raster a
+   sub-pixel splat reads as speckle — widen to ~a pixel and dim by the
+   area ratio, so the field merges without inflating its energy */
+sz=Math.max(.9,szr),en=szr<sz?(szr/sz)*(szr/sz):1;
+g.globalAlpha=a*en;g.drawImage(this.sprFor(this.cr[i],this.cg[i],this.cb[i]),sx-sz,sy-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
 drawTruthImage(g,view,x0,y0,w,h){const fpx=h*view.f;g.save();g.beginPath();g.rect(x0,y0,w,h);g.clip();
 g.fillStyle=GRT.figWell;g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
@@ -198,4 +220,4 @@ const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=.055*pr[2]*fpx*(.55+.45*Math.mi
 g.globalAlpha=Math.min(.4,lu*.55+.01);g.drawImage(this.sprFor(r,gg,b),sx-sz,sy-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
 }
-return{Nova,NebVol,CField,Meter,pixelPath,frustum,SIZES};})();
+return{Nova,NebVol,RealVol,CField,Meter,pixelPath,frustum,SIZES};})();
