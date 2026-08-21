@@ -478,3 +478,28 @@ Critique: vast colour difference cache-vs-truth panes; both too low-res.
 Riders: jitter hash is the classic sin-fract (an integer-hash attempt
 read black — never diagnosed, low value); supernova/grid moiré rings
 are the 56³ grid seen through trilinear (inherent, mild).
+
+### Owner round (2026-08-21 night): the seam's story + readable source
+Critique: cache side worse than raw side (misses radiance + structure;
+accumulation masked the 1-spp reality — left MUST read more complete);
+GT inset missing (stale-cache window: two different grt7-a.js shipped
+under one ?v=3 — versions now bump every change); code unreadable.
+☑ Estimator: research accumulation semantics — accumulate held-still,
+  reset on motion (uN progressive mean in GL + CPU; label prints held
+  count). In orbit the raw side is honest 1-spp confetti; the cache
+  side is now clearly the more complete image (verified all datasets).
+☑ Cache capacity: spatial bins → one()/predC O(local) not O(N) (1500
+  offline iters: ~15s → 2.2s); N defaults 8000–9000, kernels tightened,
+  B=240 samples/frame; training targets trilinear (gtc); pools accept
+  on EMISSION not density (halos were unreachable — butterfly's glow
+  now learned); dead tp/tvc/err deleted. Offline A/B: butterfly .99
+  energy w/ cone filaments + halo; mech/super ~1.5 in-content floor
+  stands (kernel mass vs thin shells), absorbed by the disclosed
+  brightness scalar — verified live: no blowout, structured cache.
+☑ Inset 176×123; slider range 2000–12000.
+☑ Source formatted: prettier (devDep, .prettierrc/.prettierignore,
+  vendored volumes excluded); check.mjs hard-gates formatting when
+  prettier is installed (advisory in CI); privacy-ok hatch re-pinned
+  to its line. RULINGS records the readable-source ruling.
+Verified: GPU traces 16.7ms/0-jank all four + mobile; matrix clean;
+gate clean; herojs harness green on formatted files.

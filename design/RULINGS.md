@@ -411,3 +411,28 @@ added.
   janky frames) at 1512 and 390 widths after: 16-step cache march,
   content-box ray clipping, 10-slice double-buffered bake, 30 Hz world
   splat layer.
+
+# Owner rulings — hero round 3 (2026-08-21)
+
+- **Readable source ships.** "Your code is an absolute mess… almost
+  impossible to read." The dense house style is retired: prettier is the
+  formatter of record (.prettierrc, devDependency; vendored data modules
+  excluded via .prettierignore). This audience reads source; format
+  before commit.
+- **The cache side must read as the more complete image.** The seam's
+  point is the paper's: cache-on 1 spp is usable, cache-off 1 spp is
+  not. Perpetual accumulation on the estimator side hid that (it
+  converged to a sharp image and inverted the story).
+
+## Model notes (advisory, same round)
+
+- Estimator accumulation now uses the research renderer's semantics:
+  accumulate while the view holds still, reset with motion. The label
+  prints the held sample count.
+- Cache capacity: spatial bins made training O(local overlap) instead
+  of O(N); defaults 8–9k gaussians with tighter kernels; training
+  targets are trilinear; sampling pools accept on EMISSION (density
+  pools could never place gaussians in the nebula halos). Offline A/B
+  (herojs train) shows cone filaments + halo learned; mech/supernova
+  hold a stable ~1.5× in-content energy (thin-shell kernel-mass floor)
+  absorbed by the disclosed cache-brightness scalar.
