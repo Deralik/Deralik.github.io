@@ -367,3 +367,8 @@ publicly corroborated.
   dumps found; options for owner: run a public GRMHD code ourselves
   (real, redistributable, ~a day), keep the labelled analogue, or
   pursue archive/author access.
+  UPDATE: scripts/gaiashot.py ports the shaders' OWN raymarcher +
+  computeColor — crab/helix render as real filamentary nebulae
+  (design/local/volshots/gaia-*.png). Path to the hero: bake the
+  density shell to a grid (cache trains on it) + their palette as the
+  truth TF. ⚑ BLOCKED on the CC-BY-NC-SA license call.
