@@ -140,15 +140,14 @@ body.mob .tap{display:flex;align-items:center;justify-content:center;min-height:
 .mstrip button{flex:none;min-height:44px;padding:0 14px;border:0;border-right:1px solid var(--hair);background:transparent;font:400 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--absence);cursor:pointer}
 .mstrip button[aria-current="true"]{color:var(--ink);background:var(--mat)}
 
-/* ── theme toggle: ONE button, centered on the identity line; it shows the
-   mode a press switches TO (moon in light, sun in dark) ── */
+/* ── theme toggle: a two-cell segmented switch on the identity line —
+   the site's control grammar (state is the dark fill). Click flips. ── */
 .idl .thm{display:inline-flex;align-items:center;align-self:stretch}
-.idl .thm button{display:inline-flex;align-items:center;color:inherit;background:none;border:0;padding:3px;cursor:pointer;line-height:0}
-.idl .thm button:hover{color:var(--ink)}
+.idl .thm button{display:inline-flex;padding:0;border:1px solid var(--hair);background:var(--paper);cursor:pointer;line-height:0}
+.thm .tc{display:inline-flex;align-items:center;justify-content:center;width:24px;height:20px;color:var(--absence)}
+[data-theme="h-transit"] .thm .tsun,[data-theme="k-matrix"] .thm .tmoon{background:var(--ink);color:var(--paper)}
+.idl .thm button:hover{border-color:var(--absence)}
 .idl .thm button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.thm .tsun,.thm .tmoon{display:none}
-[data-theme="k-matrix"] .thm .tsun{display:block}
-[data-theme="h-transit"] .thm .tmoon{display:block}
 
 /* ── interactive parts read as interactive (owner ruling 2026-08-21) ── */
 .retp .bk{cursor:pointer}

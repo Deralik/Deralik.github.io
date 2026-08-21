@@ -247,15 +247,15 @@ document.querySelectorAll('.fl').forEach(fl=>{
    canvases re-read tokens per frame. */
 const tbtn=document.getElementById('thm-btn');
 if(tbtn){
-  const label=()=>tbtn.setAttribute('aria-label',
-    'Switch to '+(document.documentElement.dataset.theme==='k-matrix'?'light':'dark')+' theme');
+  const mark=()=>tbtn.setAttribute('aria-checked',
+    document.documentElement.dataset.theme==='k-matrix'?'true':'false');
   tbtn.onclick=()=>{
     const t=document.documentElement.dataset.theme==='k-matrix'?'h-transit':'k-matrix';
     try{localStorage.setItem('theme',t)}catch(err){}
-    document.documentElement.dataset.theme=t; label();};
-  new MutationObserver(label).observe(document.documentElement,
+    document.documentElement.dataset.theme=t; mark();};
+  new MutationObserver(mark).observe(document.documentElement,
     {attributes:true,attributeFilter:['data-theme']});
-  label();
+  mark();
 }
 
 body.classList.toggle('mob',isMob());

@@ -44,7 +44,7 @@ const STRIP={
  'r-prod':{t:'Products — MelioraOS · Okibi',d:'May 2026 – present',c:'MelioraOS: construction management built solo with an agent fleet — first commit to closed beta with a live customer in 47 days, 29 dated releases through 25 Jul, development continuing.<br>Okibi: a task and habit tracker in daily use, where unfinished work burns to a permanent record — 16 releases since mid-June, in private beta.',ev:['<u> 5 May 2026</u>— MelioraOS first commit','<u>15 Jun 2026</u>— Okibi first commit','<u>21 Jun 2026</u>— MelioraOS private beta','<u> 2 Aug 2026</u>— Okibi first public release']}
 };
 
-fetch('data/about-record.json').then(r=>r.json()).then(rec=>{
+fetch('data/about-record.json?v=2').then(r=>r.json()).then(rec=>{
   const S={};rec.spans.forEach(s=>{
     const a=parse(s.start),b=parse(s.end);
     S[s.id]={raw:s,t0:a?a.t:2017.15,t1:b?b.t:NOW,unk:!a,
@@ -592,7 +592,7 @@ function drawVRec(S,rec){
    freshness sweep refreshes it. */
 (function gh(){
   const grids=[...document.querySelectorAll('.ghgrid')];if(!grids.length)return;
-  fetch('data/about-record.json')
+  fetch('data/about-record.json?v=2')
   .then(r=>r.ok?r.json():Promise.reject(r.status))
   .then(rec=>{
     const snap=rec.contributions;if(!snap)return Promise.reject('no snapshot');
