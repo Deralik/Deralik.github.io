@@ -8,8 +8,11 @@ class T8{
 constructor(cv,o={}){this.cv=cv;this.rand=rng(19);this.frameN=0;this.solo=!!o.solo;this.label=o.label||null;
 this.vol=vol();
 this.F=new CField(this.vol,760,21,KC);
-const bt=performance.now();while(performance.now()-bt<200)this.F.step(120,0);
-this.F.pulse.fill(-9);
+/* warm-start off the first paint: the same 200ms of training, run at idle;
+   until it lands the field trains live in view — visually identical within
+   a beat of load (handoff production task 6) */
+const warmup=()=>{const bt=performance.now();while(performance.now()-bt<200)this.F.step(120,0);this.F.pulse.fill(-9)};
+if(window.requestIdleCallback)requestIdleCallback(warmup,{timeout:900});else setTimeout(warmup,60);
 this.cam=new Cam2(cv,.9,.26,4.6);this.cam.auto=.07;this._p3=null;
 if(!this.solo){this.cam.gate=e=>{const b=cv.getBoundingClientRect(),mx=e.clientX-b.left;return!(this._p3&&mx>=this._p3)};
 this.st=this.vol.stipple(240);this.stMini=this.vol.stipple(150);

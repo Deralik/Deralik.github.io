@@ -15,7 +15,7 @@ const isMob=()=>MOB.matches;
 /* ── the config ───────────────────────────────────────────────────────────
    b: 1 = above the boundary, 2 = below it. w: share within the band.
    About takes a fixed column and spans both bands, so it has no b or w. */
-const FIELDS=[{k:'about'},{k:'f1',b:1,w:6.1},{k:'f2',b:1,w:3.9},{k:'f3',b:2,w:3.6},{k:'f4',b:2,w:3.1},{k:'f5',b:2,w:2.8}];
+const FIELDS=[{k:'about',slug:'about'},{k:'f1',slug:'cinr',b:1,w:6.1},{k:'f2',slug:'grtcache',b:1,w:3.9},{k:'f3',slug:'melioraos',b:2,w:3.6},{k:'f4',slug:'okibi',b:2,w:3.1},{k:'f5',slug:'splat',b:2,w:2.8}];
 
 const body=document.body;
 const pbody=document.getElementById('pbody');
@@ -91,7 +91,27 @@ function apply(){
   const td=parseFloat(CS.getPropertyValue('--t'))||0;
   if(td)apply._dq=setTimeout(dense,td*1000+60);
   pbody.dataset.depth=depth;
+  syncHash();
 }
+
+/* ── URL state: #/slug at depth 1, #/slug/doc at depth 2, none at home.
+   replaceState keeps the history clean; ↑/Esc remain the way back up. */
+function syncHash(){
+  const f=open&&fields().find(x=>x.k===open);
+  const h=f?('#/'+f.slug+(depth===2&&!isMob()?'/doc':'')):'';
+  if(location.hash===h||(!h&&!location.hash))return;
+  history.replaceState(null,'',h||location.pathname+location.search);
+}
+function fromHash(){
+  const m=location.hash.match(/^#\/([\w-]+)(\/doc)?$/); if(!m)return false;
+  const f=fields().find(x=>x.slug===m[1]); if(!f)return false;
+  open=f.k; depth=m[2]?2:1; if(isMob())depth=2;
+  return true;
+}
+addEventListener('hashchange',()=>{
+  if(fromHash())apply();
+  else if(!location.hash){depth=0;open=null;pbody.classList.remove('to1','to2');apply()}
+});
 
 /* A field carries what it has room for. Priority is caption, then prose, then
    quantities, then the capability chip, and last the figure itself — the title
@@ -131,6 +151,7 @@ function mobile(){
   });
   const idl=document.querySelector('.idl');
   document.documentElement.style.setProperty('--mtop',Math.round(idl.getBoundingClientRect().height)+'px');
+  syncHash();
 }
 
 /* ── committed depth changes ─────────────────────────────────────────────
@@ -212,6 +233,7 @@ if(thm){
 }
 
 body.classList.toggle('mob',isMob());
+fromHash();
 apply();
 addEventListener('load',()=>{apply()});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>apply());

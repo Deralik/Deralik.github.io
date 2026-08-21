@@ -75,10 +75,21 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   rewritten production-clean. Verified: toggle sets + persists across
   reload, keyboard nav intact, matrix clean, gate green.
 
-▶ NEXT ACTION: Wave B — hash routing (#/cinr, #/grtcache/doc) +
-restore-on-load, warm-start deferral off first paint, head/meta/
-favicon/OG, Stanford bunny credit (tasks 5–8). Then Wave C (punch
-G2–G11 + S-items + cheap R), Wave D (G1 real data + integrators).
+- ☑ Wave B (2026-08-21): hash routing live (#/slug, #/slug/doc;
+  replaceState; restore on load + hashchange; slugs already final:
+  cinr/grtcache/melioraos/okibi/splat) — probe-verified set/deepen/
+  navigate/reload-restore/clear; GRT8T warm-start moved to
+  requestIdleCallback (same 200ms, off first paint); head complete
+  (title, description, OG/Twitter, DZ favicon.svg — ruled title, not
+  README task 7's stale one); Stanford bunny credit in cINR Reference
+  (README task 8). Matrix clean both themes.
+
+▶ NEXT ACTION: Wave C — punch G2–G11 + S-items + cheap R-items
+(dead toggle, noscript, mobile sticky + hero stacking, slot retitles
+"under construction", G7/G8 copy rewrites from vetted BRIEF facts,
+team line + in-progress rewrite, image-slot→img, chips, GRT
+reduced-motion, About record wording). Then Wave D (G1 real data +
+integrators — launch gate).
 
 ## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
 
