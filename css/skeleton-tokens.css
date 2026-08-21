@@ -20,6 +20,7 @@
   --idl:54px;--rail:180px;--strip:34px;--about:252px;
   --t:.34s cubic-bezier(.4,0,.2,1); /* @kind other */
   --fs-floor:9.5px;
+  --thm-dy:4px; /* theme-toggle drop: pins its center to the identity text's cap center (measured) */
 }
 
 /* ── 6 · Transit (H) ─────────────────────────────────────────────────────
