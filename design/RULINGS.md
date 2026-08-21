@@ -293,6 +293,22 @@ where phrased generally)
 - **Workflow**: commits batch at meaningful checkpoints, not per tweak
   (owner). Dev serving is always no-store.
 
+# Owner rulings — demo data & scaling (2026-08-20)
+
+- **Truth reads as DATA, only the cache reads as gaussians.** Ground
+  truth is a clear, high-res volume render (real data + a proper
+  transfer function); gaussians represent the radiance cache, never the
+  scene. The hero's data side adopts this once a dataset + TF are
+  picked.
+- **Dataset triage runs through `scripts/volshot.py`** → stills +
+  contact sheet in design/local/volshots/; the owner picks datasets and
+  TFs from renders, not descriptions. Wanted: a real black-hole volume
+  and more nebulae; any open source with public data + proper credit is
+  fair game.
+- **Viewport-aware everywhere**: figures scale and center to their box;
+  hard-coded sizes only within logical reason.
+- Interim: hero defaults to the crab analogue until the pick lands.
+
 # Owner design directions — endorsed but unexplored
 
 - **MelioraOS**: an abstract figure of the owner's workflow loop with the

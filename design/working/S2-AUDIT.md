@@ -344,3 +344,13 @@ evidence → limits → artifacts) holds. Quantitative record exact. §2i
 dark wells "read, but barely" — shippable. Task-6 description accurate
 vs code (~0.6s measured). Honorable Mention + presentation date
 publicly corroborated.
+
+- ☑ Owner round 2 (2026-08-20): D0 portrait capped (no stretch in
+  morph); method figures scale+center via 640×262 design space +
+  aspect-ratio boxes; bunny glide rebuilt — final slot rect measured by
+  transition-replay, canvas glides in fixed viewport space on the
+  shared curve (end offset 0,0 both directions, no snap); volshot.py
+  triage harness → design/local/volshots/ contact sheet (7 datasets ×
+  4 TFs × 2 axes); hero defaults to crab pending owner dataset pick.
+  Supernova confirmed illegible (dense crust) — heptane + mechhand are
+  the strong candidates.

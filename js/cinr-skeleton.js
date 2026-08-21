@@ -28,32 +28,29 @@ function place(){
   const r0=cv.getBoundingClientRect();
   target.appendChild(cv);
   hero.setMode(target===slotP?'card':'demo');
-  if(r0.width&&!RMq.matches){
-    /* chase-FLIP: the slot itself is still morphing, so each frame we
-       re-aim at its CURRENT rect — the render travels a clean monotonic
-       path from where it was to wherever the slot settles (a fixed-target
-       FLIP bulges when the target keeps moving) */
-    const t0=performance.now(),D=360,ease=p=>1-Math.pow(1-p,3);
-    /* the slot itself is mid-morph, so its transient size mis-aims a naive
-       lerp; the direction is known (the card is always the smaller slot),
-       so clamp the size monotonic and no bulge can render */
-    const shrink=target===slotP;let pw=r0.width,ph=r0.height;
-    cv.style.transformOrigin='0 0';cv.style.transition='none';
-    cancelAnimationFrame(place._raf);
-    const step=()=>{
-      const p=Math.min(1,(performance.now()-t0)/D),e=ease(p);
-      const sr=target.getBoundingClientRect();
-      if(!sr.width){cv.style.transform='';return}
-      const L=r0.left+(sr.left-r0.left)*e,T=r0.top+(sr.top-r0.top)*e;
-      let Wd=r0.width+(sr.width-r0.width)*e,Hh=r0.height+(sr.height-r0.height)*e;
-      Wd=shrink?Math.min(pw,Wd):Math.max(pw,Wd);Hh=shrink?Math.min(ph,Hh):Math.max(ph,Hh);
-      pw=Wd;ph=Hh;
-      cv.style.transform='translate('+(L-sr.left)+'px,'+(T-sr.top)+'px) scale('+(Wd/sr.width)+','+(Hh/sr.height)+')';
-      if(p<1)place._raf=requestAnimationFrame(step);
-      else cv.style.transform='';
-    };
-    step();
-  }
+  if(!r0.width||RMq.matches||mob){return}
+  /* the slot's FINAL rect: snap the fl to its target geometry with the
+     transition off, measure, then replay the morph from its start —
+     identical motion, one frame later */
+  const fin={L:fl.style.left,T:fl.style.top,W:fl.style.width,H:fl.style.height};
+  const pb=fl.parentNode.getBoundingClientRect(),fs=fl.getBoundingClientRect();
+  fl.style.transition='none';
+  const rF=target.getBoundingClientRect();
+  fl.style.left=(fs.left-pb.left)+'px';fl.style.top=(fs.top-pb.top)+'px';
+  fl.style.width=fs.width+'px';fl.style.height=fs.height+'px';
+  void fl.offsetWidth;fl.style.transition='';
+  fl.style.left=fin.L;fl.style.top=fin.T;fl.style.width=fin.W;fl.style.height=fin.H;
+  /* glide the canvas in viewport space on the same curve — it lands
+     exactly when and where the slot does */
+  cv.style.position='fixed';cv.style.inset='auto';cv.style.zIndex=4;
+  cv.style.left=r0.left+'px';cv.style.top=r0.top+'px';
+  cv.style.width=r0.width+'px';cv.style.height=r0.height+'px';
+  cv.style.transition='none';void cv.offsetWidth;
+  cv.style.transition='left var(--t),top var(--t),width var(--t),height var(--t)';
+  cv.style.left=rF.left+'px';cv.style.top=rF.top+'px';
+  cv.style.width=rF.width+'px';cv.style.height=rF.height+'px';
+  clearTimeout(place._t);
+  place._t=setTimeout(()=>{cv.style.cssText=''},380);
 }
 const animBtn=$('#cinr-anim'),resetBtn=$('#cinr-reset');
 if(animBtn)animBtn.addEventListener('click',()=>{animBtn.textContent='Animation · '+(hero.toggle()?'on':'off')});

@@ -28,7 +28,7 @@ cv.style.cursor=this.nearSeam(e)?'col-resize':'grab'});
 const up=()=>{if(this.seamDrag){this.seamDrag=false;this.seamUntil=this.now+4}
 if(this.imgDrag){this.imgDrag=false;this.holdUntil=this.now+1.0;this.cv.style.cursor='grab'}};
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-this.setVol(window.GRT_SUPERNOVA?'super':'crab');
+this.setVol('crab');
 loop(cv,(t,dt)=>this.frame(t,dt))}
 inImg(e){const b=this.cv.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,R=this._img;return!!(R&&mx>=R[0]&&mx<=R[0]+R[2]&&my>=R[1]&&my<=R[1]+R[3])}
 nearSeam(e){const b=this.cv.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,R=this._img;

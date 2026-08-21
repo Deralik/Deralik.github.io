@@ -13,18 +13,20 @@ const seg=(x0,y0,x1,y1,dash)=>{ctx.strokeStyle=abs;if(dash)ctx.setLineDash([3,3]
 const arr=(x0,y0,x1,y1,dash)=>{seg(x0,y0,x1,y1,dash);const a2=Math.atan2(y1-y0,x1-x0);ctx.fillStyle=abs;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-6*Math.cos(a2-.42),y1-6*Math.sin(a2-.42));ctx.lineTo(x1-6*Math.cos(a2+.42),y1-6*Math.sin(a2+.42));ctx.fill()};
 const circ=(x,y,n)=>{ctx.font='500 9.5px '+mono;const w2=ctx.measureText(n).width;ctx.fillStyle=paper;ctx.fillRect(x-w2/2-5,y-8,w2+10,16);ctx.fillStyle=mat;ctx.globalAlpha=.7;ctx.fillRect(x-w2/2-5,y-8,w2+10,16);ctx.globalAlpha=1;T(x,y+3,n,prose);ctx.font='400 9.5px '+mono};
 return{T,box,seg,arr,circ,ink,prose,abs,mat,paper}}
-function setup(cv,AW,drawBody){const ctx=cv.getContext('2d'),mono=tok('--mono');
+function setup(cv,AW,AH,drawBody){const ctx=cv.getContext('2d'),mono=tok('--mono');
 function draw(){const rc=cv.getBoundingClientRect();if(!rc.width)return;const dpr=Math.min(2,devicePixelRatio||1);
 cv.width=rc.width*dpr;cv.height=rc.height*dpr;
-const fig=Math.min(1,rc.width/AW);ctx.setTransform(dpr*fig,0,0,dpr*fig,0,0);
-const H=rc.height/fig,hp=mkHelpers(ctx,mono);
-ctx.fillStyle=tok('--paper');ctx.fillRect(0,0,Math.max(rc.width/fig,AW),H);ctx.font='400 9.5px '+mono;
+/* fit + center the 640x262 design space in whatever box the viewport gives */
+const fig=Math.min(rc.width/AW,rc.height/AH),tx=(rc.width-AW*fig)/2,ty=(rc.height-AH*fig)/2;
+ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=tok('--paper');ctx.fillRect(0,0,rc.width,rc.height);
+ctx.setTransform(dpr*fig,0,0,dpr*fig,dpr*tx,dpr*ty);
+const H=AH,hp=mkHelpers(ctx,mono);ctx.font='400 9.5px '+mono;
 drawBody(ctx,hp,H,mono)}
 draw();addEventListener('resize',draw);
 if(window.ResizeObserver)new ResizeObserver(draw).observe(cv);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw)}
 /* ── the pipeline, abstract ─────────────────────────────────────────── */
-window.GRT9A=function(cv){setup(cv,640,(ctx,hp,H,mono)=>{
+window.GRT9A=function(cv){setup(cv,640,262,(ctx,hp,H,mono)=>{
 const{T,box,seg,arr,circ,abs,mat}=hp;
 /* washes */
 ctx.fillStyle=tok('--band1');ctx.fillRect(16,64,150,150);
@@ -51,7 +53,7 @@ T(392,176,'fit · relocate',abs);T(392,188,'add · nudge',abs);
 seg(559,162,559,236);seg(559,236,91,236);arr(91,236,91,166);circ(330,236,'4');
 T(330,252,'rays terminate into the cache — the bounces they skip are the savings',abs)})};
 /* ── the training step, traced back (after NRC) ─────────────────────── */
-window.GRT9T=function(cv){setup(cv,640,(ctx,hp,H,mono)=>{
+window.GRT9T=function(cv){setup(cv,640,262,(ctx,hp,H,mono)=>{
 const{T,seg,arr,circ,ink,prose,abs}=hp;
 const warm=GRT.figWarm,acc=tok('--accw');
 const cam=[38,150],v=[[150,118],[258,162],[366,114]],sfx=[[470,152],[562,106]];

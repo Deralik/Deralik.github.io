@@ -209,13 +209,13 @@ body{display:block;height:auto;overflow:auto}
         <div class="dsec" style="border-top:0;padding-top:0;margin-top:16px">
           <div class="gfw" style="height:540px" data-slot="figure"><canvas id="grt-cv-hero"></canvas></div>
           <div class="chipline">the render at 1 spp — left of the seam each ray terminates into the trained cache; right, raw path samples of the field (both briefly accumulated, one shared exposure); converged reference inset · drag the seam · drag the render to move the camera · grab the world to turn it</div>
-          <div class="chr"><span class="btn on" id="grt-v0">Supernova — real data</span><span class="btn" id="grt-v1">Crab-like — analogue</span><span class="btn" id="grt-v2">Black hole — analogue</span><span class="btn" id="grt-reset">Reset — shell cast</span><label>Gaussians<input type="range" id="grt-n" min="800" max="5200" step="200" value="3400"></label><label><span id="grt-azl">Light azimuth</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="0.9"></label><span class="ro2" id="grt-ro">—</span></div>
+          <div class="chr"><span class="btn" id="grt-v0">Supernova — real data</span><span class="btn on" id="grt-v1">Crab-like — analogue</span><span class="btn" id="grt-v2">Black hole — analogue</span><span class="btn" id="grt-reset">Reset — shell cast</span><label>Gaussians<input type="range" id="grt-n" min="800" max="5200" step="200" value="3400"></label><label><span id="grt-azl">Light azimuth</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="0.9"></label><span class="ro2" id="grt-ro">—</span></div>
         </div>
         <div class="dsec"><div class="sech">The method</div>
           <div class="drow" style="gap:20px">
             <div style="flex:1;min-width:0">
               <div class="gcap">The pipeline — abstract</div>
-              <div class="gfw" style="height:250px;background:transparent"><canvas id="grt-cv-pipe"></canvas></div>
+              <div class="gfw" style="aspect-ratio:640/262;min-height:200px;max-height:380px;background:transparent"><canvas id="grt-cv-pipe"></canvas></div>
               <div class="plegend">
                 <div class="pleg"><i>1</i><span>a PCD pass casts first rays and keeps the hit positions — the gaussians seed where the medium is (once, dashed)</span></div>
                 <div class="pleg"><i>2</i><span>the loop streams training samples: bounce positions + directions, NEE at each bounce, and the composition trace-back</span></div>
@@ -225,7 +225,7 @@ body{display:block;height:auto;overflow:auto}
             </div>
             <div style="flex:1;min-width:0">
               <div class="gcap">The training step — traced back · after NRC (Müller et al. 2021)</div>
-              <div class="gfw" style="height:250px;background:transparent"><canvas id="grt-cv-train"></canvas></div>
+              <div class="gfw" style="aspect-ratio:640/262;min-height:200px;max-height:380px;background:transparent"><canvas id="grt-cv-train"></canvas></div>
               <div class="plegend">
                 <div class="pleg"><i>1</i><span>a rendering path terminates into the cache — the same termination heuristic as NRC</span></div>
                 <div class="pleg"><i>2</i><span>a portion of rays extend past the termination — training suffixes, bounced further only to learn</span></div>
