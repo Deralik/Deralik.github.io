@@ -215,7 +215,7 @@ body{display:block;height:auto;overflow:auto}
           <div class="drow" style="gap:20px">
             <div style="flex:1;min-width:0">
               <div class="gcap">The pipeline — abstract</div>
-              <div class="gfw" style="aspect-ratio:640/262;min-height:200px;max-height:380px;background:transparent"><canvas id="grt-cv-pipe"></canvas></div>
+              <div class="gfw" style="aspect-ratio:640/262;min-height:200px;max-height:380px;margin:0 auto;background:transparent"><canvas id="grt-cv-pipe"></canvas></div>
               <div class="plegend">
                 <div class="pleg"><i>1</i><span>a PCD pass casts first rays and keeps the hit positions — the gaussians seed where the medium is (once, dashed)</span></div>
                 <div class="pleg"><i>2</i><span>the loop streams training samples: bounce positions + directions, NEE at each bounce, and the composition trace-back</span></div>
@@ -225,7 +225,7 @@ body{display:block;height:auto;overflow:auto}
             </div>
             <div style="flex:1;min-width:0">
               <div class="gcap">The training step — traced back · after NRC (Müller et al. 2021)</div>
-              <div class="gfw" style="aspect-ratio:640/262;min-height:200px;max-height:380px;background:transparent"><canvas id="grt-cv-train"></canvas></div>
+              <div class="gfw" style="aspect-ratio:640/262;min-height:200px;max-height:380px;margin:0 auto;background:transparent"><canvas id="grt-cv-train"></canvas></div>
               <div class="plegend">
                 <div class="pleg"><i>1</i><span>a rendering path terminates into the cache — the same termination heuristic as NRC</span></div>
                 <div class="pleg"><i>2</i><span>a portion of rays extend past the termination — training suffixes, bounced further only to learn</span></div>
