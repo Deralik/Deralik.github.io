@@ -140,11 +140,15 @@ body.mob .tap{display:flex;align-items:center;justify-content:center;min-height:
 .mstrip button{flex:none;min-height:44px;padding:0 14px;border:0;border-right:1px solid var(--hair);background:transparent;font:400 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--absence);cursor:pointer}
 .mstrip button[aria-current="true"]{color:var(--ink);background:var(--mat)}
 
-/* ── theme toggle on the identity line — icons; the active mode in --ink ── */
-.idl .thm{display:inline-flex;gap:7px;align-items:center;align-self:center}
-.idl .thm button{display:inline-flex;align-items:center;color:inherit;background:none;border:0;padding:2px;cursor:pointer;line-height:0}
-.idl .thm button:hover,.idl .thm button.on{color:var(--ink)}
+/* ── theme toggle: ONE button, centered on the identity line; it shows the
+   mode a press switches TO (moon in light, sun in dark) ── */
+.idl .thm{display:inline-flex;align-items:center;align-self:stretch}
+.idl .thm button{display:inline-flex;align-items:center;color:inherit;background:none;border:0;padding:3px;cursor:pointer;line-height:0}
+.idl .thm button:hover{color:var(--ink)}
 .idl .thm button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.thm .tsun,.thm .tmoon{display:none}
+[data-theme="k-matrix"] .thm .tsun{display:block}
+[data-theme="h-transit"] .thm .tmoon{display:block}
 
 /* ── interactive parts read as interactive (owner ruling 2026-08-21) ── */
 .retp .bk{cursor:pointer}

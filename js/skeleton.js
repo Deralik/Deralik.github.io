@@ -242,19 +242,20 @@ document.querySelectorAll('.fl').forEach(fl=>{
   addEventListener('scroll',()=>{if(isMob()&&fl.classList.contains('opened'))spy()},{passive:true});
 });
 
-/* ── theme toggle — writes the override; the inline head script owns first
-   paint and the system-change fallback. Canvases re-read tokens per frame. */
-const thm=document.getElementById('thm');
-if(thm){
-  const bs=[].slice.call(thm.querySelectorAll('button'));
-  const mark=()=>{const t=document.documentElement.dataset.theme;
-    bs.forEach(b=>b.classList.toggle('on',b.dataset.t===t))};
-  bs.forEach(b=>b.onclick=()=>{
-    try{localStorage.setItem('theme',b.dataset.t)}catch(err){}
-    document.documentElement.dataset.theme=b.dataset.t; mark();});
-  new MutationObserver(mark).observe(document.documentElement,
+/* ── theme toggle — one button flips the theme and writes the override; the
+   inline head script owns first paint. CSS picks the icon (target mode);
+   canvases re-read tokens per frame. */
+const tbtn=document.getElementById('thm-btn');
+if(tbtn){
+  const label=()=>tbtn.setAttribute('aria-label',
+    'Switch to '+(document.documentElement.dataset.theme==='k-matrix'?'light':'dark')+' theme');
+  tbtn.onclick=()=>{
+    const t=document.documentElement.dataset.theme==='k-matrix'?'h-transit':'k-matrix';
+    try{localStorage.setItem('theme',t)}catch(err){}
+    document.documentElement.dataset.theme=t; label();};
+  new MutationObserver(label).observe(document.documentElement,
     {attributes:true,attributeFilter:['data-theme']});
-  mark();
+  label();
 }
 
 body.classList.toggle('mob',isMob());
