@@ -17,7 +17,7 @@ this.su=.5;this.seamU=.5;this.seamUntil=-9;this.seamDrag=false;
 this.mx=.6;this.nzc=null;this.calib=1;
 this.view=new CamView(this.eyeAt(this.oa),1.05);
 this.frameN=0;this.meter=new Meter(150);this.field=null;
-this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.warm='#E8A24C';this.mono=tok('--mono');
+this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.warm=GRT.figWarm;this.mono=tok('--mono');
 let px2,py2;
 cv.addEventListener('pointerdown',e=>{if(this.nearSeam(e)){this.seamDrag=true;cv.setPointerCapture(e.pointerId);return}
 if(!this.inImg(e))return;this.imgDrag=true;px2=e.clientX;py2=e.clientY;cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing'});
@@ -97,7 +97,15 @@ if(!held){if(off){const k=Math.exp(-2.4*dt);this.uY*=k;this.uP*=k}else{this.uY=t
 const eye=this.eyeCur();this.view.setEye(eye);
 this.anim.maybeFire(t,eye);this.anim.update(t);
 this.su=this.seamDrag||t<this.seamUntil?this.seamU:.5+.33*Math.sin(t*.22);
-const split=w*.55,x0=12,y0=12,iw=split-24,ih=h-46;this._img=[x0,y0,iw,ih];
+/* ≤560px: mobile is its own layout — render above, world below, meter last —
+   never a squeezed desktop */
+const stack=w<560;
+let x0,y0,iw,ih,rx,rw,wy,wh;
+if(stack){x0=8;y0=10;iw=w-16;ih=Math.round(h*.42);
+  rx=4;rw=w-8;wy=y0+ih+26;wh=h-wy-88}
+else{const split=w*.55;x0=12;y0=12;iw=split-24;ih=h-46;
+  rx=split+6;rw=w-rx-6;wy=0;wh=h-130}
+this._img=[x0,y0,iw,ih];
 this.march(iw,ih,t);
 const bx=x0+this.su*iw;
 g.imageSmoothingEnabled=false;
@@ -105,28 +113,29 @@ g.save();g.beginPath();g.rect(bx,y0,x0+iw-bx,ih);g.clip();g.drawImage(this.nzc,x
 g.save();g.beginPath();g.rect(x0,y0,bx-x0,ih);g.clip();g.drawImage(this.czc,x0,y0,iw,ih);g.restore();
 g.imageSmoothingEnabled=true;
 g.strokeStyle='rgba(228,223,212,.65)';g.lineWidth=1;g.beginPath();g.moveTo(bx+.5,y0);g.lineTo(bx+.5,y0+ih);g.stroke();
-g.fillStyle='rgba(228,223,212,.65)';g.fillRect(bx-4,y0+ih/2-9,9,18);g.fillStyle='#0a0d11';g.fillRect(bx-1.5,y0+ih/2-5,1,10);g.fillRect(bx+1.5,y0+ih/2-5,1,10);
+g.fillStyle='rgba(228,223,212,.65)';g.fillRect(bx-4,y0+ih/2-9,9,18);g.fillStyle=GRT.figWell;g.fillRect(bx-1.5,y0+ih/2-5,1,10);g.fillRect(bx+1.5,y0+ih/2-5,1,10);
 g.strokeStyle='rgba(228,223,212,.25)';g.strokeRect(x0+.5,y0+.5,iw-1,ih-1);
-F.drawTruthImage(g,this.view,x0+iw-162,y0+10,150,105);g.strokeRect(x0+iw-162.5,y0+9.5,151,106);
+const iv=stack?[104,74]:[150,105];
+F.drawTruthImage(g,this.view,x0+iw-iv[0]-12,y0+10,iv[0],iv[1]);g.strokeRect(x0+iw-iv[0]-12.5,y0+9.5,iv[0]+1,iv[1]+1);
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;
-g.fillText('REFERENCE — CONVERGED',x0+iw-162,y0+128);
+g.fillText(GRT.elide(g,stack?'THE TRUTH FIELD':'REFERENCE — THE TRUTH FIELD',iv[0]+10),x0+iw-iv[0]-12,y0+iv[1]+23);
 g.fillText(this.imgDrag?'CAMERA — IN YOUR HAND':held||off?'CAMERA — RETURNING TO ORBIT':'CAMERA — ORBITING',x0+8,y0+16);
-g.fillText('WITH THE CACHE — 4 SPP',x0+8,y0+ih-10);
-const wl='WITHOUT — 4 SPP PATH TRACING';g.fillText(wl,x0+iw-8-g.measureText(wl).width,y0+ih-10);
-g.fillText('THE RENDER — DRAG THE SEAM TO COMPARE · DRAG ELSEWHERE TO MOVE THE CAMERA',x0,y0+ih+14);
-const rx=split+6,rw=w-rx-6,wh=h-130,pr=this.cam.proj(),S=Math.min(rw,wh)*.60,cx=rx+rw/2,cy=wh*.52,px=p=>{const q=pr(p);return[cx+q[0]*S,cy-q[1]*S,q[2]]};
-g.save();g.beginPath();g.rect(rx,0,rw,wh);g.clip();
-box(g,px);for(const s of this.st){const p=px(s);g.globalAlpha=.04+.10*s[3];g.fillStyle='#E4DFD4';g.fillRect(p[0],p[1],1.3,1.3)}g.globalAlpha=1;
+g.fillText(GRT.elide(g,stack?'WITH CACHE — 4 SPP':'WITH THE CACHE — 4 SPP',iw*.48),x0+8,y0+ih-10);
+const wl=GRT.elide(g,stack?'WITHOUT — 4 SPP':'WITHOUT — 4 SPP PATH TRACING',iw*.48);g.fillText(wl,x0+iw-8-g.measureText(wl).width,y0+ih-10);
+g.fillText(GRT.elide(g,'THE RENDER — DRAG THE SEAM TO COMPARE · DRAG ELSEWHERE TO MOVE THE CAMERA',iw),x0,y0+ih+14);
+const pr=this.cam.proj(),S=Math.min(rw,wh)*.60,cx=rx+rw/2,cy=wy+wh*.52,px=p=>{const q=pr(p);return[cx+q[0]*S,cy-q[1]*S,q[2]]};
+g.save();g.beginPath();g.rect(rx,wy,rw,wh);g.clip();
+box(g,px);for(const s of this.st){const p=px(s);g.globalAlpha=.04+.10*s[3];g.fillStyle=GRT.figPaper;g.fillRect(p[0],p[1],1.3,1.3)}g.globalAlpha=1;
 F.draw(g,px,S,t);
 this.anim.draw(g,px,S,t,false,this.conw,this.warm,'TRAINING RAY');
 if(this.vol.em<.99){this.anim.drawNees(g,px,this.vol.light,t,this.warm);const lp=px(this.vol.light);star(g,lp[0],lp[1],6,this.warm)}
 const ep=px(eye);g.strokeStyle=this.conw;g.lineWidth=1.2;g.strokeRect(ep[0]-4,ep[1]-4,8,8);
 frustum(g,px,eye,this.view,(iw/2)/(ih*1.05),.5/1.05,1.55,'rgba(228,223,212,.20)');
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;g.fillText('CAMERA',Math.min(ep[0]-6,rx+rw-48),ep[1]+17);
-if(this.anim.stats)g.fillText(this.anim.stats,rx+6,14);
-g.fillText('THE WORLD — THE CACHE AS SOFT SPLATS · UPDATED GAUSSIANS FLASH · GRAB TO TURN',rx+6,wh-8);
+if(this.anim.stats)g.fillText(GRT.elide(g,this.anim.stats,rw-12),rx+6,wy+14);
+g.fillText(GRT.elide(g,'THE WORLD — THE CACHE AS SOFT SPLATS · TOUCHED GAUSSIANS FLASH · GRAB TO TURN',rw-12),rx+6,wy+wh-8);
 g.restore();
-this.meter.draw(g,rx+6,wh+10,rw-12,66,'RENDER QUALITY — PSNR VS TRUTH FIELD · HIGHER IS BETTER',this.mono,v=>v.toFixed(1)+' dB');
+this.meter.draw(g,rx+6,wy+wh+10,rw-12,66,'THE CACHE — PSNR VS TRUTH FIELD · HIGHER IS BETTER',this.mono,v=>v.toFixed(1)+' dB');
 const ui=this.o.ui;if(ui&&this.frameN%10===0)ui.textContent='iter '+F.iter+' · '+F.N+' gaussians · '+this.kind}
 }
 window.GRT7A=R7;})();

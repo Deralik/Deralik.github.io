@@ -20,7 +20,7 @@ this.c0=new Cam2(null,.92,.30,4.6);
 this.rays=[];this.nextRay=.6;this.chips=[];
 this.paths=this.mkPaths();this.depth=this.mkDepth()}
 this.rays3=this.mkRays3();
-this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.warm='#E8A24C';this.mono=tok('--mono');
+this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.warm=GRT.figWarm;this.mono=tok('--mono');
 loop(cv,(t,dt)=>this.frame(t,dt))}
 mkPaths(){const r=rng(13),V=this.vol;
 const pick=()=>{for(let k=0;k<400;k++){const p=[r()*1.3-.65,r()*1.1-.55,r()*1.3-.65];if(V.sig(p[0],p[1],p[2])>.09&&Math.hypot(p[0]-EYE[0],p[1]-EYE[1],p[2]-EYE[2])>2.45)return p}return[.3,0,-.2]};
@@ -38,7 +38,7 @@ mkDepth(){const r=rng(29),V=this.vol,pts=V.samples(250),out=[[],[],[]];
 const avg=(p,rad,m,sc)=>{let cr=0,cg=0,cb=0;for(let k=0;k<m;k++){const c=V.gtc([p[0]+(r()*2-1)*rad,p[1]+(r()*2-1)*rad,p[2]+(r()*2-1)*rad]);cr+=c[0];cg+=c[1];cb+=c[2]}return[cr/m*sc,cg/m*sc,cb/m*sc]};
 for(const p of pts){out[0].push({p,c:V.gtc(p),s:1.7});out[1].push({p,c:avg(p,.17,5,.55),s:2.6});out[2].push({p,c:avg(p,.36,5,.32),s:3.6})}
 return out}
-frame(t,dt){const f=fit(this.cv);if(!f)return;const{g,w,h}=f;this.frameN++;const F=this.F;
+frame(t,dt){const f=fit(this.cv);if(!f)return;const{g,w,h}=f;this.frameN++;this.lastT=t;const F=this.F;
 this.cam.step(dt);
 if(F.iter<900){F.step(60,t);F.step(60,t);F.pulse.fill(-9)}
 if(this.solo){g.clearRect(0,0,w,h);this.ours(g,0,w,h,t);return}
@@ -46,7 +46,7 @@ g.fillStyle=this.cw;g.fillRect(0,0,w,h);
 const gap=10,pw=(w-2*gap)/3;this._p3=2*(pw+gap);
 g.fillStyle='rgba(228,223,212,.18)';g.fillRect(pw+gap/2,0,1,h);g.fillRect(2*pw+gap*1.5,0,1,h);
 this.nrc(g,0,pw,h,t);this.gsc(g,pw+gap,pw,h,t);this.ours(g,2*(pw+gap),pw,h,t);
-g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;g.fillText('THREE WAYS TO HOLD A LIGHT FIELD',6,14)}
+g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;g.fillText(GRT.elide(g,'THREE WAYS TO HOLD A LIGHT FIELD',w-12),6,14)}
 nrc(g,x0,pw,h,t){g.save();g.beginPath();g.rect(x0,0,pw,h);g.clip();
 const bw=pw*.36,bh=h*.30,bx=x0+pw/2-bw/2,by=h/2-bh/2;
 if(t>this.nextRay){this.rays.push({y:h*(.3+.4*this.rand()),born:t,v:.2+.65*this.rand()});this.nextRay=t+.9+this.rand()*.8}
@@ -62,11 +62,11 @@ g.strokeStyle='rgba(228,223,212,.45)';g.lineWidth=1;g.strokeRect(bx+.5,by+.5,bw-
 g.fillStyle=this.cab;g.font='500 11px '+this.mono;g.fillText('MLP',bx+bw/2-12,by+bh/2+4);
 g.font='500 8.5px '+this.mono;
 g.fillText('RAYS IN',x0+12,h*.24);g.fillText('RADIANCE OUT',bx+bw+12,h/2-12);
-g.fillText('NRC — QUERY IT; NEVER SEE IT',x0+6,h-6);g.restore()}
+g.fillText(GRT.elide(g,'NRC — QUERY IT; NEVER SEE IT',pw-12),x0+6,h-6);g.restore()}
 gsc(g,x0,pw,h,t){g.save();g.beginPath();g.rect(x0,0,pw,h);g.clip();
 const pr=this.c0.proj(),S=h*.19,cx=x0+pw*.5,cy=h*.28,px=p=>{const q=pr(p);return[cx+q[0]*S,cy-q[1]*S,q[2]]};
 const cam0=[x0+pw*.5,46];
-for(const s of this.stMini){const p=px(s);g.globalAlpha=.05+.11*s[3];g.fillStyle='#E4DFD4';g.fillRect(p[0],p[1],1.2,1.2)}g.globalAlpha=1;
+for(const s of this.stMini){const p=px(s);g.globalAlpha=.05+.11*s[3];g.fillStyle=GRT.figPaper;g.fillRect(p[0],p[1],1.2,1.2)}g.globalAlpha=1;
 /* three skewed windows across the lower half — cropped views INTO each cache.
    slant edges are parallel, so the visible gap = LX step − lw */
 const sk=14,gp=8,lw=(pw-40-2*sk-2*gp)/3,lh=h*.40,names=['CACHE 1','CACHE 2','CACHE 3'],bounce=['1 BOUNCE','2 BOUNCES','3+ BOUNCES'];
@@ -74,7 +74,7 @@ const LX=k=>x0+20+sk+k*(lw+gp),LY=h*.50;
 const T=10.5,slot=3.5,act=Math.min(2,(t%T)/slot|0),ph=((t%T)-act*slot)/slot;
 for(let k=0;k<3;k++){const lx=LX(k),ly=LY,pulse=k===act&&ph>.55?Math.max(0,1-(ph-.55)/.45):0;
 g.save();g.beginPath();g.moveTo(lx+sk,ly);g.lineTo(lx+lw+sk,ly);g.lineTo(lx+lw-sk,ly+lh);g.lineTo(lx-sk,ly+lh);g.closePath();g.clip();
-g.fillStyle='#0a0d11';g.fill();
+g.fillStyle=GRT.figWell;g.fill();
 g.globalCompositeOperation='lighter';
 const S2=lh*.72,cx2=lx+lw/2,cy2=ly+lh/2;
 for(const pt of this.depth[k]){const q=pr(pt.p),sx=cx2+q[0]*S2,sy=cy2-q[1]*S2,lu=(pt.c[0]+pt.c[1]+pt.c[2])/3;if(lu<.02)continue;
@@ -100,8 +100,8 @@ if(active&&au>0&&au<1){g.fillStyle=this.cacc;const mx2=term[0]+(tx-term[0])*au,m
 g.globalAlpha=1}
 const ep=cam0;g.strokeStyle=this.conw;g.lineWidth=1.2;g.strokeRect(ep[0]-4,ep[1]-4,8,8);
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;g.fillText('CAMERA',ep[0]+10,ep[1]+3);
-g.fillText('EACH RAY FEEDS EXACTLY ONE CACHE',x0+6,26);
-g.fillText('GSCACHE — RADIANCE BY BOUNCE, IN PATH SPACE',x0+6,h-6);g.restore()}
+g.fillText(GRT.elide(g,'EACH RAY FEEDS EXACTLY ONE CACHE',pw-12),x0+6,26);
+g.fillText(GRT.elide(g,'GSCACHE — RADIANCE BY BOUNCE, IN PATH SPACE',pw-12),x0+6,h-6);g.restore()}
 ours(g,x0,pw,h,t){g.save();g.beginPath();g.rect(x0,0,pw,h);g.clip();
 const pr=this.cam.proj(),S=h*.52,cx=x0+pw/2,cy=h*.5,px=p=>{const q=pr(p);return[cx+q[0]*S,cy-q[1]*S,q[2]]};
 this.F.draw(g,px,S,t);
@@ -119,6 +119,6 @@ g.fillStyle=this.cacc;g.globalAlpha=Math.min(1,(total-lt)/.6)*gl;g.fillRect(q[0]
 g.strokeStyle=this.cacc;g.lineWidth=1;g.beginPath();g.arc(q[0],q[1],4.5+2*(1-gl),0,6.283);g.stroke()}
 g.globalAlpha=1}
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;
-g.fillText(this.label||'GRTCACHE — THE FINISHED CACHE · GRAB TO TURN',x0+6,h-6);g.restore()}
+g.fillText(GRT.elide(g,this.label||'GRTCACHE — THE FINISHED CACHE · GRAB TO TURN',pw-12),x0+6,h-6);g.restore()}
 }
 window.GRT8T=T8;})();

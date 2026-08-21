@@ -63,7 +63,7 @@ function bunny(cv,opts){
   const st={drag:0,dy:0,zoom:Z0,zoomT:0,lodBias:(opts&&opts.initLod)||0,down:false,px:0,py:0,rel:0,last:0,t0:performance.now(),vis:true};
   let W=0,H=0,dpr=1;
   function size(){const r=cv.getBoundingClientRect();if(!r.width)return;
-    dpr=Math.min(devicePixelRatio||1,1.25);W=r.width;H=r.height;
+    dpr=Math.min(devicePixelRatio||1,1.25);W=r.width;H=r.height; /* ponytail: 1.25 DPR cap — CPU march cost scales with pixels; raise if 2× displays warrant */
     cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
   size();addEventListener('resize',size);RO(cv,size);
   /* coarse pointers keep vertical page scroll; horizontal drag still turns */
@@ -87,10 +87,11 @@ function bunny(cv,opts){
   new IntersectionObserver(es=>{st.vis=es[0].isIntersecting},{rootMargin:'120px'}).observe(cv);
   let tick=0;
   function frame(now){requestAnimationFrame(frame);if(!W)size();
-    if(opts&&opts.onState){const run=!RM&&st.vis&&!!W&&window.__cinrFocus===cv;
+    if(opts&&opts.onState){const run=!RM&&st.vis&&!!W&&!st.paused&&window.__cinrFocus===cv;
       if(run!==st.lastRun){st.lastRun=run;try{opts.onState(run)}catch(e){}}}
     if(!st.vis||!W)return;
     const focused=window.__cinrFocus===cv;
+    if(st.paused&&drewOnce&&!st.down&&now-st.zoomT>400)return; /* Animation · off — direct drags still draw */
     if(RM&&drewOnce&&!st.down&&now-st.zoomT>400)return;
     if(!focused&&drewOnce&&!st.down)return; /* frozen frame */
     /* sway runs at half rate; dragging and inertial settle at full rate */
@@ -432,7 +433,7 @@ function fpsPanel(cv,key){
       for(let i=0;i<t.length;i++){const x=X(Math.max(0,t[i])),y=Y(Math.max(0,v[i]));i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
       ctx.stroke();ctx.lineWidth=1}})}
 /* ── the general result: per-dataset gain, both modes, means derived ──── */
-const T=[['Magnetic',174.8,36.3,9.4,5.5,[2048,2048,2048]],['Chameleon',212.3,43.0,20.6,11.0,[2048,2048,2160]],['Beechnut',47.3,9.5,11.7,5.3,[2048,2048,3092]],['Fialka',33.2,6.6,5.3,2.5,[3272,3786,1986]],['Flower',56.4,14.0,1.7,0.8,[3652,3234,3828]],['Heatrelease',79.9,24.3,4.6,3.7,[4608,1280,3412]],['Scrambler',21.1,3.3,2.9,1.2,[4354,3870,2612]],['Richmyer',90.3,21.9,6.4,2.1,[4096,4096,3840]],['Miranda',67.4,17.9,13.1,8.9,[4096,4096,4096]],['DNS',91.8,14.3,20.5,10.6,[10240,7680,1536]]];
+const T=[['Magnetic',174.8,36.3,9.4,5.5,[2048,2048,2048]],['Chameleon',212.3,43.0,20.6,11.0,[2048,2048,2160]],['Beechnut',47.3,9.5,11.7,5.3,[2048,2048,3092]],['Fialka',33.2,6.6,5.3,2.5,[3272,3786,1986]],['Flower',56.4,14.0,1.7,0.8,[3652,3234,3828]],['Heatrelease',79.9,24.3,4.6,3.7,[4608,1280,3412]],['Scrambler',21.1,3.3,2.9,1.2,[4354,3870,2612]],['Richtmyer',90.3,21.9,6.4,2.1,[4096,4096,3840]],['Miranda',67.4,17.9,13.1,8.9,[4096,4096,4096]],['DNS',91.8,14.3,20.5,10.6,[10240,7680,1536]]];
 /* bytes: float32 grids; DNS is the paper's double-precision case study */
 const SZ=(r,i)=>{const b=r[5][0]*r[5][1]*r[5][2]*(r[0]==='DNS'?8:4);return b>=1e12?(b/1e12).toFixed(2)+' TB':Math.round(b/1e9)+' GB'};
 const rm=T.map(r=>r[1]/r[2]),pt=T.map(r=>r[3]/r[4]);
@@ -457,7 +458,7 @@ function resultPlot(cv,o){
     if(o.full){ctx.beginPath();ctx.moveTo(padL,Y(mPT)+.5);ctx.lineTo(W-padR,Y(mPT)+.5);ctx.stroke()}
     ctx.setLineDash([]);ctx.fillStyle=V('--prose');
     ctx.fillText('mean '+mRM.toFixed(1)+'× · claimed ~5×',W-padR-158,Y(mRM)-5);
-    if(o.full)ctx.fillText('mean '+mPT.toFixed(1)+'× · claimed 2×',W-padR-148,Y(mPT)-5);
+    if(o.full)ctx.fillText('mean '+mPT.toFixed(1)+'× · claimed ~2×',W-padR-148,Y(mPT)-5);
     T.forEach((row,i)=>{const x=X(i);
       ctx.fillStyle=DS(i);ctx.fillRect(x-3.5,Y(rm[i])-3.5,7,7);
       ctx.textAlign='center';ctx.fillText(rm[i].toFixed(1)+'×',x,Y(rm[i])-8);ctx.textAlign='left';

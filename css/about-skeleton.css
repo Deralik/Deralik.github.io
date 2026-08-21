@@ -166,7 +166,7 @@ body.mob .ahdr .rside{width:100%}
 /* D0 panel: portrait + the vertical two-lane record (mock E, merged) */
 .aport{flex:0 0 auto;height:200px;margin:12px 0;background:var(--mat);overflow:hidden}
 .aport img{display:block;width:100%;height:100%;object-fit:cover}
-.aport image-slot{display:block;width:100%;height:100%}
+.pslot2 img{display:block;width:100%;height:auto;max-height:176px;object-fit:cover}
 .fl[data-dense] .aport{display:none} /* the portrait sheds first; the line and record stay */
 #about-vrec{position:relative;flex:1 1 auto;min-height:150px}
 #about-vrec canvas{position:absolute;inset:0;width:100%;height:100%;display:block}

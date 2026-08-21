@@ -59,3 +59,8 @@
    at runtime as oklch(--ds-l --ds-c h), h = --ds-h0 + i·--ds-hstep. The one
    place a figure needs more colours than the accent registers provide. */
 :root{--ds-l:.52; /* @kind other */--ds-c:.11; /* @kind other */--ds-h0:20; /* @kind other */--ds-hstep:36 /* @kind other */}
+
+/* GRT figure registers — theme-INDEPENDENT by design, like the radiance
+   colormap: render wells and training-ray warmth read the same in both
+   modes. Named here so no colour lives in a JS file. */
+:root{--render-well:#0a0d11;--render-paper:#E4DFD4;--ray-warm:#E8A24C}

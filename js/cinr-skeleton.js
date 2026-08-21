@@ -22,9 +22,11 @@ if(animBtn&&hero)animBtn.addEventListener('click',()=>{animBtn.textContent='Anim
 if(resetBtn&&hero)resetBtn.addEventListener('click',()=>{hero.reset();saveV()});
 const clearBtn=$('#cinr-clear'),capIn=$('#cinr-cap'),lodIn=$('#cinr-lod');
 if(clearBtn)clearBtn.addEventListener('click',()=>cvw.clear());
+/* 'unranked sweep', not 'first-come': the demo's unranked mode fills by brick
+   index, not true arrival order — the paper's baseline name would overclaim */
 const ordBtn=$('#cinr-order');let ord='rank';
 if(ordBtn)ordBtn.addEventListener('click',()=>{ord=ord==='rank'?'fifo':'rank';
-  cvw.setOrder(ord);ordBtn.textContent='Fill order · '+(ord==='rank'?'ranked':'first-come')});
+  cvw.setOrder(ord);ordBtn.textContent='Fill order · '+(ord==='rank'?'ranked':'unranked sweep')});
 if(capIn)capIn.addEventListener('input',()=>cvw.setCap(capIn.value/100));
 if(lodIn&&hero){lodIn.value=Math.round(sv.lod*100);lodIn.addEventListener('input',()=>{hero.setLod(lodIn.value/100);saveV()})}
 CINR.pipeline($('#cinr-cv-pipe'));

@@ -247,6 +247,22 @@ where phrased generally)
   are NOT presented as in progress. Equal-time comparisons are not
   claimed as running — the honest absence stands.
 
+# Owner rulings — affordance & assets (2026-08-21)
+
+- **Interactive parts must be visually distinct from non-interactive
+  ones** — an element that looks static but responds (or looks clickable
+  but doesn't) is a defect. Applied: links underline (browser default
+  kept), the theme toggle is icon-based (sun/moon; active in --ink),
+  section tabs and "↑ the panel" get pointer cursor + hover ink,
+  cards get :focus-visible outlines and Enter/Space activation, the
+  pending résumé item stays muted/no-underline until it is a real link.
+  Reviews check this both ways.
+- **Theme toggle is icons, not words** — the identity line already
+  carries text; icons keep it quiet.
+- **Portrait color pipeline**: the source photo is Display P3; any
+  derivative for the web is converted to sRGB at export (a dropped
+  profile reads as a sickly green cast — found 2026-08-21).
+
 # Owner design directions — endorsed but unexplored
 
 - **MelioraOS**: an abstract figure of the owner's workflow loop with the

@@ -34,13 +34,13 @@ const MTICK={'mel-beta':{top:-13,h:12},'okb-public':{top:2,h:11}};
 const MSIDE={'mel-beta':'up'}; /* short tick: crosses Meliora's bar only, not Okibi's below it */
 /* reader-facing copy: experience, not provenance */
 const STRIP={
- 'r-ucd':{t:'UC Davis — BS → MS, Computer Science',d:'Sep 2021 – Jun 2023 · Jan 2025 – Jun 2026',c:'Joined as a junior and completed my BS in under two years with a 3.78 GPA, added to the Dean\u2019s List spring of 2022. I returned for my MS a year and a half later, finishing at a 3.96 GPA with broad graduate coursework in machine learning, generative models, computer architecture, and security. I joined the VIDI Lab as an undergraduate in my final quarter and stayed on through the gap between degrees, with TA appointments in Winter 2022, Fall 2025, and Winter 2026 alongside.'},
- 'r-arc':{t:'American River College — six associate degrees',d:'Fall 2017 – Spring 2021',c:'Computer science as the primary field, alongside economics, mathematics and physics — Highest Honors: 3.88 over 107 units, up to seven courses and 22 units in a term, with a broad range of electives covering foreign languages, music, and physical education. Active in the CS club from the second term, treasurer in the last.',ev:['19 May 2021 — all conferred · Highest Honors','AA-T Economics','AS-T Mathematics','AS Mathematics','AS-T Physics','AS Physical Science & Math','AS Computer Science','IGETC certificate'],evGrid:true},
- 'r-hs':{t:'Visions In Education — high school',d:'graduated Jun 2019',c:'Graduated with about 366 units against the ~220 required — took nearly every elective offered, 8–10 classes a term, at a ~4.2 GPA — with dual-enrollment in community college beginning at age 16.'},
- 'r-res':{t:'Research — VIDI Lab, UC Davis',d:'Summer 2024 – present',c:'Work on cINR — a GPU cache pipeline over a neural volume representation — ran from the summer of 2024 through acceptance at EGPGV 2025, presented in Luxembourg on June 2nd: first author, Honorable Mention. GRTCache followed near the end of that summer — a neural radiance cache over ray-traced 3D Gaussians, submitted to HPG 2026 and rejected on 8 May; improvements toward resubmission continue.',ev:['<u>   Mar 2025</u>— cINR accepted','<u> 2 Jun 2025</u>— cINR presented · EGPGV','<u> 8 May 2026</u>— GRTCache rejected · HPG']},
+ 'r-ucd':{t:'UC Davis — BS → MS, Computer Science',d:'Sep 2021 – Jun 2023 · Jan 2025 – Jun 2026',c:'Joined as a junior and completed my BS in under two years with a 3.78 GPA, added to the Dean\u2019s List spring of 2022. I returned for my MS a year and a half later, finishing at a 3.96 GPA with broad graduate coursework in machine learning, computer graphics, computer architecture, and security. I joined the VIDI Lab as an undergraduate in my final quarter and stayed on through the gap between degrees, with TA appointments in Winter 2022, Fall 2025, and Winter 2026 alongside.'},
+ 'r-arc':{t:'American River College — six associate degrees',d:'Fall 2017 – Spring 2021',c:'Computer science as the primary field, alongside economics, mathematics and physics — Highest Honors: 3.88 over 107 units, up to 22 units in a term, with a broad range of electives covering foreign languages, music, and physical education. Active in the CS club from the second term, treasurer in the last.',ev:['19 May 2021 — all conferred · Highest Honors','AA-T Economics','AS-T Mathematics','AS Mathematics','AS-T Physics','AS Physical Science & Math','AS Computer Science','IGETC certificate'],evGrid:true},
+ 'r-hs':{t:'Visions In Education — high school',d:'graduated Jun 2019',c:'Graduated with about 366 units against the ~220 required — took nearly every elective offered, 8–10 classes a term, at a ~4.2 GPA, with dual enrollment in community college along the way. My recollection — no HS transcript survives.'},
+ 'r-res':{t:'Research — VIDI Lab, UC Davis',d:'Summer 2024 – present',c:'Work on cINR — a GPU cache pipeline over a neural volume representation — ran from the summer of 2024 through acceptance at EGPGV 2025, presented in Luxembourg on June 2nd: first author, Honorable Mention. GRTCache followed at the end of summer 2025 — a neural radiance cache over ray-traced 3D Gaussians, submitted to HPG 2026 and rejected on 8 May; improvements toward resubmission continue.',ev:['<u>   Mar 2025</u>— cINR accepted','<u> 2 Jun 2025</u>— cINR presented · EGPGV','<u> 8 May 2026</u>— GRTCache rejected · HPG']},
  'r-teach':{t:'Teaching — ARC and UC Davis',d:'tutoring Sep 2020 – May 2021 · TA Win 2022 · Fal 2025 · Win 2026',c:'A year tutoring C++ at ARC, then TAs for Algorithm Design, Computer Vision and Computer Architecture — led sections, co-designed exams, held office hours.'},
- 'r-vz':{t:'VZ Plumbing — technician & financial officer',d:'~2016 – present',c:'Started around fifteen — working more through breaks and the gaps between programs than during terms. Estimates, invoicing, permitting and legal paperwork for the family trade business, part time in the field. The domain knowledge MelioraOS is built on.'},
- 'r-snd':{t:'Grace Family Church — assistant sound engineer',d:'~2019 – present',c:'Started around 2019 — mentored by the church\u2019s professional sound engineer since mid-2021, and running the front-of-house board as the primary live-sound engineer since late 2025. Weekly mixing for a congregation of 300+, plus event setup and maintenance.'},
+ 'r-vz':{t:'VZ Plumbing — technician & financial officer',d:'~2016 (start unrecorded) – present',c:'Started around fifteen — working more through breaks and the gaps between programs than during terms. Estimates, invoicing, permitting and legal paperwork for the family trade business, part time in the field. The domain knowledge MelioraOS is built on.'},
+ 'r-snd':{t:'Grace Family Church — assistant sound engineer',d:'~2019 – present',c:'Started around 2019 — mentored by the church\u2019s professional sound engineer since mid-2021, and running the front-of-house board as the primary live-sound engineer since mid-2025. Weekly mixing for a congregation of 300+, plus event setup and maintenance.'},
  'r-prod':{t:'Products — MelioraOS · Okibi',d:'May 2026 – present',c:'MelioraOS: construction management built solo with an agent fleet — first commit to closed beta with a live customer in 47 days, 29 dated releases through 25 Jul, development continuing.<br>Okibi: a task and habit tracker in daily use, where unfinished work burns to a permanent record — 16 releases since mid-June, in private beta.',ev:['<u> 5 May 2026</u>— MelioraOS first commit','<u>15 Jun 2026</u>— Okibi first commit','<u>21 Jun 2026</u>— MelioraOS private beta','<u> 2 Aug 2026</u>— Okibi first public release']}
 };
 
@@ -407,7 +407,7 @@ function drawV(host,S,marks){
   /* events: labels gather by the axis, a dotted leader running out to the
      tick on the lane they belong to */
   const LANE={'r-ucd':xU,'r-arc':xA,'r-hs':xH,'r-res':xR,'r-prod':xP};
-  const VSHORT={'cc-degrees':'6 AS degrees'};
+  const VSHORT={'cc-degrees':'6 assoc. degrees'};
   const VDROP={'ms-candidacy':1,'cinr-published':1,'mel-beta':1,'okb-public':1};
   const VDIR={'hs-grad':'R','cc-degrees':'R','bs':'L','ms-awarded':'L','cinr-accepted':'R','grt-rejected':'R'};
   const VFAR={'hs-grad':1}; /* rides near the axis, tied back by its leader */
@@ -545,7 +545,7 @@ function drawVRec(S,rec){
       ctx.strokeStyle=inkC;ctx.lineWidth=1;
       ctx.strokeRect(ln.dir>0?ln.x-.5:ln.x-sw+.5,yN+1,sw,4)}
   }
-  const MLAB={'hs-grad':'HS','cc-degrees':'6 AS','bs':'BS','ms-awarded':'MS','cinr-accepted':'cINR accepted'};
+  const MLAB={'hs-grad':'HS','cc-degrees':'6 assoc.','bs':'BS','ms-awarded':'MS','cinr-accepted':'cINR accepted'};
   const MK=(rec.marks||[]).filter(m=>MLAB[m.id]).map(m=>({id:m.id,t:parse(m.date).t,lab:MLAB[m.id],doing:m.id==='cinr-accepted'}));
   /* greedy collision pass, most recent achievements first: a label needs
      12px of air on its side or it is dropped, not squeezed */
@@ -587,12 +587,17 @@ function drawVRec(S,rec){
     ctx.fillStyle=absC;ctx.fillText(lab,bx-5-lw,(y0+y1)/2+3);
   }
 }
-/* live GitHub contributions — real data or an honest note, never decoration */
+/* GitHub contributions — a vendored snapshot in the record (owner ruling
+   2026-08-19): real data, dated, no reader IPs to any third party; the
+   freshness sweep refreshes it. */
 (function gh(){
   const grids=[...document.querySelectorAll('.ghgrid')];if(!grids.length)return;
-  fetch('https://github-contributions-api.jogruber.de/v4/Deralik?y=last')
+  fetch('data/about-record.json')
   .then(r=>r.ok?r.json():Promise.reject(r.status))
-  .then(j=>{
+  .then(rec=>{
+    const snap=rec.contributions;if(!snap)return Promise.reject('no snapshot');
+    const j={contributions:snap.days.map(d=>({date:d[0],count:d[1],level:d[2]}))};
+    const asOf=new Date(snap.fetched+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const fill=g3=>{
       /* the mock's proportions: D1 carries the full year, cells sized to the
          column; the D0 grid keeps its fixed 26-week size */
@@ -605,11 +610,11 @@ function drawVRec(S,rec){
       const pad=new Date(days[0].date+'T00:00:00').getDay();
       for(let k=0;k<pad;k++){const c=document.createElement('i');c.style.opacity=0;g3.appendChild(c)}
       days.forEach(dd=>{const c=document.createElement('i');c.style.opacity=dd.level?(0.15+dd.level*0.21):0.07;c.title=dd.date+' — '+dd.count;g3.appendChild(c)});
-      if(!sm){const we=document.querySelector('.gh .ghw');if(we)we.textContent=wk+' weeks · live'}
+      if(!sm){const we=document.querySelector('.gh .ghw');if(we)we.textContent=wk+' weeks · as of '+asOf}
     };
     grids.forEach(fill);
     if(window.ResizeObserver)grids.forEach(g3=>{let q,lw=g3.clientWidth;const ro=new ResizeObserver(()=>{if(Math.abs(g3.clientWidth-lw)<2)return;lw=g3.clientWidth;clearTimeout(q);q=setTimeout(()=>fill(g3),150)});ro.observe(g3)});
   })
-  .catch(()=>{grids.forEach(g3=>{g3.outerHTML='<span class="ghnote">live GitHub activity — unreachable in this preview; wires to the contributions feed on the real site</span>'})});
+  .catch(()=>{grids.forEach(g3=>{g3.outerHTML='<span class="ghnote">GitHub activity snapshot unavailable</span>'})});
 })();
 })();

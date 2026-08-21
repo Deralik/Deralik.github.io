@@ -84,12 +84,35 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   README task 7's stale one); Stanford bunny credit in cINR Reference
   (README task 8). Matrix clean both themes.
 
-▶ NEXT ACTION: Wave C — punch G2–G11 + S-items + cheap R-items
-(dead toggle, noscript, mobile sticky + hero stacking, slot retitles
-"under construction", G7/G8 copy rewrites from vetted BRIEF facts,
-team line + in-progress rewrite, image-slot→img, chips, GRT
-reduced-motion, About record wording). Then Wave D (G1 real data +
-integrators — launch gate).
+- ☑ Wave C (2026-08-21): ALL of G2–G11 cleared + S1–S15 + R1–R3,
+  R5–R11, R13–R15, R17–R18, behaviorally verified via probe:
+  Animation-off byte-frozen; GRT reduced-motion byte-frozen (engage-to-
+  animate); no-JS doc faces render; mobile sticky (strip top 86 after
+  1200px scroll, was −101); mobile hero stacked with legible labels;
+  section tabs scroll+spy; chips wired truthful (Running/Held both
+  cards); slots titled MelioraOS/Okibi/SPLAT "under construction"
+  (f6/f7 dead markup deleted); rejection ¶ + in-progress + team line
+  rewritten from vetted facts; academic record block restructured
+  (HS marked recollection; conferral note); JP bare at D0; grid =
+  vendored snapshot (no third-party fetch; "as of Aug 21, 2026");
+  image-slot.js deleted (404 gone); figure colors → tokens
+  (--render-well/--render-paper/--ray-warm); elide helper; Richtmyer;
+  unranked-sweep relabel; covq trend lines at doc covers; mobile tier
+  tags; owner additions: portrait P3→sRGB fix, icon toggle, affordance
+  ruling applied.
+  Skipped, recorded: R12 (NRC chip from queryRay — 2D choreography has
+  no real ray to query; random tint stays, pane is labelled an
+  architecture diagram) · R16 documented not raised (DPR comment) ·
+  vz timeline dotted-lead (bar already runs off the chart edge; d-text
+  says "start unrecorded") · R4/hero-spp + chipline "compared in place"
+  wording — Wave D owns the hero's honesty rebuild.
+
+▶ NEXT ACTION: Wave D — G1: nebula dataset offline conversion
+(handoff/DATA-HANDOFF.md sources, license check, ≤64³ quantized JS
+module), real n-spp tracer + real cache-terminated integrator sharing
+one tone map, honest gap; black-hole companion feasibility → owner
+picks labelled analogue or drop. Then S16 owner copy pass + final
+review (all six lenses, fresh reviewer) → S4 deploy.
 
 ## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
 

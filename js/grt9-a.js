@@ -53,7 +53,7 @@ T(330,252,'rays terminate into the cache — the bounces they skip are the savin
 /* ── the training step, traced back (after NRC) ─────────────────────── */
 window.GRT9T=function(cv){setup(cv,640,(ctx,hp,H,mono)=>{
 const{T,seg,arr,circ,ink,prose,abs}=hp;
-const warm='#E8A24C',acc=tok('--accw');
+const warm=GRT.figWarm,acc=tok('--accw');
 const cam=[38,150],v=[[150,118],[258,162],[366,114]],sfx=[[470,152],[562,106]];
 /* light + NEE */
 const lp=[586,38];GRT.star(ctx,lp[0],lp[1],5,warm);

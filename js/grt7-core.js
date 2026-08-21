@@ -184,71 +184,18 @@ const p=px([this.gx[i],this.gy[i],this.gz[i]]),sz=Math.exp(this.ls[i])*p[2]*S*th
 g.globalAlpha=a;g.drawImage(this.sprFor(this.cr[i],this.cg[i],this.cb[i]),p[0]-sz,p[1]-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over'}
 drawCacheImage(g,view,x0,y0,w,h,now){const fpx=h*view.f;g.save();g.beginPath();g.rect(x0,y0,w,h);g.clip();
-g.fillStyle='#0a0d11';g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
+g.fillStyle=GRT.figWell;g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
 for(let i=0;i<this.N;i++){const lum=(this.cr[i]+this.cg[i]+this.cb[i])/3,a=Math.min(.85,lum*1.35);if(a<.02)continue;
 const pr=view.proj([this.gx[i],this.gy[i],this.gz[i]]);if(!pr)continue;
 const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=Math.exp(this.ls[i])*pr[2]*fpx*this.opt.sMul;
 g.globalAlpha=a;g.drawImage(this.sprFor(this.cr[i],this.cg[i],this.cb[i]),sx-sz,sy-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
 drawTruthImage(g,view,x0,y0,w,h){const fpx=h*view.f;g.save();g.beginPath();g.rect(x0,y0,w,h);g.clip();
-g.fillStyle='#0a0d11';g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
+g.fillStyle=GRT.figWell;g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
 for(let i=0;i<this.tp.length;i++){const r=this.tvc[i*3],gg=this.tvc[i*3+1],b=this.tvc[i*3+2],lu=(r+gg+b)/3;if(lu<.03)continue;
 const pr=view.proj(this.tp[i]);if(!pr)continue;
 const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=.055*pr[2]*fpx*(.55+.45*Math.min(1,lu));
 g.globalAlpha=Math.min(.4,lu*.55+.01);g.drawImage(this.sprFor(r,gg,b),sx-sz,sy-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
 }
-/* RawVol — a REAL scalar volume fetched at runtime (Open SciVis Datasets
-   mirror). Density is the published data, downsampled; colour is a fixed TF
-   over the real values; lighting is our single-scatter model. */
-class RawVol extends NebVol{
-constructor(url,dim,onready){super('hyd',99);this.async=true;this.ready=false;this.err=null;this.den=null;this.D=48;
-fetch(url).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.arrayBuffer()}).then(b=>{const u=new Uint8Array(b),n=dim,D=this.D,g=new Float32Array(D*D*D),step=n/D;let mx=1e-6;
-for(let k=0;k<D;k++)for(let j=0;j<D;j++)for(let i=0;i<D;i++){const x=(i*step)|0,y=(j*step)|0,z=(k*step)|0,v=u[(z*n+y)*n+x]/255;g[(k*D+j)*D+i]=v;if(v>mx)mx=v}
-for(let i=0;i<g.length;i++)g[i]=Math.max(0,g[i]/mx-.05)*1.5;
-this.den=g;this.ready=true;this.rebuild();onready&&onready(this)}).catch(e=>{this.err=String(e&&e.message||e);onready&&onready(this)})}
-sig(x,y,z){if(!this.den||Math.abs(x)>=1||Math.abs(y)>=1||Math.abs(z)>=1)return 0;const D=this.D,i=(x+1)/2*D|0,j=(y+1)/2*D|0,k=(z+1)/2*D|0;return this.den[(k*D+j)*D+i]}
-spec(x,y,z){return Math.min(1,this.sig(x,y,z)*1.1)}
-}
-/* StarVol — REAL stars: the HYG database (Hipparcos · Yale BSC5 · Gliese,
-   CC BY-SA) fetched from datastro.eu's open API. Positions to scale in a
-   20-parsec ball around the Sun; colours from each star's published colour
-   index (B−V → temperature → RGB); brightness from absolute magnitude.
-   The transfer-function slider is a luminosity gamma. */
-function unpackStars(D){const dec=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
-const px=new Int16Array(dec(D.px).buffer),py=new Int16Array(dec(D.py).buffer),pz=new Int16Array(dec(D.pz).buffer),ci=new Int8Array(dec(D.ci).buffer),am=dec(D.am);
-const rows=[];for(let i=0;i<D.n;i++)rows.push({x:px[i]/100,y:py[i]/100,z:pz[i]/100,ci:ci[i]/50,am:am[i]/10-2});return rows}
-function k2rgb(T){T/=100;let r=T<=66?255:329.7*Math.pow(T-60,-.1332),g=T<=66?99.47*Math.log(T)-161.12:288.12*Math.pow(T-60,-.0755),b=T>=66?255:(T<=19?0:138.52*Math.log(T-10)-305.04);
-const c=v=>Math.max(0,Math.min(255,v))/255;return[c(r),c(g),c(b)]}
-class StarVol extends NebVol{
-constructor(onready){super('stars',7);this.async=true;this.ready=false;this.err=null;this.den=null;this.D=48;this.stars=[];
-if(window.GRT_STARS){try{this.build(unpackStars(window.GRT_STARS));this.ready=true;this.vendored=true;this.rebuild()}catch(e){this.err=String(e&&e.message||e)}return}
-const done=rows=>{try{this.build(rows);this.ready=true;this.rebuild();onready&&onready(this)}catch(e){this.err=String(e&&e.message||e);onready&&onready(this)}};
-const u2='https://www.datastro.eu/api/explore/v2.1/catalog/datasets/hyg-stellar-database/exports/csv?select=x%2Cy%2Cz%2Cci%2Cabsmag&where=dist0%3C20%20and%20dist0%3E0.000001&limit=-1&delimiter=%3B';
-fetch(u2).then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>{const L=t.trim().split('\n'),hd=L[0].replace(/"/g,'').split(';'),ix={};hd.forEach((k,i)=>ix[k.trim()]=i);const rows=[];
-for(let i=1;i<L.length;i++){const c=L[i].split(';');rows.push({x:+c[ix.x],y:+c[ix.y],z:+c[ix.z],ci:parseFloat(c[ix.ci]),am:+c[ix.absmag]})}done(rows)})
-.catch(()=>{const u1='https://www.datastro.eu/api/records/1.0/search/?dataset=hyg-stellar-database&rows=6000&fields=x,y,z,ci,absmag&q=dist0%3A%5B0.000001+TO+20%5D';
-fetch(u1).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(j=>done((j.records||[]).map(r=>{const f=r.fields||{};return{x:f.x,y:f.y,z:f.z,ci:f.ci,am:f.absmag}}))).catch(e=>{this.err=String(e&&e.message||e);onready&&onready(this)})})}
-build(rows){const st=[];let mw=1e-6;
-for(const r of rows){if(!isFinite(r.x)||!isFinite(r.y)||!isFinite(r.z))continue;const d=Math.hypot(r.x,r.y,r.z);if(d>20||d<1e-6)continue;
-const ci=isFinite(r.ci)?r.ci:.6,T=4600*(1/(.92*ci+1.7)+1/(.92*ci+.62)),c=k2rgb(T);
-const L=isFinite(r.am)?Math.pow(10,(4.83-r.am)/2.5):.5,w=Math.pow(Math.max(1e-4,L),.3);if(w>mw)mw=w;
-st.push({p:[r.x/20,r.z/20,r.y/20],c,w})}
-for(const s of st)s.w/=mw;
-if(st.length<50)throw new Error('too few rows ('+st.length+')');
-this.stars=st;this.count=st.length;
-const D=this.D,g=new Float32Array(D*D*D);
-for(const s of st){const i=Math.max(0,Math.min(D-1,(s.p[0]+1)/2*D|0)),j=Math.max(0,Math.min(D-1,(s.p[1]+1)/2*D|0)),k=Math.max(0,Math.min(D-1,(s.p[2]+1)/2*D|0));g[(k*D+j)*D+i]+=.5+s.w}
-let mx=1e-6;for(const v of g)if(v>mx)mx=v;for(let i=0;i<g.length;i++)g[i]=Math.min(1,g[i]/mx*3);this.den=g}
-sig(x,y,z){if(!this.den||Math.abs(x)>=1||Math.abs(y)>=1||Math.abs(z)>=1)return 0;const D=this.D,i=(x+1)/2*D|0,j=(y+1)/2*D|0,k=(z+1)/2*D|0;return this.den[(k*D+j)*D+i]}
-rebuild(){if(!this.stars.length)return;const R=this.RG;this.grid.fill(0);const gam=.25+1.3*this.tf;
-const add=(i,j,k,r,g2,b,f)=>{if(i<0||j<0||k<0||i>=R||j>=R||k>=R)return;const o=((k*R+j)*R+i)*3;this.grid[o]+=r*f;this.grid[o+1]+=g2*f;this.grid[o+2]+=b*f};
-for(const s of this.stars){const w=Math.pow(s.w,gam),i=(s.p[0]+1)/2*R|0,j=(s.p[1]+1)/2*R|0,k=(s.p[2]+1)/2*R|0,r=s.c[0]*w,g2=s.c[1]*w,b=s.c[2]*w;
-add(i,j,k,r,g2,b,1);add(i+1,j,k,r,g2,b,.3);add(i-1,j,k,r,g2,b,.3);add(i,j+1,k,r,g2,b,.3);add(i,j-1,k,r,g2,b,.3);add(i,j,k+1,r,g2,b,.3);add(i,j,k-1,r,g2,b,.3)}
-let m=1e-6;for(let i=0;i<this.grid.length;i+=3){const lu=(this.grid[i]+this.grid[i+1]+this.grid[i+2])/3;if(lu>m)m=lu}
-const inv=1/m;for(let i=0;i<this.grid.length;i++)this.grid[i]=Math.min(2,this.grid[i]*inv)}
-samples(n){const a=[];if(!this.stars.length)return a;for(let i=0;i<n;i++){const s=this.stars[(this.r()*this.stars.length)|0];a.push([s.p[0]+.03*(this.r()-.5),s.p[1]+.03*(this.r()-.5),s.p[2]+.03*(this.r()-.5)])}return a}
-stipple(n){const a=[];if(!this.stars.length)return a;for(let i=0;i<n;i++){const s=this.stars[(this.r()*this.stars.length)|0];a.push([s.p[0],s.p[1],s.p[2],.3+.7*s.w])}return a}
-shellInit(){const s=this.stars[(this.r()*this.stars.length)|0];return[s.p[0]+.02*(this.r()-.5),s.p[1]+.02*(this.r()-.5),s.p[2]+.02*(this.r()-.5)]}
-}
-return{Nova,NebVol,RawVol,StarVol,CField,Meter,pixelPath,frustum,SIZES};})();
+return{Nova,NebVol,CField,Meter,pixelPath,frustum,SIZES};})();

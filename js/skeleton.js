@@ -207,8 +207,12 @@ pbody.addEventListener('click',e=>{
   open=fl.dataset.k; depth=1; pbody.classList.remove('to1','to2'); apply();
 });
 addEventListener('keydown',e=>{
-  const tg=e.target; if(tg&&tg.matches&&tg.matches('select,input,textarea'))return;
+  const tg=e.target; if(tg&&tg.matches&&tg.matches('select,input,textarea,button'))return;
   if(isMob())return;
+  /* Enter/Space on a focused card opens it — tabindex without activation
+     would be a fake affordance */
+  if((e.key==='Enter'||e.key===' ')&&tg&&tg.classList&&tg.classList.contains('fl')&&tg.dataset.face!=='doc'){
+    e.preventDefault(); open=tg.dataset.k; depth=1; pbody.classList.remove('to1','to2'); apply(); return}
   if(e.key==='ArrowDown'){e.preventDefault(); if(depth===0){open=proj()[0].k;depth=1;apply()}else cross(1)}
   if(e.key==='ArrowUp'){e.preventDefault(); cross(-1)}
   if(e.key==='Escape'){depth=0;open=null;apply()}
@@ -216,6 +220,27 @@ addEventListener('keydown',e=>{
   if(n>=1&&n<=7){const p=proj()[n-1]; if(p){open=p.k;depth=1;apply()}}
 });
 addEventListener('resize',()=>{body.classList.toggle('mob',isMob());apply()});
+
+/* ── section tabs: click scrolls to the section; the active tab follows the
+   reader's scroll. A tab maps to the .dsec whose header matches its text;
+   headerless tabs (the demonstration/history covers) map to the first. */
+document.querySelectorAll('.fl').forEach(fl=>{
+  const doc=fl.querySelector('.face-doc'), tabs=[...fl.querySelectorAll('.retp .secs span')];
+  if(!doc||!tabs.length)return;
+  const ds=[...doc.querySelectorAll('.dsec')];
+  const target=tab=>{const t=tab.textContent.trim().toLowerCase();
+    return ds.find(d=>{const h=d.querySelector('.sech');return h&&h.textContent.trim().toLowerCase()===t})||ds[0]};
+  tabs.forEach(tab=>{const d=target(tab); if(!d)return;
+    tab.addEventListener('click',e=>{e.stopPropagation();
+      const bh=RM.matches?'auto':'smooth';
+      if(isMob())scrollTo({top:d.getBoundingClientRect().top+scrollY-(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--mtop'))||90)-40,behavior:bh});
+      else doc.scrollTo({top:Math.max(0,d.offsetTop-STRIP-8),behavior:bh})})});
+  const spy=()=>{const y=isMob()?((parseInt(getComputedStyle(document.documentElement).getPropertyValue('--mtop'))||90)+70):doc.getBoundingClientRect().top+STRIP+60;
+    let on=tabs[0]; tabs.forEach(tab=>{if(target(tab).getBoundingClientRect().top<=y)on=tab});
+    tabs.forEach(tab=>tab.classList.toggle('on',tab===on))};
+  doc.addEventListener('scroll',spy,{passive:true});
+  addEventListener('scroll',()=>{if(isMob()&&fl.classList.contains('opened'))spy()},{passive:true});
+});
 
 /* ── theme toggle — writes the override; the inline head script owns first
    paint and the system-change fallback. Canvases re-read tokens per frame. */

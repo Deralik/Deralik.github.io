@@ -1,9 +1,14 @@
 /* GRTCache skeleton wiring — panel mini + doc figures (hero, method pair,
    comparison). Mirrors cinr-skeleton.js's role. */
 (()=>{const $=id=>document.getElementById(id);
-/* Panel mini — the comparison figure's own GRTCache pane (GRT8T), background off. */
+/* Panel mini — the comparison figure's own GRTCache pane (GRT8T), background off.
+   The chip states what is true NOW: Running while frames tick, Held when the
+   loop is paused (off-screen, reduced motion) — same vocabulary as cINR's. */
 function panel(cv){if(!cv)return;
-new GRT8T(cv,{solo:true,label:'THE CACHE — LIVE, TRAINING IN THIS PAGE'});
+const t8=new GRT8T(cv,{solo:true,label:'THE CACHE — TRAINED LIVE IN THIS PAGE'});
+const chip=$('grt-chip');
+if(chip)setInterval(()=>{const on=t8.lastT&&performance.now()/1000-t8.lastT<.5;
+  chip.textContent=on?'Running':'Held';chip.classList.toggle('run',!!on)},600);
 /* dragging the figure must not read as a click that opens the doc (cINR pattern) */
 let moved=0,sx=0,sy=0;
 cv.addEventListener('pointerdown',e=>{moved=0;sx=e.clientX;sy=e.clientY},true);
