@@ -380,3 +380,20 @@ publicly corroborated.
   adequate (rim structure softer). Supernova stays as option 4.
   Open SciVis reachable over HTTP (https broken) — triage fetches now
   possible.
+
+## Renderer rebuild spec (2026-08-21, owner mandate — night session)
+Pipeline: density cache D (44³ from nebula fns / native dims from data
+modules) → EMIT RGB grid 64³ = TF(density, radius)·AO(local density) +
+star term (nebulae), normalized; exposure fixed per dataset from a
+32×32 probe march (Reinhard + sRGB gamma, after the research repo's
+"shared Reinhard+sRGB, p99.5 luminance" convention). ONE march
+integrator, ONE resolution (adaptive ~192px wide), ONE exposure for:
+right pane = 1-spp/frame HT estimate of the emission integral,
+LINEAR accumulation, tone at display; left pane = full march of
+CACHEGRID (gaussians baked → 64³ every 2nd frame = predC discretized)
+— a render of the cache's field, never splats (final-render rule);
+reference inset + render-space PSNR = truth march vs cache march at
+inset res. calib deleted (shared units by construction). Datasets:
+Butterfly, Ring (Gaia models), MechHand (real CT, vendored 40×36×38),
+Supernova (real). Hourglass dropped (owner). Goals: match gaiashot/
+volshot/gsrc reference looks; interactive framerate via trace.
