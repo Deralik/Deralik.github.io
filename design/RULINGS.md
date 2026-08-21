@@ -136,7 +136,10 @@ where phrased generally)
   world/breakdown panes.
 - **Hero**: sweeps 1 spp with-cache against 1 spp raw path tracing along a
   draggable seam (auto-sweeps otherwise); converged reference inset
-  top-right; the cache-only inset is dropped.
+  top-right; the cache-only inset is dropped. SUPERSEDED 2026-08-21 by
+  the renderer rebuild (see the rebuild sections below + BRIEF's GRT
+  bullet): the cache side is now a full march of the cache's baked
+  field, not a 1-spp estimator; the seam/inset stay.
 - **Demo dataset**: demo volumes must have overarching structure the cache
   can visibly learn — a bag of points fails (HYG star catalog rejected on
   this ground); nebulae preferred. Sources, licenses, and the offline
@@ -371,3 +374,40 @@ added.
   models, never observations. Supersedes the strict real-data-only
   hero framing (2026-08-18) — the real supernova stays as the fourth,
   "real data" option.
+
+# Owner rulings — renderer rebuild (2026-08-20, pre-sleep mandate)
+
+- **Hourglass dropped; MechHand added** — the research repo's real
+  industrial-CT benchmark replaces the third nebula. Hero order:
+  Butterfly · Ring · MechHand (real CT) · Supernova (real data).
+- **Full pipeline re-evaluation ordered**: owner's critique — left pane
+  far too low-res; the two sides differed in resolution; the 2D view
+  showed gaussian splats instead of a render of the field; TFs didn't
+  match the approved gaiashot previews (only butterfly close). Rebuild
+  mandate: study ../gsrc, understand what may be approximated without
+  compromising the intended result, keep interactive framerates.
+
+## Model notes from the rebuild (2026-08-21, advisory)
+
+- Official transfer functions recovered from the research repo's scene
+  configs (mechhand + supernova RGB/alpha control points; supernova's
+  official scalar domain is 0→0.13584 of the raw range — the earlier
+  percentile vendoring was why it rendered as a white blob). Display
+  curve is the repo's paper curve 1−exp(−e·L), no gamma; figures'
+  Reinhard+sRGB variant applies only to research-bench evals.
+- One integrator / one resolution / one probe-calibrated exposure for
+  both panes; left = full march of the cache baked to a grid (never
+  splats — final-render ruling upheld); right = unbiased 1-spp/frame
+  estimate, linear accumulation; PSNR is render-space vs a full-march
+  reference on shared rays.
+- Supernova opacity floor (small, disclosed on-page): stands in for
+  shell scattering an emission-only pipeline cannot produce. Gaia edge
+  dust colour matched to the shaders' rendered output rather than their
+  raw constants (their optical-depth accumulation warms it) — both are
+  approximation disclosures, not new facts.
+- MechHand stored upright (long axis = y) so orbit views stay broadside
+  — kills oblique undersampling streaks; real aspect preserved via
+  per-volume half-extents. All four datasets hold 60 fps (16.7 ms, zero
+  janky frames) at 1512 and 390 widths after: 16-step cache march,
+  content-box ray clipping, 10-slice double-buffered bake, 30 Hz world
+  splat layer.

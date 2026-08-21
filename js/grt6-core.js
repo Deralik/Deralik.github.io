@@ -10,22 +10,10 @@ setEye(eye){this.eye=eye;this.fwd=norm([-eye[0],-eye[1],-eye[2]]);this.right=nor
 proj(p){const e=this.eye,rel=[p[0]-e[0],p[1]-e[1],p[2]-e[2]],z=rel[0]*this.fwd[0]+rel[1]*this.fwd[1]+rel[2]*this.fwd[2];
 if(z<.2)return null;return[(rel[0]*this.right[0]+rel[1]*this.right[1]+rel[2]*this.right[2])/z,(rel[0]*this.up[0]+rel[1]*this.up[1]+rel[2]*this.up[2])/z,1/z]}
 ray(a,b){const d=[this.fwd[0]+a/this.f*this.right[0]+b/this.f*this.up[0],this.fwd[1]+a/this.f*this.right[1]+b/this.f*this.up[1],this.fwd[2]+a/this.f*this.right[2]+b/this.f*this.up[2]];return norm(d)}
-renderCache(g,x0,y0,w,h,F,now,wmax){const fpx=h*this.f;g.save();g.beginPath();g.rect(x0,y0,w,h);g.clip();
-g.fillStyle=GRT.figWell;g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
-for(let i=0;i<F.N;i++){const pr=this.proj([F.gx[i],F.gy[i],F.gz[i]]);if(!pr)continue;
-const pb=F.pulse[i]>0?Math.exp(-(now-F.pulse[i])*2.5):0,a=Math.min(.85,F.w[i]*1.3+.4*pb);if(a<.02)continue;
-const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=Math.exp(F.ls[i])*pr[2]*fpx*((F.opt&&F.opt.sMul)||1.15);
-g.globalAlpha=a;g.drawImage(F.spr[Math.min(13,(F.w[i]/wmax*13)|0)],sx-sz,sy-sz,sz*2,sz*2)}
-g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
-renderTruth(g,x0,y0,w,h,F){const fpx=h*this.f;g.save();g.beginPath();g.rect(x0,y0,w,h);g.clip();
-g.fillStyle=GRT.figWell;g.fillRect(x0,y0,w,h);g.globalCompositeOperation='lighter';
-for(let i=0;i<F.tp.length;i++){const v=F.tv[i];if(v<.04)continue;const pr=this.proj(F.tp[i]);if(!pr)continue;
-const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=.06*pr[2]*fpx*(.55+.45*v);
-g.globalAlpha=Math.min(.42,v*.58+.01);g.drawImage(F.spr[Math.min(13,(v*13)|0)],sx-sz,sy-sz,sz*2,sz*2)}
-g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
 }
-function box(g,px){g.strokeStyle=GRT.alpha(GRT.figPaper,.12);g.lineWidth=1;const CC=[-1,1];g.beginPath();
-for(const a of CC)for(const b of CC){let p1=px([a,b,-1]),p2=px([a,b,1]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);p1=px([a,-1,b]);p2=px([a,1,b]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);p1=px([-1,a,b]);p2=px([1,a,b]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1])}g.stroke()}
+function box(g,px,he){const hx=he?he[0]:1,hy=he?he[1]:1,hz=he?he[2]:1;
+g.strokeStyle=GRT.alpha(GRT.figPaper,.12);g.lineWidth=1;const CC=[-1,1];g.beginPath();
+for(const a of CC)for(const b of CC){let p1=px([a*hx,b*hy,-hz]),p2=px([a*hx,b*hy,hz]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);p1=px([a*hx,-hy,b*hz]);p2=px([a*hx,hy,b*hz]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);p1=px([-hx,a*hy,b*hz]);p2=px([hx,a*hy,b*hz]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1])}g.stroke()}
 /* RayAnim — auto training rays: walk, NEE, vertex micro-training, and
    intersect-time highlighting of every gaussian the ray crosses. */
 class RayAnim{
@@ -48,7 +36,7 @@ while(P.evI<P.reach.length&&t>=P.reach[P.evI]){const v=P.V[P.evI];this.nees.push
 const fr=this.front(P,t);
 if(fr)for(let i=0;i<F.N;i++){if(P.upd.has(i))continue;const s=Math.exp(F.ls[i]),thr=Math.max(.1,1.5*s),d2=(F.gx[i]-fr.q[0])**2+(F.gy[i]-fr.q[1])**2+(F.gz[i]-fr.q[2])**2;
 if(d2<thr*thr){P.upd.add(i);F.pulse[i]=t;if(fr.cum-P.microAt>.1){F.micro(fr.q,t,P.upd);P.microAt=fr.cum}}}
-if(t>P.reach[P.reach.length-1]&&!P.done){P.done=true;this.stats='LAST TRAINING RAY · '+(P.V.length-1)+' SCATTERS · '+P.upd.size+' GAUSSIANS TOUCHED'}}
+if(t>P.reach[P.reach.length-1]&&!P.done){P.done=true;const ns=P.V.length-1;this.stats='LAST TRAINING RAY · '+ns+(ns===1?' SCATTER':' SCATTERS')+' · '+P.upd.size+' GAUSSIANS TOUCHED'}}
 this.nees=this.nees.filter(n=>t-n.t0<1.1)}
 draw(g,px,S,t,detail,conw,cacc,label){const F=this.F;
 for(const P of this.paths){g.globalAlpha=Math.min(1,(P.fEnd-t)/.7);

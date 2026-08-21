@@ -15,6 +15,7 @@
 .chr{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin-top:8px;font:400 10px/1 var(--mono);color:var(--absence)}
 .chr .btn{border:1px solid var(--hair);padding:4px 10px;color:var(--prose);cursor:pointer;white-space:nowrap}
 .chr .btn:hover{border-color:var(--ink);color:var(--ink)}
+.chr .btn.on{border-color:var(--ink);color:var(--ink);background:var(--mat)}
 .chr label{display:inline-flex;align-items:center;gap:8px;color:var(--absence)}
 .chr input[type="range"]{width:92px;height:2px;accent-color:var(--ink);cursor:pointer}
 .chr .sl{position:relative;width:70px;height:3px;background:var(--mat)}

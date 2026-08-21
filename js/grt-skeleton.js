@@ -17,12 +17,20 @@ cv.addEventListener('click',e=>{if(moved>6){e.stopPropagation();e.preventDefault
 function init(){
 panel($('grt-cv-panel'));
 const hero=$('grt-cv-hero');
-if(hero){const R7=new GRT7A(hero,{ui:$('grt-ro'),azl:$('grt-azl'),nEl:$('grt-n')});
-const vb=[['grt-v0','butterfly'],['grt-v1','hourglass'],['grt-v2','ring'],['grt-v3','super']];
-for(const[id,k]of vb){const el=$(id);if(el)el.onclick=()=>{R7.setVol(k);for(const[id2]of vb)$(id2).classList.toggle('on',id2===id)}}
-const rs=$('grt-reset');if(rs)rs.onclick=()=>R7.field.alloc(R7.field.N);
+/* the hero's first volume rebuild is ~0.5s of density evaluation — build
+   it off the first paint (the site never waits on a demo); its loop only
+   draws once visible anyway */
+if(hero){const build=()=>{
+const R7=new GRT7A(hero,{ui:$('grt-ro'),azl:$('grt-azl'),nEl:$('grt-n')});window.__grt=R7;
+const vb=[['grt-v0','butterfly'],['grt-v1','ring'],['grt-v2','mech'],['grt-v3','super']];
+const azw=$('grt-az')?$('grt-az').parentElement:null;
+const azv=()=>{if(azw)azw.style.display=R7.vol.tfr===false?'none':''};
+for(const[id,k]of vb){const el=$(id);if(el)el.onclick=()=>{R7.setVol(k);azv();for(const[id2]of vb)$(id2).classList.toggle('on',id2===id)}}
+azv();
+const rs=$('grt-reset');if(rs)rs.onclick=()=>R7.resetField();
 const n=$('grt-n');if(n)n.oninput=e=>R7.field.setN(+e.target.value,performance.now()/1000);
-const az=$('grt-az');if(az)az.oninput=e=>R7.pendingAz=+e.target.value}
+const az=$('grt-az');if(az)az.oninput=e=>R7.pendingAz=+e.target.value};
+if(window.requestIdleCallback)requestIdleCallback(build,{timeout:400});else setTimeout(build,50)}
 if($('grt-cv-three'))new GRT8T($('grt-cv-three'));
 if($('grt-cv-pipe'))new GRT9A($('grt-cv-pipe'));
 if($('grt-cv-train'))new GRT9T($('grt-cv-train'));

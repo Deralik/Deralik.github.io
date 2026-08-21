@@ -1,7 +1,7 @@
 /* Nebula density models — ports of Gaia Sky's NGC2000 volumetric nebula
    shaders (Toni Sagristà / Zentrum für Astronomie Heidelberg), themselves
    derived from Shadertoy work ("Helix Nebula" by izutionix,
-   shadertoy.com/view/cdK3Wy; butterfly/hourglass via view/XfyyWd).
+   shadertoy.com/view/cdK3Wy; butterfly via view/XfyyWd).
    License: CC BY-NC-SA — credited on-page (owner acceptance 2026-08-21).
    Only the density fields are ported; rendering, lighting, and training
    are this site's own pipeline. */
@@ -45,12 +45,6 @@ const qx=p[0]*1.6,qy=p[1]*1.6,qz=p[2]*1.6;
 const s1=cone(qx,qy-5.8,qz,5,.05,1.4)+fbm(qx*80,(qy-5.8)*80,qz*80)+spiralC(qx*.002,(qy-5.8)*.002,qz*.002);
 const s2=cone(qx,qy+6.2,qz,-5,.015,1.4)+fbm(qx*80,(qy+6.2)*80,qz*80)+spiralC(qx*.001,(qy+6.2)*.001,qz*.001);
 return Math.max(0,.28-(Math.abs(xr(s2,s1)*.45)+.086))}
-function hourglass(px,py,pz){const S=2.5;
-let p=rot([py*S,pz*S,px*S],1,1,1,-Math.PI/8);
-const qx=p[0]/.645,qy=p[1]/.645,qz=p[2]/.645;
-const s1=sph(qx,qy-1,qz,1.4)+fbm(qx*10,(qy-1)*10,qz*10)+spiralC(qz*.222,qx*.222,(qy-1)*.222);
-const s2=sph(qx,qy+2.1,qz,1.4)+fbm(qx*10,(qy+2.1)*10,qz*10)+spiralC(qz*.33,qx*.33,(qy+2.1)*.33);
-return Math.max(0,.28-(Math.abs(xr(s2,s1)*.45)+.086))}
 function ring(px,py,pz){const S=3.4;
 let p=rot([px*S,py*S,pz*S],0,0,1,Math.PI/3);p=rot(p,0,1,0,Math.PI/2);
 const q0=Math.hypot(p[0],p[1])-2.2,q1=p[2];
@@ -58,7 +52,7 @@ const a=Math.pow(Math.pow(q0,8)+Math.pow(q1,8),1/8);
 const d1=Math.max(a-1,Math.abs(p[2])-.3)+vnoise((p[0]+.1)*17,(p[1]+.1)*17,(p[2]+.1)*17)*.8;
 const d2=Math.hypot(Math.hypot(p[0]*1.3,p[1]*.9)-2.2,p[2]);
 const neb=sph(p[0],p[2],p[1],3.5)+fbm(p[0]*10,p[1]*10,p[2]*10)+spiralC(p[2]*.415,p[0]*.415,p[1]*.415);
-const d3=Math.abs(neb*2.5*.8)+.07;
+const d3=Math.abs(neb*2.5*.8)+.12;
 const k=1,hh=Math.max(0,Math.min(1,.5+.5*(d2-d1)/k)),sm=d2+(d1-d2)*hh-k*hh*(1-hh);
 return Math.max(0,.28-xr(d3,sm))}
-return{butterfly,hourglass,ring};})();
+return{butterfly,ring};})();

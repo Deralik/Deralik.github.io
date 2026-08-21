@@ -397,3 +397,48 @@ inset res. calib deleted (shared units by construction). Datasets:
 Butterfly, Ring (Gaia models), MechHand (real CT, vendored 40×36×38),
 Supernova (real). Hourglass dropped (owner). Goals: match gaiashot/
 volshot/gsrc reference looks; interactive framerate via trace.
+
+### Rebuild landed (2026-08-21) — spec deltas + verification
+☑ Shipped as specced with these deltas (all verified offline + live):
+- Tone: the repo's PAPER curve 1−exp(−e·L), no gamma (study agent:
+  every preset/figure uses it; Reinhard+sRGB was only research-bench
+  post-processing). Exposure = 3.0/p97 of a 260-ray probe march.
+- Grids: EMIT at per-volume dims over true half-extents (he) — mech
+  36×104×37 upright slab (real aspect, broadside orbits), others 56³.
+  Cache grid same dims (bakeSlice, 10-slice double buffer, exp LUT,
+  splat volume cap); pane march 16 steps, inset/PSNR 22, RW 160,
+  content-box ray clip (computed from data at rebuild).
+- Official TFs: mechhand + supernova RGB/alpha from scene configs;
+  supernova re-vendored to its official domain (0→0.13584) — the white
+  blob was a domain error, now the reference's pastel ball. Gaia tf2 =
+  their computeColor in shader radius units + their additive glow
+  (cosine halo, blue→amber); edge dust warmed to match rendered
+  output; hourglass removed everywhere (KO/NDEF/GRTNEB/buttons).
+- Offline twins: scripts/herojs.mjs (JS-exact, loads site files, PPM
+  views per dataset) — the TF tuning loop; scripts/heroprobe.py
+  (numpy, vendor mode emits both b64 files). window.__grt debug handle.
+- Verified: all four datasets 60fps locked (16.7ms avg, 0 janky) at
+  1512+390; matrix green both themes; mobile stack + light theme
+  shots reviewed; .btn.on style added (active dataset was unmarked).
+Riders: adaptive RW skipped (fixed 160 holds 60fps with margin —
+revisit only if a slower machine janks); Open SciVis license re-verify
+before deploy (stands). (Sampler-pool rider resolved same night:
+samples/stipple now draw within the he box — mech pools 2600/2600.)
+
+### Review pass (2026-08-21, adversarial reviewer → all verified + fixed)
+Launch-gating: reference-block "The demonstration" paragraph still
+described the pre-rebuild renderer (splatted answer / luminance-matched
+/ path samples) → rewritten to the one-integrator wording; supernova
+opacity floor now disclosed on-page (BRIEF said "disclosed"). Also:
+meter label elides (390 overlap); Reset re-seeds CG + bake phase (no
+ghost mix); 2018-08 hero ruling marked SUPERSEDED in RULINGS; stale
+source comments fixed (header, "Reinhard + gamma", "RealVol"); hero
+built at idle (DOMContentLoaded was blocked ~1.6s, GaiaVol ~575ms);
+TF-slider rebuild debounced to rest (was ~75ms mid-drag); world box
+draws he extents (mech no longer floats in a 3× cube); dead
+renderCache/renderTruth + EMS + unused PAL/EM rows deleted; "1
+SCATTERS" pluralized. (Spec block above says mech vendored 40×36×38 —
+actual shipped grid is 28×80×29 upright.)
+Rider (pre-existing, seen during 390 review): the method PIPE figure
+(GRT9A) draws its desktop layout at 390 — right boxes clip inside the
+canvas. Untouched by the rebuild; fix with the method-figure pass.

@@ -146,24 +146,33 @@ behavior, and every demo's label states exactly what is running (owner,
   model trained with the actual cINR pipeline, WASM or WebGPU; the
   temperature-distortion cube is the dataset candidate) — at which point
   the demo genuinely runs the paper's idea.
-- **GRT demo (launch gate, owner 2026-08-18 — MET 2026-08-20):** ships on
-  the hero's volumes are the owner's picks (2026-08-21): Butterfly,
-  Hourglass, and Ring — nebula density models from Gaia Sky's NGC2000
-  catalog (Toni Sagristà, ZAH Heidelberg; after Shadertoy work by
-  izutionix), CC BY-NC-SA accepted by the owner WITH CREDIT, ported as
-  density functions (js/grt-nebulae.js) and rendered entirely by this
-  site's own pipeline — labelled as models, never as observations.
-  A fourth option stays: the REAL Open SciVis "supernova" (John M.
-  Blondin, NCSU — the research repo's own benchmark volume, vendored
-  54³, js/grt-vol-supernova.js). RIDER: Open SciVis reachable over
-  http only — re-verify its license text before deploy. The hero
-  comparison is real computation: right of the seam, an unbiased 1-spp
-  Monte Carlo estimator of the radiance integral (its noise is genuine
-  variance, accumulating); left, rays terminate into the trained cache
-  and the pane is the cache's own splat render (its error is the real
-  residual, fading with training); one luminance-matched exposure,
-  disclosed on-page. The old synthetic blend is gone. Demo parameters
-  the page may print: 1 spp per frame, per side.
+- **GRT demo (launch gate, owner 2026-08-18 — MET 2026-08-20; renderer
+  rebuilt 2026-08-21 per owner critique):** the hero's volumes are the
+  owner's picks: Butterfly and Ring — nebula density models from Gaia
+  Sky's NGC2000 catalog (Toni Sagristà, ZAH Heidelberg; after Shadertoy
+  work by izutionix), CC BY-NC-SA accepted by the owner WITH CREDIT,
+  ported as density functions (js/grt-nebulae.js) and rendered entirely
+  by this site's own pipeline — labelled as models, never as
+  observations (hourglass dropped, owner 2026-08-20) — plus two REAL
+  volumes: MechHand, the research repo's industrial-CT benchmark
+  (vendored, js/grt-vol-mechhand.js), and the Open SciVis "supernova"
+  (John M. Blondin, NCSU; vendored 54³, js/grt-vol-supernova.js). Both
+  real volumes use the research repo's own scene transfer functions
+  (recovered from its scene configs 2026-08-21) and its display curve
+  1−exp(−exposure·L); the supernova adds a small disclosed opacity
+  floor so the shell scattering lights in the real renderer stays
+  visible in this emission-only pipeline. RIDER: Open SciVis reachable
+  over http only — re-verify its license text before deploy. The hero
+  comparison is real computation, one integrator, one resolution, one
+  fixed probe-calibrated exposure: right of the seam, an unbiased
+  1-spp-per-frame estimate of the emission integral, accumulated in
+  linear radiance (its noise is genuine variance); left, a full march
+  of the field the cache believes — its gaussians baked to a grid,
+  never its splats (its blur/error is the real residual, fading with
+  training); reference inset is the true field fully marched; the meter
+  is render-space PSNR (cache march vs reference march, same rays).
+  Demo parameters the page may print: 1 spp per frame on the estimator
+  side.
 
 ## Constraints
 
