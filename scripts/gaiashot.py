@@ -57,7 +57,62 @@ def map_helix(p):
     neb = disk(q[...,[0,2,1]],(2,1.8,1.25),.5) + fbm(q*20) + spiralC(q[...,[2,0,1]]*.5123+100.)*3
     return np.abs(neb*0.5)+0.07
 
-MAPS={'crab':map_crab,'helix':map_helix}
+def sphere(p,r): return np.linalg.norm(p,axis=-1)-r
+def xor_(a,b): return np.maximum(np.minimum(a,b),-np.maximum(a,b))
+def smin(a,b,k):
+    h=np.clip(.5+.5*(b-a)/k,0,1); return b+(a-b)*h-k*h*(1-h)
+def capped_cone(p,h,r1,r2):
+    qx=np.sqrt(p[...,0]**2+p[...,2]**2); qy=p[...,1]
+    k1=np.array([r2,h]); k2=np.array([r2-r1,2*h])
+    cax=qx-np.minimum(qx,np.where(qy<0,r1,r2)); cay=np.abs(qy)-h
+    t=np.clip(((k1[0]-qx)*k2[0]+(k1[1]-qy)*k2[1])/(k2@k2),0,1)
+    cbx=qx-k1[0]+k2[0]*t; cby=qy-k1[1]+k2[1]*t
+    sg=np.where((cbx<0)&(cay<0),-1.,1.)
+    return sg*np.sqrt(np.minimum(cax**2+cay**2,cbx**2+cby**2))
+def spiral3D(p):
+    p=p.copy(); n=np.zeros(p.shape[:-1]); nudge=.9; norm=1/np.sqrt(1+nudge*nudge); it=1.0
+    for _ in range(5):
+        n+=(np.sin(p[...,1]*it)+np.cos(p[...,0]*it))/it
+        x,z=p[...,0].copy(),p[...,2].copy()
+        p[...,0],p[...,2]=(x+z*nudge)*norm,(z-x*nudge)*norm
+        it*=1.33733
+    return n
+def map_catseye(p):
+    p=p[...,[1,2,0]]; p=rot_axis(p,(-0.5,1,0),np.pi/4); q=p/0.645
+    neb=disk(q[...,[0,2,1]],(1.4,1.8,1.25),.5)+fbm(q*90)+spiralC(q[...,[2,0,1]]*.7123)*2.3
+    return np.abs(neb*0.45)+0.086
+def map_box(p):
+    p=rot_axis(p,(0.2,0.1,1),np.pi/2); q=p/0.645
+    neb=disk(q[...,[0,2,1]],(1,2.2,1.05),.5)+fbm(q*20)+spiralC(q)
+    return np.abs(neb*0.35)+0.098
+def map_butterfly(p):
+    p=p[...,[1,2,0]]; p=rot_axis(p,(-0.1,1,-0.3),np.pi/3); q=p*1.6
+    p1=q.copy(); p1[...,1]-=5.8
+    s1=capped_cone(p1,5.,.05,1.4)+fbm(p1*80)+spiralC(p1*.002)
+    p2=q.copy(); p2[...,1]+=6.2
+    s2=capped_cone(p2,-5.,.015,1.4)+fbm(p2*80)+spiralC(p2*.001)
+    return np.abs(xor_(s2,s1)*0.45)+0.086
+def map_hourglass(p):
+    p=p[...,[1,2,0]]; p=rot_axis(p,(1,1,1),-np.pi/8); q=p/0.645
+    p1=q.copy(); p1[...,1]-=1.0
+    s1=sphere(p1,1.4)+fbm(p1*10)+spiralC(p1*.222)
+    p2=q.copy(); p2[...,1]+=2.1
+    s2=sphere(p2,1.4)+fbm(p2*10)+spiralC(p2*.33)
+    return np.abs(xor_(s2,s1)*0.45)+0.086
+def map_ring(p):
+    p=rot_axis(p,(0,0,1),np.deg2rad(60)); p=rot_axis(p,(0,1,0),np.deg2rad(90))
+    d1=disk(p[...,[0,1,2]]*1,(2.2,1.,0.3),1.0)+vnoise((p+0.1)*17)*0.8
+    rp=p.copy(); rx=p[...,0]*1.3; ry=p[...,1]*0.9
+    d2=np.sqrt((np.sqrt(rx**2+ry**2)-2.2)**2+p[...,2]**2)
+    neb=sphere(p[...,[0,2,1]],3.5)+fbm(p*10)+spiralC(p[...,[2,0,1]]*.415)
+    d3=np.abs(neb*2.5*0.8)+0.07
+    return xor_(d3,smin(d1,d2,1.0))
+def map_trifid(p):
+    p=rot_axis(p,(0,0,1),np.deg2rad(80)); q=p/0.5
+    neb=q[...,1]+4.5-spiralC(q)+spiralC(q[...,[2,0,1]]*.523+10.)*4.0-spiral3D(q)
+    return np.abs(neb*0.33)+0.04
+MAPS={'crab':map_crab,'helix':map_helix,'catseye':map_catseye,'box':map_box,
+      'butterfly':map_butterfly,'hourglass':map_hourglass,'ring':map_ring,'trifid':map_trifid}
 
 def render(kind, cam, W=460, H=340, fov=.9):
     MAP=MAPS[kind]
