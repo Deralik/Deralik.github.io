@@ -80,11 +80,12 @@ benchmarked head-to-head against NRC and GSCache from one binary with
 matched termination (C = 0.03). Manuscript record — always labelled
 on-site as "the manuscript's numbers, not yet peer-verified": cache
 ≈28 MB (ours) vs ≈382.7 MB (NRC) vs ≈423.9 MB (GSCache); peak VRAM
-5.1 / 3.2 / 6.4 GB in the same order; runtime slower than NRC, faster
+≈5.1 GB (ours), ≈3.2 GB (NRC), ≈6.4 GB (GSCache); runtime slower than NRC, faster
 than GSCache; quality ≈ NRC, slightly behind GSCache — D0 trend phrasing: "~10×
 smaller cache, quality held" (conservative vs the actual 13.7×/15.1×
 ratios; RULINGS-sanctioned). PCD init: 125k
-surface samples, MCMC cap 300k, init 1.37 s. Current work (owner
+surface samples, MCMC cap 300k, init 1.37 s; measured on one RTX 4090
+(24 GB) — the manuscript's test system. Current work (owner
 statement 2026-08-19, no new numbers): NEE implementation improved, and
 NEE-only training samples explored to the working conclusion that they
 may be fundamentally incompatible with the method — they provide
@@ -145,7 +146,7 @@ behavior, and every demo's label states exactly what is running (owner,
   model trained with the actual cINR pipeline, WASM or WebGPU; the
   temperature-distortion cube is the dataset candidate) — at which point
   the demo genuinely runs the paper's idea.
-- **GRT demo (launch gate, owner 2026-08-18 — MET 2026-08-22):** ships on
+- **GRT demo (launch gate, owner 2026-08-18 — MET 2026-08-20):** ships on
   REAL volume data: the Open SciVis "supernova" (John M. Blondin, NCSU —
   the same dataset the research repo benchmarks on), 8³ box-filtered to
   54³ and vendored (js/grt-vol-supernova.js carries the provenance
@@ -158,7 +159,8 @@ behavior, and every demo's label states exactly what is running (owner,
   variance, accumulating); left, rays terminate into the trained cache
   and the pane is the cache's own splat render (its error is the real
   residual, fading with training); one luminance-matched exposure,
-  disclosed on-page. The old synthetic blend is gone.
+  disclosed on-page. The old synthetic blend is gone. Demo parameters
+  the page may print: 1 spp per frame, per side.
 
 ## Constraints
 

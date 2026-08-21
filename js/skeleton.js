@@ -115,7 +115,7 @@ function fromHash(){
 }
 addEventListener('hashchange',()=>{
   if(fromHash())apply();
-  else if(!location.hash){depth=0;open=null;pbody.classList.remove('to1','to2');apply()}
+  else if(!location.hash){depth=0;open=null;apply()}
 });
 
 /* A field carries what it has room for. Priority is caption, then prose, then
@@ -186,11 +186,11 @@ function cross(d){
   if(doc0){doc0.style.transition='';doc0.style.transform=''}
   commit=0;dir=0;meterTo(0);
   const doc=open?F[open].querySelector('.face-doc'):null;
-  if(d>0&&depth===1){depth=2;pbody.classList.remove('to1');pbody.classList.add('to2');apply();
+  if(d>0&&depth===1){depth=2;apply();
     if(doc){const s=doc.querySelector('.dsec');
       setTimeout(()=>{doc.scrollTop=s?Math.max(0,s.offsetTop-STRIP-8):0},RM.matches?0:340);}}
-  else if(d<0&&depth===2){depth=1;pbody.classList.remove('to2');pbody.classList.add('to1');apply();if(doc)doc.scrollTop=0}
-  else if(d<0&&depth===1){depth=0;open=null;pbody.classList.remove('to1','to2');apply()}
+  else if(d<0&&depth===2){depth=1;apply();if(doc)doc.scrollTop=0}
+  else if(d<0&&depth===1){depth=0;open=null;apply()}
 }
 function push(d,amt){
   if(d!==dir){dir=d;commit=0}
@@ -207,9 +207,9 @@ pbody.addEventListener('wheel',e=>{
 
 pbody.addEventListener('click',e=>{
   const fl=e.target.closest('.fl'); if(!fl||isMob())return;
-  if(e.target.closest('.bk')){cross(-1);if(depth===1)cross(-1);return}
+  if(e.target.closest('.bk')){cross(-1);return} /* one level up, as labelled */
   if(e.target.closest('.face-doc'))return;
-  open=fl.dataset.k; depth=1; pbody.classList.remove('to1','to2'); apply();
+  open=fl.dataset.k; depth=1; apply();
 });
 addEventListener('keydown',e=>{
   const tg=e.target; if(tg&&tg.matches&&tg.matches('select,input,textarea,button'))return;
@@ -217,10 +217,10 @@ addEventListener('keydown',e=>{
   /* Enter/Space on a focused card opens it — tabindex without activation
      would be a fake affordance */
   if((e.key==='Enter'||e.key===' ')&&tg&&tg.classList&&tg.classList.contains('fl')&&tg.dataset.face!=='doc'){
-    e.preventDefault(); open=tg.dataset.k; depth=1; pbody.classList.remove('to1','to2'); apply(); return}
+    e.preventDefault(); open=tg.dataset.k; depth=1; apply(); return}
   if(e.key==='ArrowDown'){e.preventDefault(); if(depth===0){
     const af=document.activeElement;
-    open=(af&&af.classList&&af.classList.contains('fl')&&af.dataset.k!=='about')?af.dataset.k:proj()[0].k;
+    open=(af&&af.classList&&af.classList.contains('fl'))?af.dataset.k:proj()[0].k;
     depth=1;apply()}else cross(1)}
   if(e.key==='ArrowUp'){e.preventDefault(); cross(-1)}
   if(e.key==='Escape'){depth=0;open=null;apply()}
@@ -237,7 +237,9 @@ document.querySelectorAll('.fl').forEach(fl=>{
   if(!doc||!tabs.length)return;
   const ds=[...doc.querySelectorAll('.dsec')];
   const target=tab=>{const t=tab.textContent.trim().toLowerCase();
-    return ds.find(d=>{const h=d.querySelector('.sech');return h&&h.textContent.trim().toLowerCase()===t})||ds[0]};
+    /* prefix match: the tab says "in progress", the header says
+       "In progress — toward resubmission" */
+    return ds.find(d=>{const h=d.querySelector('.sech');return h&&h.textContent.trim().toLowerCase().startsWith(t)})||ds[0]};
   tabs.forEach(tab=>{const d=target(tab); if(!d)return;
     tab.addEventListener('click',e=>{e.stopPropagation();
       const bh=RM.matches?'auto':'smooth';
@@ -261,8 +263,11 @@ if(tbtn){
     const t=document.documentElement.dataset.theme==='k-matrix'?'h-transit':'k-matrix';
     try{localStorage.setItem('theme',t)}catch(err){}
     document.documentElement.dataset.theme=t; mark();};
-  new MutationObserver(mark).observe(document.documentElement,
-    {attributes:true,attributeFilter:['data-theme']});
+  new MutationObserver(()=>{mark();
+    /* draw-once figures redraw on resize; a theme change must re-theme
+       every canvas, so borrow that path */
+    requestAnimationFrame(()=>dispatchEvent(new Event('resize')));
+  }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   mark();
 }
 

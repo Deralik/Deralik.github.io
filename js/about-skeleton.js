@@ -52,11 +52,8 @@ fetch('data/about-record.json?v=2').then(r=>r.json()).then(rec=>{
       p0:s.precision?s.precision.start:'unknown',p1:s.precision?s.precision.end:'—'};
   });
   const marks=rec.marks.filter(m=>MARKROW[m.id]).map(m=>({raw:m,t:parse(m.date).t,row:MARKROW[m.id],lab:SHORT[m.id]!==undefined?SHORT[m.id]:m.label}));
-  const pf=document.getElementById('about-plots');if(pf)pf.textContent=rec.spans.length+' spans, every one dated · 2017 → now';
   const rv=document.getElementById('about-railv');if(rv)rv.textContent=Math.floor(NOW-2017.05);
-  document.querySelectorAll('[data-count]').forEach(e=>{
-    e.textContent=rec.spans.length+' spans · '+(LEARN.length+DOING.length)+' rows · '+marks.length+' events — drawn from the project record';
-  });
+
   const rndr=()=>{try{draw(S,marks,rec)}catch(e){console.warn('tl',e)}};
   const mcr=()=>{try{drawVRec(S,rec)}catch(e){}};
   rndr();mcr();
@@ -310,22 +307,6 @@ function draw(S,marks,rec){
       strip.style.top=(open.band==='L'?(open.cy-4-EXPL):(open.cy+29))+'px';
       strip.classList.add('on');strip.innerHTML=detail(open);
     } else {strip.classList.remove('on');strip.innerHTML=''}
-    setTimeout(audit,320);
-  }
-  function audit(){
-    const vis=e=>!e.classList.contains('gone')&&e.offsetWidth>0;
-    const lab=[...host.querySelectorAll('.stoplab,.duallab,.grtlab,.taillab,.flclab')].filter(vis);
-    const lines=[...host.querySelectorAll('.stopk,.conn')].filter(e=>vis(e)&&!e.classList.contains('dim'));
-    const B=e=>e.getBoundingClientRect();
-    const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
-    let ll=0,lt=0,clip=0;
-    for(let i=0;i<lab.length;i++)for(let j=i+1;j<lab.length;j++)if(hit(B(lab[i]),B(lab[j])))ll++;
-    for(const L of lab){if(L.classList.contains('grtlab')||L.classList.contains('stoplab'))continue;const r=B(L);for(const k of lines)if(hit(r,B(k)))lt++}
-    document.querySelectorAll('.xstrip .xev span,.xstrip .xs em,.xstrip .xs i,.xstrip .xs b').forEach(e=>{if(e.scrollWidth>e.clientWidth+1||e.scrollHeight>e.clientHeight+2)clip++});
-    let so=0;const st=host.querySelector('.xstrip');
-    if(st&&st.classList.contains('on')){const sr=st.getBoundingClientRect();for(const L of lab)if(hit(B(L),sr))so++}
-    const out=document.querySelector('[data-audit]');
-    if(out)out.textContent='audit — label overlaps '+ll+' · lines through text '+lt+' · clipped card lines '+clip+' · card overlaps '+so;
   }
   host.onclick=e=>{
     const t=e.target.closest('[data-row]');
@@ -335,7 +316,6 @@ function draw(S,marks,rec){
   };
   host.onkeydown=e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.row)e.target.click()};
 
-  setTimeout(audit,600);
 }
 
 /* Mobile: the record turned on its side — time flows down, learning left of
@@ -611,7 +591,9 @@ function drawVRec(S,rec){
       const pad=new Date(days[0].date+'T00:00:00').getDay();
       for(let k=0;k<pad;k++){const c=document.createElement('i');c.style.opacity=0;g3.appendChild(c)}
       days.forEach(dd=>{const c=document.createElement('i');c.style.opacity=dd.level?(0.15+dd.level*0.21):0.07;c.title=dd.date+' — '+dd.count;g3.appendChild(c)});
-      if(!sm){const we=document.querySelector('.gh .ghw');if(we)we.textContent=wk+' weeks · as of '+asOf}
+      if(!sm){let n=g3.nextElementSibling;
+        if(!n||!n.classList||!n.classList.contains('ghnote')){n=document.createElement('span');n.className='ghnote';g3.after(n)}
+        n.textContent=wk+' weeks of GitHub activity · as of '+asOf}
     };
     grids.forEach(fill);
     if(window.ResizeObserver)grids.forEach(g3=>{let q,lw=g3.clientWidth;const ro=new ResizeObserver(()=>{if(Math.abs(g3.clientWidth-lw)<2)return;lw=g3.clientWidth;clearTimeout(q);q=setTimeout(()=>fill(g3),150)});ro.observe(g3)});

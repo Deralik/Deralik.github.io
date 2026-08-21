@@ -1,66 +1,19 @@
-/* Round 7 shared — Nova volume (structured shells + filaments + ejecta),
-   in-figure error meter, deterministic per-pixel path replay, frustum. */
+/* Round 7 shared — volumes (procedural + RealVol), in-figure error meter, frustum. */
 window.GRT7=(()=>{
 const{rng,tok}=GRT;const sq=v=>v*v;
 const SIZES={s0:.052,sv:.018,lsMin:-3.66,lsMax:-1.55,sMul:.92,relocLs:Math.log(.06)};
-class Nova{
-constructor(seed){this.r=rng(seed||7);this.RG=24;this.grid=new Float32Array(this.RG**3);this.gmax=1;this.light=[1.15,1.05,.45];
-this.knots=[];for(let i=0;i<9;i++){const th=this.r()*6.283,ph=Math.acos(2*this.r()-1),rr=.55+.33*this.r();
-this.knots.push([rr*Math.sin(ph)*Math.cos(th),rr*Math.cos(ph)*.85,rr*Math.sin(ph)*Math.sin(th),.09+.07*this.r(),.55+.6*this.r()])}}
-sig(x,y,z){const ys=y*1.18,r=Math.sqrt(x*x+ys*ys+z*z);if(r>1.22)return 0;
-const ir=1/(r+1e-4),dx=x*ir,dy=ys*ir,dz=z*ir;
-const f1=Math.sin(7.2*dx+4.1*dz+1.7)*Math.sin(6.3*dy-2.6*dx+.6),f2=Math.sin(13.4*dz-9.1*dy+3.9)*Math.sin(11.2*dx+9.6*dz-1.2);
-const fil=Math.max(0,.18+.55*f1+.38*f2);
-let s=Math.exp(-sq(r/.13))*1.45+(Math.exp(-sq((r-.70)/.09))*1.15+Math.exp(-sq((r-.42)/.075))*.7)*fil;
-for(const k of this.knots)s+=k[4]*.85*Math.exp(-(sq(x-k[0])+sq(ys-k[1])+sq(z-k[2]))/(k[3]*k[3]));
-s-=.24;return s>0?s:0}
-rebuild(){const R=this.RG,L=this.light;let m=0;for(let k=0;k<R;k++)for(let j=0;j<R;j++)for(let i=0;i<R;i++){const x=-1+2*(i+.5)/R,y=-1+2*(j+.5)/R,z=-1+2*(k+.5)/R,s=this.sig(x,y,z);let v=0;
-if(s>0){const M=11,ddx=(L[0]-x)/M,ddy=(L[1]-y)/M,ddz=(L[2]-z)/M,dl=Math.hypot(L[0]-x,L[1]-y,L[2]-z)/M;let tau=0,px=x,py=y,pz=z;
-for(let q=0;q<M;q++){px+=ddx;py+=ddy;pz+=ddz;tau+=this.sig(px,py,pz)*dl}
-v=s*Math.exp(-2.6*tau)/(.35+.9*(sq(x-L[0])+sq(y-L[1])+sq(z-L[2])))}
-this.grid[(k*R+j)*R+i]=v;if(v>m)m=v}this.gmax=Math.max(m,1e-6)}
-gt(p){const R=this.RG,i=Math.max(0,Math.min(R-1,(p[0]+1)/2*R|0)),j=Math.max(0,Math.min(R-1,(p[1]+1)/2*R|0)),k=Math.max(0,Math.min(R-1,(p[2]+1)/2*R|0));return this.grid[(k*R+j)*R+i]/this.gmax}
-samples(n){const a=[];let g=0;while(a.length<n&&g<n*60){g++;const x=this.r()*2-1,y=this.r()*2-1,z=this.r()*2-1,s=this.sig(x,y,z);if(s>.05&&this.r()<s*1.1)a.push([x,y,z])}return a}
-stipple(n){const a=[];let g=0;while(a.length<n&&g<n*60){g++;const x=this.r()*2-1,y=this.r()*2-1,z=this.r()*2-1,s=this.sig(x,y,z);if(s>.02&&this.r()<.8)a.push([x,y,z,Math.min(1,s)])}return a}
-shellInit(){for(let t=0;t<4;t++){const th=this.r()*6.283,ph=Math.acos(2*this.r()-1),o=[1.6*Math.sin(ph)*Math.cos(th),1.6*Math.cos(ph),1.6*Math.sin(ph)*Math.sin(th)],tg=[(this.r()*2-1)*.5,(this.r()*2-1)*.5,(this.r()*2-1)*.5];
-const d=[tg[0]-o[0],tg[1]-o[1],tg[2]-o[2]],L=Math.hypot(d[0],d[1],d[2]);
-for(let s=0;s<60;s++){const u=s/60*L,p=[o[0]+d[0]/L*u,o[1]+d[1]/L*u,o[2]+d[2]/L*u];if(this.sig(p[0],p[1],p[2])>.07)return[p[0]+(this.r()-.5)*.05,p[1]+(this.r()-.5)*.05,p[2]+(this.r()-.5)*.05]}}
-return[(this.r()*2-1)*.4,(this.r()*2-1)*.4,(this.r()*2-1)*.4]}
-}
-/* Meter — the learning, drawn in the figure's own language. Min–max scaled
-   history; fmt controls the readout (default %, 7a passes dB). */
 class Meter{constructor(cap){this.hist=[];this.cap=cap||150}
 push(v){this.hist.push(v);if(this.hist.length>this.cap)this.hist.shift()}
 draw(g,x,y,w,h,label,mono,fmt){const H=this.hist;g.save();
-g.fillStyle='rgba(228,223,212,.045)';g.fillRect(x,y,w,h);
-g.strokeStyle='rgba(228,223,212,.18)';g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,h-1);
+g.fillStyle=GRT.alpha(GRT.figPaper,.045);g.fillRect(x,y,w,h);
+g.strokeStyle=GRT.alpha(GRT.figPaper,.18);g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,h-1);
 g.fillStyle=tok('--absence');g.font='500 8.5px '+mono;g.fillText(label,x+8,y+13);
 if(H.length>1){let mn=Infinity,mx=-Infinity;for(const v of H){if(v<mn)mn=v;if(v>mx)mx=v}const pad=Math.max((mx-mn)*.1,1e-3);mn-=pad;mx+=pad;
-g.strokeStyle='rgba(228,223,212,.14)';g.beginPath();g.moveTo(x+8,y+h-6.5);g.lineTo(x+w-8,y+h-6.5);g.stroke();
+g.strokeStyle=GRT.alpha(GRT.figPaper,.14);g.beginPath();g.moveTo(x+8,y+h-6.5);g.lineTo(x+w-8,y+h-6.5);g.stroke();
 g.strokeStyle=tok('--accw');g.lineWidth=1.2;g.beginPath();
 H.forEach((v,i)=>{const xx=x+8+i/(this.cap-1)*(w-16),yy=y+h-6-((v-mn)/(mx-mn))*(h-28);g[i?'lineTo':'moveTo'](xx,yy)});g.stroke();
 g.fillStyle=tok('--onwell');g.font='500 11px '+mono;const s=(fmt||(v=>(v*100).toFixed(1)+'%'))(H[H.length-1]);g.fillText(s,x+w-g.measureText(s).width-8,y+15)}
 g.restore()}}
-/* pixelPath — a pixel's whole story, deterministic per pixel: walk to a first
-   interaction, scatter twice at most, then the one cache query; integrals of
-   cache and truth along the query; gaussians the query crosses. */
-function pixelPath(vol,F,eye,view,a,b){
-const seed=((Math.round(a*61)*131+Math.round(b*61)*17+997)^0x9E37)|0,rand=rng(seed);
-const inB=p=>Math.abs(p[0])<1&&Math.abs(p[1])<1&&Math.abs(p[2])<1;
-let d=view.ray(a,b),p=null;
-for(let t=.35;t<5.5;t+=.06){const q=[eye[0]+d[0]*t,eye[1]+d[1]*t,eye[2]+d[2]*t];if(inB(q)&&rand()<vol.sig(q[0],q[1],q[2])*.5){p=q;break}}
-if(!p)return null;const V=[eye.slice(),p];
-for(let k=0;k<2;k++){const rd=[rand()*2-1,rand()*2-1,rand()*2-1];let nd=[d[0]*.5+rd[0],d[1]*.5+rd[1],d[2]*.5+rd[2]];const n=Math.hypot(nd[0],nd[1],nd[2])||1;nd=[nd[0]/n,nd[1]/n,nd[2]/n];
-let q2=null;for(let t=.08;t<.9;t+=.05){const q=[p[0]+nd[0]*t,p[1]+nd[1]*t,p[2]+nd[2]*t];if(!inB(q))break;if(rand()<vol.sig(q[0],q[1],q[2])*.55){q2=q;break}}
-if(!q2)break;V.push(q2);p=q2;d=nd}
-const dq=d;let te=.2;
-for(let t=0;t<2.6;t+=.065){te=t;if(Math.hypot(p[0]+dq[0]*t,p[1]+dq[1]*t,p[2]+dq[2]*t)>1.5)break}
-let cI=0,tI=0;const M=30,dt=te/M||.01;
-for(let k=0;k<M;k++){const t=(k+.5)*dt,q=[p[0]+dq[0]*t,p[1]+dq[1]*t,p[2]+dq[2]*t];if(!inB(q))continue;cI+=Math.max(0,F.pred(q))*dt;tI+=vol.gt(q)*dt}
-const hits=[];for(let i=0;i<F.N;i++){const rx=F.gx[i]-p[0],ry=F.gy[i]-p[1],rz=F.gz[i]-p[2],tt=rx*dq[0]+ry*dq[1]+rz*dq[2];if(tt<0||tt>te)continue;
-const per=Math.hypot(rx-dq[0]*tt,ry-dq[1]*tt,rz-dq[2]*tt);if(per<.14)hits.push([tt,i])}
-hits.sort((a,b)=>a[0]-b[0]);
-return{V,q:p,dq,te,cI,tI,hits}}
 function frustum(g,px,eye,view,amax,bmax,len,col){const ep=px(eye);g.strokeStyle=col;g.lineWidth=.8;g.beginPath();
 for(const sa of[-1,1])for(const sb of[-1,1]){const d=view.ray(sa*amax,sb*bmax),q=px([eye[0]+d[0]*len,eye[1]+d[1]*len,eye[2]+d[2]*len]);g.moveTo(ep[0],ep[1]);g.lineTo(q[0],q[1])}g.stroke()}
 /* NebVol — four colour datasets, dense by design: emission + single scatter,
@@ -220,4 +173,4 @@ const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=.055*pr[2]*fpx*(.55+.45*Math.mi
 g.globalAlpha=Math.min(.4,lu*.55+.01);g.drawImage(this.sprFor(r,gg,b),sx-sz,sy-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
 }
-return{Nova,NebVol,RealVol,CField,Meter,pixelPath,frustum,SIZES};})();
+return{NebVol,RealVol,CField,Meter,frustum,SIZES};})();

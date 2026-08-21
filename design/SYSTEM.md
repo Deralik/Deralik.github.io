@@ -69,8 +69,11 @@ stop (the bunny pattern). Card canvases: drag turns the figure, click
 opens the project (6px click-suppression pattern — preserve on anything
 similar). 3D drag grabs the volume (inverted deltas, inertia); hero
 cameras ease back to orbit ~1 s after release; camera drags gated to the
-image rect. Figure loops gate on IntersectionObserver (±300px), DPR
-capped at 2. `prefers-reduced-motion` pauses autorotation and card loops.
+image rect. Figure loops gate on IntersectionObserver (±120–150px
+margins) and pause on hidden faces, during depth morphs, and under
+`prefers-reduced-motion` (direct pointer engagement still animates).
+DPR capped at 2 for GRT figures, 1.25 for the bunny march (documented
+CPU budget).
 No scroll hijacking; the wheel-commitment depth change is reader-driven
 navigation (open clause in skeleton-notes §7 — unratified).
 

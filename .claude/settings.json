@@ -1,8 +1,10 @@
 {
   "permissions": {
     "deny": [
-      "Bash(git push*)",
+      "Bash(*git push*)",
       "Bash(*--no-verify*)",
+      "Bash(git commit -n*)",
+      "Bash(*core.hooksPath *)",
       "Bash(*employment-hunter*)",
       "Read(//home/deralik/GitHub/employment-hunter/**)"
     ]

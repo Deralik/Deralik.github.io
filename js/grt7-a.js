@@ -17,7 +17,7 @@ this.su=.5;this.seamU=.5;this.seamUntil=-9;this.seamDrag=false;
 this.mx=.6;this.nzc=null;this.calib=1;
 this.view=new CamView(this.eyeAt(this.oa),1.05);
 this.frameN=0;this.meter=new Meter(150);this.field=null;
-this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.warm=GRT.figWarm;this.mono=tok('--mono');
+this.retok();this.warm=GRT.figWarm;
 let px2,py2;
 cv.addEventListener('pointerdown',e=>{if(this.nearSeam(e)){this.seamDrag=true;cv.setPointerCapture(e.pointerId);return}
 if(!this.inImg(e))return;this.imgDrag=true;px2=e.clientX;py2=e.clientY;cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing'});
@@ -50,7 +50,7 @@ if(!this.nzc||this.nzH!==RH){this.nzc=document.createElement('canvas');this.nzc.
    the per-pixel sample side, and deserves its real soft-field look */
 this.czc=document.createElement('canvas');this.czc.width=RW*2;this.czc.height=RH*2;this.czg=this.czc.getContext('2d',{willReadFrequently:true});this.czd=this.czg.createImageData(RW*2,RH*2);this.cacc2=new Float32Array(RW*RH*12)}
 const F=this.field;
-if(!this._cd||this.frameN%2===0){F.drawCacheImage(this.czg,this.view,0,0,RW*2,RH*2,t);this._cd=this.czg.getImageData(0,0,RW*2,RH*2).data}
+if(!this._cd||this.frameN%3===0){F.drawCacheImage(this.czg,this.view,0,0,RW*2,RH*2,t);this._cd=this.czg.getImageData(0,0,RW*2,RH*2).data;this._cdN=true}
 const cd=this._cd;
 const v=this.vol,G=v.grid,R=v.RG,f=this.view.f,e=this.view.eye,fw=this.view.fwd,rt=this.view.right,up=this.view.up;
 const D=this.nzd.data,A=this.acc,D2=this.czd.data,A2=this.cacc2,sc=1/(this.mx||.6),cal=this.calib;
@@ -82,22 +82,24 @@ D[q]=Math.min(255,10+A[o]);D[q+1]=Math.min(255,13+A[o+1]);D[q+2]=Math.min(255,17
 }}
 /* left — the ray terminates into the cache: the pane is the cache's own
    splat render (2× raster), luminance-matched to the estimator side (one
-   exposure); its error is the cache's real residual, fading as it trains —
-   nothing is blended or sculpted */
-const W2=RW*2,H2=RH*2;
-for(let j=0;j<H2;j++)for(let i=0;i<W2;i++){const q=(j*W2+i)*4,o=(j*W2+i)*3;
-const cr=Math.max(0,cd[q]-10)*cal,cg=Math.max(0,cd[q+1]-13)*cal,cb2=Math.max(0,cd[q+2]-17)*cal;
-sumC+=cr+cg+cb2;
-A2[o]=A2[o]*.5+.5*Math.min(255,cr);A2[o+1]=A2[o+1]*.5+.5*Math.min(255,cg);A2[o+2]=A2[o+2]*.5+.5*Math.min(255,cb2);
-D2[q]=Math.min(255,10+A2[o]);D2[q+1]=Math.min(255,13+A2[o+1]);D2[q+2]=Math.min(255,17+A2[o+2]);D2[q+3]=255}
+   exposure). No temporal filter here — the field itself evolves smoothly;
+   its error is the cache's real residual, fading as it trains. Rewritten
+   only when the raster refreshes. */
+if(this._cdN){this._cdN=false;
+const W2=RW*2,H2=RH*2;let rawC=0;
+for(let p2=0;p2<W2*H2;p2++){const q=p2*4;
+const r0=Math.max(0,cd[q]-10),g0=Math.max(0,cd[q+1]-13),b0=Math.max(0,cd[q+2]-17);rawC+=r0+g0+b0;
+D2[q]=Math.min(255,10+r0*cal);D2[q+1]=Math.min(255,13+g0*cal);D2[q+2]=Math.min(255,17+b0*cal);D2[q+3]=255}
+const tgt=rawC>1?Math.max(.3,Math.min(4,sumT*4/rawC)):1;this.calib=Math.max(.3,Math.min(4,this.calib*.9+.1*tgt));
+this.czg.putImageData(this.czd,0,0)}
 this.mx=mx;
-const tgt=sumC>1?Math.max(.3,Math.min(4,sumT*4/(sumC/Math.max(1e-6,cal)))):1;this.calib=Math.max(.3,Math.min(4,this.calib*.9+.1*tgt));
-this.nzg.putImageData(this.nzd,0,0);this.czg.putImageData(this.czd,0,0)}
-frame(t,dt){const f=fit(this.cv);if(!f)return;const{g,w,h}=f;this.frameN++;this.now=t;const F=this.field;
+this.nzg.putImageData(this.nzd,0,0)}
+retok(){this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.mono=tok('--mono')}
+frame(t,dt){const f=fit(this.cv);if(!f)return;this.retok();const{g,w,h}=f;this.frameN++;this.now=t;const F=this.field;
 g.fillStyle=this.cw;g.fillRect(0,0,w,h);if(!F)return;
 if(!this.cam.dr)this.cam.auto+=(.12-this.cam.auto)*Math.min(1,dt*1.2);
 this.cam.step(dt);
-const B=Math.max(40,Math.min(110,Math.round(150000/F.N)));F.step(B,t);if(dt<.045)F.step(B,t);
+const B=Math.max(40,Math.min(110,Math.round(150000/F.N)));F.step(B,t);if(dt<.022)F.step(B,t);
 if(this.frameN%3===0){const p=F.psnr(24);this._ps=this._ps===undefined?p:this._ps*.85+.15*p;if(this.frameN%12===0)this.meter.push(this._ps)}
 if(this.pendingAz!==undefined){const v2=this.pendingAz;this.pendingAz=undefined;if(this.vol.em>=.99)this.vol.tf=v2/6.28;else{this.az=v2;this.setLight()}this.gtDirty=true}
 if(this.gtDirty&&this.frameN%5===0){this.vol.rebuild();F.refreshTruth();this.gtDirty=false}
@@ -124,9 +126,9 @@ g.imageSmoothingEnabled=false;
 g.save();g.beginPath();g.rect(bx,y0,x0+iw-bx,ih);g.clip();g.drawImage(this.nzc,x0,y0,iw,ih);g.restore();
 g.imageSmoothingEnabled=true;
 g.save();g.beginPath();g.rect(x0,y0,bx-x0,ih);g.clip();g.drawImage(this.czc,x0,y0,iw,ih);g.restore();
-g.strokeStyle='rgba(228,223,212,.65)';g.lineWidth=1;g.beginPath();g.moveTo(bx+.5,y0);g.lineTo(bx+.5,y0+ih);g.stroke();
-g.fillStyle='rgba(228,223,212,.65)';g.fillRect(bx-4,y0+ih/2-9,9,18);g.fillStyle=GRT.figWell;g.fillRect(bx-1.5,y0+ih/2-5,1,10);g.fillRect(bx+1.5,y0+ih/2-5,1,10);
-g.strokeStyle='rgba(228,223,212,.25)';g.strokeRect(x0+.5,y0+.5,iw-1,ih-1);
+g.strokeStyle=GRT.alpha(GRT.figPaper,.65);g.lineWidth=1;g.beginPath();g.moveTo(bx+.5,y0);g.lineTo(bx+.5,y0+ih);g.stroke();
+g.fillStyle=GRT.alpha(GRT.figPaper,.65);g.fillRect(bx-4,y0+ih/2-9,9,18);g.fillStyle=GRT.figWell;g.fillRect(bx-1.5,y0+ih/2-5,1,10);g.fillRect(bx+1.5,y0+ih/2-5,1,10);
+g.strokeStyle=GRT.alpha(GRT.figPaper,.25);g.strokeRect(x0+.5,y0+.5,iw-1,ih-1);
 const iv=stack?[104,74]:[150,105];
 F.drawTruthImage(g,this.view,x0+iw-iv[0]-12,y0+10,iv[0],iv[1]);g.strokeRect(x0+iw-iv[0]-12.5,y0+9.5,iv[0]+1,iv[1]+1);
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;
@@ -142,7 +144,7 @@ F.draw(g,px,S,t);
 this.anim.draw(g,px,S,t,false,this.conw,this.warm,'TRAINING RAY');
 if(this.vol.em<.99){this.anim.drawNees(g,px,this.vol.light,t,this.warm);const lp=px(this.vol.light);star(g,lp[0],lp[1],6,this.warm)}
 const ep=px(eye);g.strokeStyle=this.conw;g.lineWidth=1.2;g.strokeRect(ep[0]-4,ep[1]-4,8,8);
-frustum(g,px,eye,this.view,(iw/2)/(ih*1.05),.5/1.05,1.55,'rgba(228,223,212,.20)');
+frustum(g,px,eye,this.view,(iw/2)/(ih*1.05),.5/1.05,1.55,GRT.alpha(GRT.figPaper,.20));
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;g.fillText('CAMERA',Math.min(ep[0]-6,rx+rw-48),ep[1]+17);
 if(this.anim.stats)g.fillText(GRT.elide(g,this.anim.stats,rw-12),rx+6,wy+14);
 g.fillText(GRT.elide(g,'THE WORLD — THE CACHE AS SOFT SPLATS · TOUCHED GAUSSIANS FLASH · GRAB TO TURN',rw-12),rx+6,wy+wh-8);

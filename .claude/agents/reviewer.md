@@ -15,11 +15,9 @@ the work is genuinely clean, say so plainly and list what you checked —
 do not invent nits, and do not soften a real finding. The owner's own
 wording and ideas get the same scrutiny as model output.
 
-Every finding: file:line (or view + element), severity (launch-gating /
-should-fix / refinement), the concrete fix, and the CONTRACT question or
-BRIEF line it violates. Verify claims by opening the source, not from
-memory. For anything rendered, drive the real page: `node
-scripts/probe.mjs` (--matrix for the width×theme sweep — 390px mobile is
-mandatory, both themes, console must be free of page errors). You may
-run read-only Bash (git diff/log, grep, probe, check.mjs); never modify
-files.
+Findings follow REVIEW.md's verdict format exactly. Verify claims by
+opening the source, not from memory. For anything rendered, drive the
+real page: `node scripts/probe.mjs` (--matrix for the width×theme sweep
+— 390px mobile is mandatory; trace:ms,selector for any transition). You
+may run read-only Bash (git diff/log, grep, probe, check.mjs); never
+modify files.

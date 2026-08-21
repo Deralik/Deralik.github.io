@@ -22,14 +22,17 @@ ap();d.addEventListener('change',ap);})()</script>
 <link rel="stylesheet" href="css/grt-skeleton.css?v=2">
 <noscript><style>
 /* no JS: the depth machine can't run, so stack every document readably —
-   the mobile machine's shape. Canvases and controls compute nothing; hidden. */
-body{overflow:auto}
-.pbody{display:block;position:static}
+   the mobile machine's shape. Canvases and controls compute nothing; hidden.
+   !important where the runtime stylesheet would out-specify this block. */
+body{display:block;height:auto;overflow:auto}
+.pbody{display:block;position:static;overflow:visible;flex:none}
 .fl{position:static!important;width:auto!important;height:auto!important}
-.face{position:static;opacity:1;pointer-events:auto}
+.face{position:static;opacity:1!important;pointer-events:auto}
 .face-panel,.face-rail,.face-strip{display:none}
-.face-doc{position:static;display:block;overflow:visible}
-.cwrap,.cread,.thm,.retp .bk,.retp .secs,.chr,canvas,[data-resume-pending]{display:none}
+.face-doc{position:static;display:block;overflow:visible;opacity:1!important}
+.cwrap,.cread,.retp .bk,.retp .secs,.chr,canvas,[data-resume-pending]{display:none}
+.idl .thm{display:none}
+.gfw,.cfigd,.cmap,.cfigw,.cfigp,.tl,#about-vrec,.ghgrid,.chipline,.pscroll,.tlfoot,.afig,.im{display:none}
 </style></noscript>
 </head>
 <body>
@@ -320,7 +323,6 @@ body{overflow:auto}
     </div>
     
   <div class="cwrap"><i class="cbar" id="cbar"></i></div>
-  <div class="cread" id="cread"></div>
 </div>
 
 <script src="js/skeleton.js?v=2"></script>

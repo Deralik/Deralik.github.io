@@ -20,7 +20,7 @@ this.c0=new Cam2(null,.92,.30,4.6);
 this.rays=[];this.nextRay=.6;this.chips=[];
 this.paths=this.mkPaths();this.depth=this.mkDepth()}
 this.rays3=this.mkRays3();
-this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.warm=GRT.figWarm;this.mono=tok('--mono');
+this.retok();this.warm=GRT.figWarm;
 loop(cv,(t,dt)=>this.frame(t,dt))}
 mkPaths(){const r=rng(13),V=this.vol;
 const pick=()=>{for(let k=0;k<400;k++){const p=[r()*1.3-.65,r()*1.1-.55,r()*1.3-.65];if(V.sig(p[0],p[1],p[2])>.09&&Math.hypot(p[0]-EYE[0],p[1]-EYE[1],p[2]-EYE[2])>2.45)return p}return[.3,0,-.2]};
@@ -38,13 +38,14 @@ mkDepth(){const r=rng(29),V=this.vol,pts=V.samples(250),out=[[],[],[]];
 const avg=(p,rad,m,sc)=>{let cr=0,cg=0,cb=0;for(let k=0;k<m;k++){const c=V.gtc([p[0]+(r()*2-1)*rad,p[1]+(r()*2-1)*rad,p[2]+(r()*2-1)*rad]);cr+=c[0];cg+=c[1];cb+=c[2]}return[cr/m*sc,cg/m*sc,cb/m*sc]};
 for(const p of pts){out[0].push({p,c:V.gtc(p),s:1.7});out[1].push({p,c:avg(p,.17,5,.55),s:2.6});out[2].push({p,c:avg(p,.36,5,.32),s:3.6})}
 return out}
-frame(t,dt){const f=fit(this.cv);if(!f)return;const{g,w,h}=f;this.frameN++;this.lastT=t;const F=this.F;
+retok(){this.cw=tok('--well');this.cab=tok('--absence');this.conw=tok('--onwell');this.cacc=tok('--accw');this.mono=tok('--mono')}
+frame(t,dt){const f=fit(this.cv);if(!f)return;this.retok();const{g,w,h}=f;this.frameN++;this.lastT=t;const F=this.F;
 this.cam.step(dt);
 if(F.iter<900){F.step(60,t);F.step(60,t);F.pulse.fill(-9)}
 if(this.solo){g.clearRect(0,0,w,h);this.ours(g,0,w,h,t);return}
 g.fillStyle=this.cw;g.fillRect(0,0,w,h);
 const gap=10,pw=(w-2*gap)/3;this._p3=2*(pw+gap);
-g.fillStyle='rgba(228,223,212,.18)';g.fillRect(pw+gap/2,0,1,h);g.fillRect(2*pw+gap*1.5,0,1,h);
+g.fillStyle=GRT.alpha(GRT.figPaper,.18);g.fillRect(pw+gap/2,0,1,h);g.fillRect(2*pw+gap*1.5,0,1,h);
 this.nrc(g,0,pw,h,t);this.gsc(g,pw+gap,pw,h,t);this.ours(g,2*(pw+gap),pw,h,t);
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;g.fillText(GRT.elide(g,'THREE WAYS TO HOLD A LIGHT FIELD',w-12),6,14)}
 nrc(g,x0,pw,h,t){g.save();g.beginPath();g.rect(x0,0,pw,h);g.clip();
@@ -57,8 +58,8 @@ g.beginPath();g.moveTo(x0+12,r.y);const ex=x0+12+(bx-x0-12)*u,ey=r.y+(h/2-r.y)*u
 g.fillStyle=this.conw;g.beginPath();g.arc(ex,ey,1.7,0,6.283);g.fill();g.globalAlpha=1;
 if(u>=1){const uo=(t-r.born-.7)/.6;if(uo>0&&uo<1){const c=cmap(r.v);
 g.fillStyle=`rgb(${c[0]},${c[1]},${c[2]})`;g.globalAlpha=1-uo;g.fillRect(bx+bw+12+34*uo,h/2-5,9,9);g.globalAlpha=1}}}
-g.fillStyle='#000';g.fillRect(bx,by,bw,bh);
-g.strokeStyle='rgba(228,223,212,.45)';g.lineWidth=1;g.strokeRect(bx+.5,by+.5,bw-1,bh-1);
+g.fillStyle=GRT.figWell;g.fillRect(bx,by,bw,bh);
+g.strokeStyle=GRT.alpha(GRT.figPaper,.45);g.lineWidth=1;g.strokeRect(bx+.5,by+.5,bw-1,bh-1);
 g.fillStyle=this.cab;g.font='500 11px '+this.mono;g.fillText('MLP',bx+bw/2-12,by+bh/2+4);
 g.font='500 8.5px '+this.mono;
 g.fillText('RAYS IN',x0+12,h*.24);g.fillText('RADIANCE OUT',bx+bw+12,h/2-12);
@@ -81,7 +82,7 @@ for(const pt of this.depth[k]){const q=pr(pt.p),sx=cx2+q[0]*S2,sy=cy2-q[1]*S2,lu
 g.globalAlpha=Math.min(.9,lu*(k===0?1.6:k===1?1.9:2.2));g.fillStyle=`rgb(${pt.c[0]*255|0},${pt.c[1]*255|0},${pt.c[2]*255|0})`;
 const sz=pt.s*1.5;g.fillRect(sx-sz/2,sy-sz/2,sz,sz)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore();
-g.strokeStyle=pulse>0?this.cacc:'rgba(228,223,212,.35)';g.globalAlpha=pulse>0?.4+.6*pulse:1;g.lineWidth=pulse>0?1.4:1;
+g.strokeStyle=pulse>0?this.cacc:GRT.alpha(GRT.figPaper,.35);g.globalAlpha=pulse>0?.4+.6*pulse:1;g.lineWidth=pulse>0?1.4:1;
 g.beginPath();g.moveTo(lx+sk,ly);g.lineTo(lx+lw+sk,ly);g.lineTo(lx+lw-sk,ly+lh);g.lineTo(lx-sk,ly+lh);g.closePath();g.stroke();g.globalAlpha=1;
 g.fillStyle=this.cab;g.font='500 8.5px '+this.mono;
 g.fillText(names[k],lx+sk+2,ly-5);g.fillText(bounce[k],lx-sk+2,ly+lh+13)}
@@ -93,7 +94,7 @@ if(i===1){const pb=px(P[1]);g.lineTo(cam0[0]+(pb[0]-cam0[0])*su,cam0[1]+(pb[1]-c
 else{const a=P[i-1],b=P[i],q=px([a[0]+(b[0]-a[0])*su,a[1]+(b[1]-a[1])*su,a[2]+(b[2]-a[2])*su]);g.lineTo(q[0],q[1])}}g.stroke();
 for(let i=1;i<P.length;i++){if(drawU*nseg<i)break;const q=px(P[i]);g.fillStyle=this.conw;g.beginPath();g.arc(q[0],q[1],active?2:1.5,0,6.283);g.fill()}
 const term=px(P[P.length-1]),tx=LX(k)+lw/2,ty=LY+lh*.35,au=active?(ph<.5?0:Math.min(1,(ph-.5)/.22)):1;
-if(au>0){g.setLineDash([3,4]);g.strokeStyle=active?this.cacc:'rgba(228,223,212,.3)';g.lineWidth=active?1.2:.8;
+if(au>0){g.setLineDash([3,4]);g.strokeStyle=active?this.cacc:GRT.alpha(GRT.figPaper,.3);g.lineWidth=active?1.2:.8;
 g.beginPath();g.moveTo(term[0],term[1]);g.lineTo(term[0]+(tx-term[0])*au,term[1]+(ty-term[1])*au);g.stroke();g.setLineDash([]);
 if(au>=1){const an=Math.atan2(ty-term[1],tx-term[0]);g.beginPath();g.moveTo(tx,ty);g.lineTo(tx-7*Math.cos(an-.4),ty-7*Math.sin(an-.4));g.moveTo(tx,ty);g.lineTo(tx-7*Math.cos(an+.4),ty-7*Math.sin(an+.4));g.stroke()}
 if(active&&au>0&&au<1){g.fillStyle=this.cacc;const mx2=term[0]+(tx-term[0])*au,my2=term[1]+(ty-term[1])*au;g.fillRect(mx2-2,my2-2,4,4)}}

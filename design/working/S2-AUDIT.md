@@ -1,4 +1,4 @@
-# S2 — retrofit audit ledger (live; delete when S2 ships into S3)
+# S3 port ledger (was the S2 audit; live — delete when S3 ships)
 
 Read this first each session. Status: ☐ open · ◐ running · ☑ done
 (with evidence) · ⚑ blocked on owner.
@@ -75,7 +75,7 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   rewritten production-clean. Verified: toggle sets + persists across
   reload, keyboard nav intact, matrix clean, gate green.
 
-- ☑ Wave B (2026-08-21): hash routing live (#/slug, #/slug/doc;
+- ☑ Wave B (2026-08-20): hash routing live (#/slug, #/slug/doc;
   replaceState; restore on load + hashchange; slugs already final:
   cinr/grtcache/melioraos/okibi/splat) — probe-verified set/deepen/
   navigate/reload-restore/clear; GRT8T warm-start moved to
@@ -84,7 +84,7 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   README task 7's stale one); Stanford bunny credit in cINR Reference
   (README task 8). Matrix clean both themes.
 
-- ☑ Wave C (2026-08-21): ALL of G2–G11 cleared + S1–S15 + R1–R3,
+- ☑ Wave C (2026-08-20): ALL of G2–G11 cleared + S1–S15 + R1–R3,
   R5–R11, R13–R15, R17–R18, behaviorally verified via probe:
   Animation-off byte-frozen; GRT reduced-motion byte-frozen (engage-to-
   animate); no-JS doc faces render; mobile sticky (strip top 86 after
@@ -94,7 +94,7 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   (f6/f7 dead markup deleted); rejection ¶ + in-progress + team line
   rewritten from vetted facts; academic record block restructured
   (HS marked recollection; conferral note); JP bare at D0; grid =
-  vendored snapshot (no third-party fetch; "as of Aug 21, 2026");
+  vendored snapshot (no third-party fetch; "as of Aug 20, 2026");
   image-slot.js deleted (404 gone); figure colors → tokens
   (--render-well/--render-paper/--ray-warm); elide helper; Richtmyer;
   unranked-sweep relabel; covq trend lines at doc covers; mobile tier
@@ -107,7 +107,7 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   says "start unrecorded") · R4/hero-spp + chipline "compared in place"
   wording — Wave D owns the hero's honesty rebuild.
 
-- ☑ Owner reactive rounds (2026-08-21/22), all probe-verified: toggle →
+- ☑ Owner reactive rounds (2026-08-20), all probe-verified: toggle →
   segmented sliding switch pixel-pinned to the text (both widths);
   cache-busting ?v=2 + no-store dev server (stale-mix root cause);
   portrait P3→sRGB + tint grade; About header rework (portrait fills
@@ -120,7 +120,7 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   gained trace/frames steps. Riders for owner return: portrait grade is
   a taste knob; black-hole companion decision comes with Wave D.
 
-- ☑ Wave D core (2026-08-22, autonomous): G1 CLEARED. Real data: Open
+- ☑ Wave D core (2026-08-20, autonomous): G1 CLEARED. Real data: Open
   SciVis supernova (Blondin — the research repo's own benchmark volume,
   vendored from its local copy; 432³→54³ box-filtered uint8, 205KB
   module with provenance header; RealVol trilinear subclass feeds the
@@ -139,8 +139,44 @@ Read this first each session. Status: ☐ open · ◐ running · ☑ done
   deploy (site unreachable at build); (b) drop-or-keep the black-hole
   analogue; (c) hero look/feel taste pass.
 
-▶ NEXT ACTION: review-agent findings (tooling + code) → re-verify,
-fix, commit. Then S16 owner copy pass + final all-lens review → S4.
+- ☑ Autonomous review round (2026-08-20): two adversarial agents
+  (machinery+protocols; site code), findings re-verified first-hand,
+  fixed, behaviorally proven:
+  · Machinery: privacy-ok hatch scoped to phone-scan only; PDFs now
+    word-scanned; archives hard-fail; denies hardened (git commit -n,
+    compound push, hooksPath); probe asserts the theme seed took,
+    gains --nojs with REAL assertions (opacity/scroll/text — the old
+    isVisible check passed on an opacity:0 page), settle 1500ms;
+    session-start now points at true ROADMAP state; ALL future-dated
+    labels corrected to real dates incl. the public "as of" grid label
+    (root cause: UTC CI timestamps misread as local); about-record
+    bookkeeping audited — editorial prose neutralized, snapshot
+    trimmed to real days; BRIEF per-unit VRAM + 1-spp + RTX 4090 lines
+    (advisory channel now ZERO standing advisories).
+  · Site code, launch-gating: no-JS page was BLANK (the D0 doc-snap
+    rule out-specified noscript; now !important + layout resets —
+    verified 11k chars readable+scrollable); GRT "in progress" tab
+    dead + spy corrupted (prefix match — verified scroll 2324 + active
+    tab); theme toggle left canvases wrong-theme (resize dispatch +
+    per-frame token re-reads — pixel-verified dark pipeline).
+  · Should-fix: "↑ the panel" now one level (D2→D1, verified); GRT
+    hero no longer computes on hidden faces (iter frozen on Escape —
+    and the matrix caught my first attempt's const-shadow crash,
+    proving the gate works); doc cursor auto; mobile GRT tabs wrap;
+    setCap drains to the readout's truth; ~330 lines of dead JS
+    deleted (Nova, pixelPath, Field3/spark/sprites, grt8 trio, Vol3,
+    resultPlot/railBars, audit(), to1/to2, #cread); rgba literals →
+    GRT.alpha(token); 966GB→0.97TB threshold; chip honors morph-hold;
+    as-of label renders under the D2 grid; SYSTEM margins/DPR text
+    aligned to code.
+  · Deferred, recorded: dead-CSS selector purge (risky sweep — final
+    review scope); Okibi beta-vs-public wording + 11-vs-16 releases →
+    first freshness sweep; morph jank re-measure on real hardware;
+    REAL-DEVICE TOUCH remains the riskiest untested surface; commit
+    26c8a8b+ (Wave D) still needs its focused review pass at final.
+
+▶ NEXT ACTION: S16 owner copy pass + Wave-D-focused review inside the
+final all-lens review → S4 deploy decisions.
 
 ## Triage results (owner, 2026-08-19 — law in RULINGS "content & voice")
 

@@ -127,7 +127,7 @@
     "end": "ongoing"
    },
    "source": "résumé 2026-08-12 (uploads/Daniel_Zavorotny_Resume.pdf): \"Mar 2023 – Present\"",
-   "notes": "Starts BEFORE the BS was awarded (Jun 2023) — overlaps the final undergrad quarter. GRTCache is inside this span per the résumé (neural radiance cache on ray-traced Gaussians bullet). cINR, cache scheduling, CUDA pipeline work all live here. OWNER 2026-08-12: involvement is minor/supporting since MS candidacy (2026-04) — drawn as a thin tail after the candidacy point. OWNER 2026-08-13: VIDI is drawn as a captioned wash over the UC Davis row (like the CS club on ARC), not as its own row; the former VIDI row is now Research and carries cINR + GRTCache with a dotted thread between them. TA terms are underline markings on the UC Davis row; a thin line bridges BS→MS (in the lab, not enrolled). OWNER 2026-08-13: joined as an undergraduate (Mar 2023, final BS quarter), not hired as staff; some quarters covered as a GSR — dates not known offhand and deliberately not published. The résumé’s blanket “Graduate Research Assistant, Mar 2023 – Present” is a simplification.",
+   "notes": "Starts BEFORE the BS was awarded (Jun 2023) — overlaps the final undergrad quarter. GRTCache is inside this span per the résumé (neural radiance cache on ray-traced Gaussians bullet). cINR, cache scheduling, CUDA pipeline work all live here. OWNER 2026-08-12: involvement is minor/supporting since MS candidacy (2026-04) — drawn as a thin tail after the candidacy point. OWNER 2026-08-13: VIDI is drawn as a captioned wash over the UC Davis row (like the CS club on ARC), not as its own row; the former VIDI row is now Research and carries cINR + GRTCache with a dotted thread between them. TA terms are underline markings on the UC Davis row; a thin line bridges BS→MS (in the lab, not enrolled). OWNER 2026-08-13: joined as an undergraduate (Mar 2023, final BS quarter), not hired as staff; some quarters covered as a GSR — term-level dates only. The résumé’s blanket “Graduate Research Assistant, Mar 2023 – Present” is a simplification.",
    "ongoing": true
   },
   {
@@ -365,7 +365,7 @@
   },
   {
    "claim": "Résumé: 'AS, Physics, Mathematics & Economics 2019–2021, ARC — GPA 3.95'",
-   "status": "Transcript disagrees three ways: cum GPA 3.879 (3.95 matches the MS, likely a paste error); span Fall 2017–Spring 2021, not 2019; the econ credential is an AA-T. Site follows the transcript. Résumé flagged to owner as unpolished by his own description."
+   "status": "Transcript disagrees three ways: cum GPA 3.879 (3.95 matches the MS, likely a paste error); span Fall 2017–Spring 2021, not 2019; the econ credential is an AA-T. Site follows the transcript."
   },
   {
    "claim": "Older résumé dates ARC as 'Summer 2019 – Spring 2021'",
@@ -425,11 +425,11 @@
    "Computer Vision",
    "Robotics (older résumé — explains SPLAT)"
   ],
-  "mentorship": "Mentored at VIDI by Dr. Qi Wu (now NVIDIA) through his PhD; lab directed by Dr. Kwan-Liu Ma. References with emails are in the résumé — NEVER published on the site; the mentorship facts may be used as context if the owner approves."
+  "mentorship": "Mentored at VIDI by Dr. Qi Wu (now NVIDIA) through his PhD; lab directed by Dr. Kwan-Liu Ma."
  },
  "contributions": {
   "_note": "vendored GitHub contributions snapshot (github-contributions-api.jogruber.de, public data) — refreshed by the freshness sweep, never fetched client-side",
-  "fetched": "2026-08-21",
+  "fetched": "2026-08-20",
   "total_last_year": 478,
   "days": [
    [
@@ -2274,11 +2274,6 @@
    ],
    [
     "2026-08-20",
-    0,
-    0
-   ],
-   [
-    "2026-08-21",
     0,
     0
    ]

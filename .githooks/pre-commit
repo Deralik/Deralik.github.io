@@ -5,7 +5,9 @@
 # Activate once per clone: git config core.hooksPath .githooks
 set -u
 # .githooks is excluded — the guard's own word list lives there.
-staged() { git diff --cached -U0 --no-color -- . ':!.githooks'; }
+# Only ADDED CONTENT lines are scanned: diff metadata ("index abc123..")
+# carries digit runs that false-match the phone shape.
+staged() { git diff --cached -U0 --no-color -- . ':!.githooks' | grep -E '^\+[^+]'; }
 fail=0
 
 # Exempt from the phone scan only: lines marked privacy-ok (legit

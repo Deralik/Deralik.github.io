@@ -1,5 +1,5 @@
 /* cINR figures — shared by mocks and (later) the skeleton port.
-   window.CINR = { bunny, pipeline, cacheGrid, resultPlot }
+   window.CINR = { bunny, pipeline, cacheView, fpsPanel, rankPanel, DSN, T, DS, SZ }
    All colours read from the theme tokens at draw time; no literals except
    inside the bunny's shading ramp, which quotes k-figures.js geometry
    verbatim (owner 2026-08-15: copy K's motion; only the ground changed). */
@@ -96,7 +96,7 @@ function bunny(cv,opts){
   new IntersectionObserver(es=>{st.vis=es[0].isIntersecting},{rootMargin:'120px'}).observe(cv);
   let tick=0;
   function frame(now){requestAnimationFrame(frame);if(!W)size();
-    if(opts&&opts.onState){const run=!RM&&st.vis&&!!W&&!st.paused&&window.__cinrFocus===cv;
+    if(opts&&opts.onState){const run=!RM&&st.vis&&!!W&&!st.paused&&!window.__morph&&window.__cinrFocus===cv;
       if(run!==st.lastRun){st.lastRun=run;try{opts.onState(run)}catch(e){}}}
     if(!st.vis||!W)return;
     if(window.__morph&&drewOnce)return; /* hold the frame; the morph stretches it */
@@ -376,7 +376,8 @@ function cacheView(cv){
     ctx.fillStyle=abs;ctx.fillText(cap,bx,by+bh+17);
   }
   return {feed,
-    setCap(frac){CAP=Math.max(PRE.length+30,Math.round(frac*TOTAL));draw(performance.now())},
+    setCap(frac){CAP=Math.max(PRE.length+30,Math.round(frac*TOTAL));
+      const now=performance.now();while(resident.size>CAP&&evictOne(now));draw(now)},
     setOrder(o){ORDER=o;resident.clear();preI=0;lastInsert=performance.now();draw(lastInsert)},
     clear(){resident.clear();preI=0;lastInsert=performance.now();draw(lastInsert)},
     anyFresh:()=>performance.now()-lastInsert<350,
@@ -446,62 +447,9 @@ function fpsPanel(cv,key){
 /* ── the general result: per-dataset gain, both modes, means derived ──── */
 const T=[['Magnetic',174.8,36.3,9.4,5.5,[2048,2048,2048]],['Chameleon',212.3,43.0,20.6,11.0,[2048,2048,2160]],['Beechnut',47.3,9.5,11.7,5.3,[2048,2048,3092]],['Fialka',33.2,6.6,5.3,2.5,[3272,3786,1986]],['Flower',56.4,14.0,1.7,0.8,[3652,3234,3828]],['Heatrelease',79.9,24.3,4.6,3.7,[4608,1280,3412]],['Scrambler',21.1,3.3,2.9,1.2,[4354,3870,2612]],['Richtmyer',90.3,21.9,6.4,2.1,[4096,4096,3840]],['Miranda',67.4,17.9,13.1,8.9,[4096,4096,4096]],['DNS',91.8,14.3,20.5,10.6,[10240,7680,1536]]];
 /* bytes: float32 grids; DNS is the paper's double-precision case study */
-const SZ=(r,i)=>{const b=r[5][0]*r[5][1]*r[5][2]*(r[0]==='DNS'?8:4);return b>=1e12?(b/1e12).toFixed(2)+' TB':Math.round(b/1e9)+' GB'};
+const SZ=(r,i)=>{const b=r[5][0]*r[5][1]*r[5][2]*(r[0]==='DNS'?8:4);return b>=0.95e12?(b/1e12).toFixed(2)+' TB':Math.round(b/1e9)+' GB'};
 const rm=T.map(r=>r[1]/r[2]),pt=T.map(r=>r[3]/r[4]);
 const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
 const DS=i=>{const g=n=>parseFloat(V(n));const l=g('--ds-l')||.52,c=g('--ds-c')||.11,h0=g('--ds-h0')||20,hs=g('--ds-hstep')||36;return 'oklch('+l+' '+c+' '+((i*hs+h0)%360)+')'};
-function resultPlot(cv,o){
-  o=o||{};
-  const ctx=cv.getContext('2d');
-  function draw(){
-    const r=cv.getBoundingClientRect();if(!r.width)return;
-    const dpr=Math.min(devicePixelRatio||1,2);cv.width=r.width*dpr;cv.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-    const W=r.width,H=r.height,mono=V('--mono');
-    const padL=34,padR=10,padT=o.full?20:12,padB=24,y0=1,y1=7;
-    const Y=v=>padT+(y1-v)/(y1-y0)*(H-padT-padB), X=i=>padL+(i+.5)/T.length*(W-padL-padR);
-    ctx.clearRect(0,0,W,H);ctx.font='400 9.5px '+mono;
-    for(const t of [1,3,5,7]){ctx.strokeStyle=V('--hair');ctx.globalAlpha=t===1?1:.55;
-      ctx.beginPath();ctx.moveTo(padL,Y(t)+.5);ctx.lineTo(W-padR,Y(t)+.5);ctx.stroke();ctx.globalAlpha=1;
-      ctx.fillStyle=V('--absence');ctx.fillText(t+'×',8,Y(t)+3)}
-    const mRM=mean(rm),mPT=mean(pt);
-    ctx.setLineDash([3,3]);ctx.strokeStyle=V('--prose');
-    ctx.beginPath();ctx.moveTo(padL,Y(mRM)+.5);ctx.lineTo(W-padR,Y(mRM)+.5);ctx.stroke();
-    if(o.full){ctx.beginPath();ctx.moveTo(padL,Y(mPT)+.5);ctx.lineTo(W-padR,Y(mPT)+.5);ctx.stroke()}
-    ctx.setLineDash([]);ctx.fillStyle=V('--prose');
-    ctx.fillText('mean '+mRM.toFixed(1)+'× · claimed ~5×',W-padR-158,Y(mRM)-5);
-    if(o.full)ctx.fillText('mean '+mPT.toFixed(1)+'× · claimed ~2×',W-padR-148,Y(mPT)-5);
-    T.forEach((row,i)=>{const x=X(i);
-      ctx.fillStyle=DS(i);ctx.fillRect(x-3.5,Y(rm[i])-3.5,7,7);
-      ctx.textAlign='center';ctx.fillText(rm[i].toFixed(1)+'×',x,Y(rm[i])-8);ctx.textAlign='left';
-      if(o.full){ctx.strokeStyle=DS(i);ctx.strokeRect(x-2.5,Y(pt[i])-2.5,5,5);
-        ctx.textAlign='center';ctx.fillText(pt[i].toFixed(1)+'×',x,Y(pt[i])+15);ctx.textAlign='left'}
-      ctx.fillStyle=DS(i);ctx.textAlign='center';ctx.fillText(row[0],x,H-padB+13);ctx.textAlign='left'});
-    if(o.full){ctx.fillStyle=V('--prose');ctx.fillText('▪ ray-march   ▫ path trace   gain = FPS ours ÷ un-cached · same algorithm, same machine',padL,11)}
-  }
-  draw();addEventListener('resize',draw);RO(cv,draw);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
-  return {n:T.length,mRM:mean(rm),mPT:mean(pt)};
-}
-function railBars(cv){
-  const draw=()=>{
-    const r=cv.getBoundingClientRect();if(r.width<40||r.height<20)return;
-    const dpr=Math.min(devicePixelRatio||1,2);
-    cv.width=r.width*dpr;cv.height=r.height*dpr;
-    const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
-    const W=r.width,H=r.height;
-    const g=T.map(row=>row[1]/row[2]),mx=Math.max.apply(null,g);
-    const mean=g.reduce((s,x)=>s+x,0)/g.length;
-    const gap=3,bw=Math.max(2,(W-gap*(g.length-1))/g.length);
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle=V('--ink');
-    g.forEach((v,i)=>{const h=(H-3)*v/mx;ctx.fillRect(i*(bw+gap),H-1-h,bw,h)});
-    const ym=Math.round(H-1-(H-3)*mean/mx)+.5;
-    ctx.strokeStyle=V('--prose');ctx.setLineDash([3,3]);
-    ctx.beginPath();ctx.moveTo(0,ym);ctx.lineTo(W,ym);ctx.stroke();ctx.setLineDash([]);
-    ctx.strokeStyle=V('--hair');
-    ctx.beginPath();ctx.moveTo(0,H-.5);ctx.lineTo(W,H-.5);ctx.stroke();
-  };
-  draw();return {draw};
-}
-window.CINR={bunny,pipeline,cacheView,fpsPanel,rankPanel,railBars,DSN,resultPlot,T,DS,SZ};
+window.CINR={bunny,pipeline,cacheView,fpsPanel,rankPanel,DSN,T,DS,SZ};
 })();

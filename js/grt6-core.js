@@ -24,7 +24,7 @@ const sx=x0+w/2+pr[0]*fpx,sy=y0+h/2-pr[1]*fpx,sz=.06*pr[2]*fpx*(.55+.45*v);
 g.globalAlpha=Math.min(.42,v*.58+.01);g.drawImage(F.spr[Math.min(13,(v*13)|0)],sx-sz,sy-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over';g.restore()}
 }
-function box(g,px){g.strokeStyle='rgba(228,223,212,.12)';g.lineWidth=1;const CC=[-1,1];g.beginPath();
+function box(g,px){g.strokeStyle=GRT.alpha(GRT.figPaper,.12);g.lineWidth=1;const CC=[-1,1];g.beginPath();
 for(const a of CC)for(const b of CC){let p1=px([a,b,-1]),p2=px([a,b,1]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);p1=px([a,-1,b]);p2=px([a,1,b]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);p1=px([-1,a,b]);p2=px([1,a,b]);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1])}g.stroke()}
 /* RayAnim — auto training rays: walk, NEE, vertex micro-training, and
    intersect-time highlighting of every gaussian the ray crosses. */

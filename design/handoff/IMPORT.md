@@ -23,7 +23,7 @@ Results.png` (recompress).
   publishability before commit — the file ships to the public site.
 
 ## README supersessions (the frozen spec is wrong or outdated here —
-this list wins; recorded 2026-08-21, S3 Wave C)
+this list wins; recorded 2026-08-20, S3 Wave C)
 
 - README "drawn … from about-record.json — static data, no API" was
   FALSE of the handoff code: about-skeleton fetched

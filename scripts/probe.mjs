@@ -50,13 +50,33 @@ for (let i = 0; i < 40; i++) {
 }
 
 const browser = await chromium.launch();
+/* --nojs: render with JavaScript disabled (the noscript fallback path) */
+if (flag('nojs')) {
+  const ctx = await browser.newContext({ viewport: { width: +opt('w', 1280), height: +opt('h', 900) }, javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  await page.goto(base, { waitUntil: 'load' });
+  await page.screenshot({ path: path.join(out, 'nojs.png'), fullPage: false });
+  /* Playwright's isVisible() counts opacity:0 as visible — assert the real
+     contract: computed opacity 1 AND the page actually scrolls its content */
+  const st = await page.evaluate(() => {
+    const d = document.querySelector('.face-doc');
+    return { op: d ? getComputedStyle(d).opacity : '0',
+             scrollable: document.documentElement.scrollHeight > innerHeight + 50,
+             text: (document.body.innerText || '').length };
+  });
+  console.log('shot: ' + path.join(out, 'nojs.png'));
+  console.log(`nojs: doc opacity=${st.op} · scrollable=${st.scrollable} · text=${st.text} chars`);
+  await browser.close(); server.kill();
+  if (st.op !== '1' || !st.scrollable || st.text < 2000) { console.error('NOJS: page not readable without JavaScript'); process.exit(1); }
+  process.exit(0);
+}
 const consoleLog = [], pageErrors = [];
 const wire = page => {
   page.on('console', m => (m.type() === 'error' || m.type() === 'warning') &&
     consoleLog.push(`[${m.type()}] ${m.text()}`));
   page.on('pageerror', e => pageErrors.push(String(e)));
 };
-const settle = page => page.waitForTimeout(1200); // canvas warm-starts
+const settle = page => page.waitForTimeout(1500); // canvas warm-starts (rIC ceiling 900ms + slack)
 
 const shoot = async (page, name) => {
   const p = path.join(out, name.endsWith('.png') ? name : name + '.png');
@@ -77,6 +97,10 @@ if (flag('matrix')) {
       await page.addInitScript(([k, v]) => localStorage.setItem(k, v), [lsKey, theme]);
       await page.goto(base, { waitUntil: 'load' });
       await settle(page);
+      /* assert the seed took — otherwise both sweeps could silently shoot
+         one theme and exit green */
+      const got = await page.evaluate(() => document.documentElement.dataset.theme);
+      if (got !== theme) pageErrors.push(`matrix: seeded theme "${theme}" but page is "${got}" — theme values/key drifted`);
       await shoot(page, `${theme}-${w}x${h}`);
       await ctx.close();
     }

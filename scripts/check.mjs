@@ -38,10 +38,10 @@ const hard = [], advisory = [];
 for (const f of textFiles) {
   let body; try { body = readFileSync(f, 'utf8'); } catch { continue; }
   body.split('\n').forEach((line, i) => {
-    if (line.includes('privacy-ok')) return;
-    /* doi.org lines: DOI suffixes are phone-shaped; exempt from the
-       phone scan only — word/local scans below still run on them */
-    if (!line.includes('doi.org') && PHONE.test(line))
+    /* privacy-ok and doi.org exempt a line from the PHONE scan ONLY
+       (numeric constants / DOI suffixes are phone-shaped) — the word and
+       .privacy.local scans always run on every line */
+    if (!line.includes('privacy-ok') && !line.includes('doi.org') && PHONE.test(line))
       hard.push(`${f}:${i + 1}: phone-shaped string`);
     for (const w of PRIVATE_WORDS) if (line.toLowerCase().includes(w)) hard.push(`${f}:${i + 1}: private-artifact reference "${w}"`);
     for (const s of localStrings) if (line.includes(s)) hard.push(`${f}:${i + 1}: string from .privacy.local`);
@@ -54,8 +54,13 @@ for (const f of pdfFiles) {
   try { text = execSync(`pdftotext ${JSON.stringify(f)} -`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString(); }
   catch { hard.push(`${f}: cannot extract PDF text — install poppler-utils (pdftotext); unscanned PDFs do not ship`); continue; }
   if (PHONE.test(text)) hard.push(`${f}: phone-shaped string inside PDF`);
+  for (const w of PRIVATE_WORDS) if (text.toLowerCase().includes(w)) hard.push(`${f}: private-artifact reference "${w}" inside PDF`);
   for (const s of localStrings) if (text.includes(s)) hard.push(`${f}: .privacy.local string inside PDF`);
 }
+
+/* archives can smuggle anything past the text scans — none belongs here */
+for (const f of files.filter(f => ['zip', 'gz', 'tar', '7z', 'rar'].includes(ext(f))))
+  hard.push(`${f}: archive in the public tree — unscannable; unpack or remove`);
 
 /* ── integrity: relative links in HTML resolve ── */
 for (const f of textFiles.filter(f => ext(f) === 'html')) {

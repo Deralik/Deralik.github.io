@@ -247,7 +247,7 @@ where phrased generally)
   are NOT presented as in progress. Equal-time comparisons are not
   claimed as running — the honest absence stands.
 
-# Owner rulings — affordance & assets (2026-08-21)
+# Owner rulings — affordance & assets (2026-08-20)
 
 - **Interactive parts must be visually distinct from non-interactive
   ones** — an element that looks static but responds (or looks clickable
@@ -261,9 +261,9 @@ where phrased generally)
   carries text; icons keep it quiet.
 - **Portrait color pipeline**: the source photo is Display P3; any
   derivative for the web is converted to sRGB at export (a dropped
-  profile reads as a sickly green cast — found 2026-08-21).
+  profile reads as a sickly green cast — found 2026-08-20).
 
-# Owner rulings — reactive rounds (2026-08-22)
+# Owner rulings — reactive rounds (2026-08-20)
 
 - **Persistent render across depths (cINR, pattern for future demos)**:
   the bunny is ONE component at every depth — it migrates card ↔ demo

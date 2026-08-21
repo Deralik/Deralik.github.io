@@ -41,29 +41,27 @@ depth-machine design handed off in `handoff/` — see `iterations/`.
       Two riders open there: GRT author line (D7), in-progress framing
       (D8) — neither blocks the rest of the port starting.
 
-## S3 — Production port
+## S3 — Production port (ledger: working/S2-AUDIT.md)
 
-- [ ] Port `site/` + safe uploads into the repo per `handoff/README.md`
-      production tasks 1–11 (theming toggle, scaffold removal, partition
+- [x] Port per `handoff/README.md` tasks 1–11 (commits 7aeaef3, f738276,
+      4aa93d4, f033f41: theming toggle, scaffold removal, partition/font
       trim, hash routing, deferred warm-starts, head/meta/favicon,
-      accessibility, tested widths).
-- [ ] Import-gate strips (`handoff/IMPORT.md`): résumé placeholder until
-      owner supplies email-only PDF; strip `identity.phone`; audit JSON
-      bookkeeping fields; harmonize `identity.title` to the ruled "GPU &
-      Machine Learning engineer". Compress portrait (1.8 MB) + Quality
-      Results.png.
-- [ ] Under-construction cards: band-2 slots titled MelioraOS / Okibi /
-      SPLAT in the existing empty-slot design language.
-- [ ] **GRT real data (launch gate):** nebula-class dataset converted
-      offline per `handoff/DATA-HANDOFF.md` (license verified, credited);
-      black-hole companion: feasibility check → owner picks labelled
-      analogue or drop. Honest comparison rule enforced (no synthetic
-      blend behind a comparison frame).
-- [ ] Stanford bunny credit line in cINR reference.
-- [ ] Launch-gating punch items from S2.
-- [ ] Reviews: /review on the port, probe matrix clean (no page errors,
-      all widths × themes), check.mjs green, claims extraction pass.
-      Owner may trigger /code-review ultra as the final gate.
+      Enter/Space + focus-visible + reduced-motion, tested widths).
+- [x] Import-gate strips: `identity.phone` stripped, title harmonized,
+      images compressed (7aeaef3); JSON bookkeeping fields audited and
+      neutralized (2026-08-20). STILL OPEN → S17: résumé placeholder
+      until the owner copies the email-only PDF.
+- [x] Under-construction cards titled MelioraOS / Okibi / SPLAT (f033f41).
+- [x] **GRT real data (launch gate) — MET** (26c8a8b): vendored Open
+      SciVis supernova + honest 1-spp estimators; synthetic blend
+      deleted. RIDERS: license text re-verify before deploy; black-hole
+      analogue keep-or-drop (owner).
+- [x] Stanford bunny credit (4aa93d4). Launch-gating punch G1–G11 all
+      cleared (f033f41, 26c8a8b).
+- [ ] S16 owner-voice copy pass (About bio/lede + anything owner flags).
+- [ ] Final review: all six REVIEW.md lenses by a fresh reviewer; probe
+      matrix + --nojs clean; check.mjs green. Owner may trigger
+      /code-review ultra as the final gate.
 
 ## S4 — Deploy
 

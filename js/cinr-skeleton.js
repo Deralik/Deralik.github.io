@@ -1,5 +1,5 @@
 /* cINR f1 — wiring: ONE bunny render shared by card and demo (owner
-   2026-08-22: the render persists across depths — it MIGRATES between the
+   2026-08-20: the render persists across depths — it MIGRATES between the
    card slot and the demo slot with a FLIP glide matched to the morph; card
    mode locks the LoD and mutes the cache). Markup in index.html; drawing
    in cinr-figs.js. */

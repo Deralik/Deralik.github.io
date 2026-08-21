@@ -161,7 +161,9 @@ body.mob .tap{display:flex;align-items:center;justify-content:center;min-height:
    inside the shrinking card */
 .pbody[data-depth="0"] .face-doc{opacity:0;transition:opacity .07s}
 
-/* ── interactive parts read as interactive (owner ruling 2026-08-21) ── */
+/* ── interactive parts read as interactive (owner ruling 2026-08-20) ── */
+.fl[data-face="doc"]{cursor:auto} /* the document is prose, not a button */
+body.mob .retp .secs{flex-wrap:wrap;row-gap:6px}
 .retp .bk{cursor:pointer}
 .retp .bk:hover{color:var(--ink)}
 .retp .secs span{cursor:pointer}
