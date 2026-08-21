@@ -139,7 +139,9 @@ this.expo=3.0/Math.max(p,1e-4)}
 idx(p){const EX=this.EX,EY=this.EY,EZ=this.EZ,he=this.he,i=Math.max(0,Math.min(EX-1,(p[0]/he[0]+1)/2*EX|0)),j=Math.max(0,Math.min(EY-1,(p[1]/he[1]+1)/2*EY|0)),k=Math.max(0,Math.min(EZ-1,(p[2]/he[2]+1)/2*EZ|0));return((k*EY+j)*EX+i)*3}
 gtc(p){const o=this.idx(p);return[this.grid[o],this.grid[o+1],this.grid[o+2]]}
 gt(p){const o=this.idx(p);return(this.grid[o]+this.grid[o+1]+this.grid[o+2])/3}
-samples(n){const a=[],he=this.he;let g=0;while(a.length<n&&g<n*60){g++;const x=(this.r()*2-1)*he[0],y=(this.r()*2-1)*he[1],z=(this.r()*2-1)*he[2],s=this.sig(x,y,z);if(s>.05&&this.r()<s*1.1)a.push([x,y,z])}return a}
+/* near-flat acceptance over content: dim regions must train too, or
+   bright-region tails inflate them unchecked */
+samples(n){const a=[],he=this.he;let g=0;while(a.length<n&&g<n*60){g++;const x=(this.r()*2-1)*he[0],y=(this.r()*2-1)*he[1],z=(this.r()*2-1)*he[2],s=this.sig(x,y,z);if(s>.02&&this.r()<.25+s)a.push([x,y,z])}return a}
 stipple(n){const a=[],he=this.he;let g=0;while(a.length<n&&g<n*60){g++;const x=(this.r()*2-1)*he[0],y=(this.r()*2-1)*he[1],z=(this.r()*2-1)*he[2],s=this.sig(x,y,z);if(s>.02&&this.r()<.8)a.push([x,y,z,Math.min(1,s)])}return a}
 shellInit(){for(let t=0;t<4;t++){const th=this.r()*6.283,ph=Math.acos(2*this.r()-1),o=[1.6*Math.sin(ph)*Math.cos(th),1.6*Math.cos(ph),1.6*Math.sin(ph)*Math.sin(th)],tg=[(this.r()*2-1)*.5,(this.r()*2-1)*.5,(this.r()*2-1)*.5];
 const d=[tg[0]-o[0],tg[1]-o[1],tg[2]-o[2]],L=Math.hypot(d[0],d[1],d[2]);
@@ -212,15 +214,33 @@ const GS={butterfly:4.2,ring:3.4};
    a gaussian flashes when a training sample updates it. */
 function makeBase(){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,1,32,32,31);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.42,'rgba(255,255,255,.42)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.beginPath();g.arc(32,32,31,0,6.283);g.fill();return c}
 class CField{
-constructor(vol,N,seed,opts){this.vol=vol;this.opt=opts||SIZES;this.rand=rng(seed||17);this.S=vol.samples(2600);this.buildLit();this.relocOn=true;this.wmax=.3;this.base=makeBase();this.tintC=new Map();this.alloc(N);
+constructor(vol,N,seed,opts){this.vol=vol;this.opt=opts||SIZES;this.rand=rng(seed||17);this.S=vol.samples(2600);this.buildLit();
+/* dark pool: uniform in the box, no rejection — the field must learn its
+   ZEROS too, or gaussian tails leave untrained haze where the truth is
+   black (the pane marches through empty space; the training samples
+   otherwise never land there) */
+this.dark=[];for(let i=0;i<1400;i++)this.dark.push([(this.rand()*2-1)*vol.he[0],(this.rand()*2-1)*vol.he[1],(this.rand()*2-1)*vol.he[2]]);
+this.relocOn=true;this.wmax=.3;this.base=makeBase();this.tintC=new Map();this.alloc(N);
 this.tp=vol.samples(1600);this.tvc=new Float32Array(this.tp.length*3);this.refreshTruth()}
 buildLit(){this.lit=[];for(const p of this.S){const c=this.vol.gtc(p),lu=(c[0]+c[1]+c[2])/3;if(lu>.04&&this.rand()<lu*1.6)this.lit.push(p)}if(!this.lit.length)this.lit=this.S}
 alloc(N){this.N=N;this.gx=new Float32Array(N);this.gy=new Float32Array(N);this.gz=new Float32Array(N);this.ls=new Float32Array(N);this.cr=new Float32Array(N);this.cg=new Float32Array(N);this.cb=new Float32Array(N);this.pulse=new Float32Array(N).fill(-9);
-for(let i=0;i<N;i++)this.seed(i);this.hb(N);this.iter=0;this.loss=1}
+this.cs=1;for(let i=0;i<N;i++)this.seed(i);this.hb(N);this.normInit();this.iter=0;this.loss=1}
+/* the field is a SUM: seeding every gaussian at the full local colour
+   overshoots by the overlap count (~10-30×). Measure it, scale once —
+   the field starts at the right energy and SGD only shapes structure. */
+normInit(){let m=0,n=0;
+for(let k=0;k<80;k++){const p=this.S[(this.rand()*this.S.length)|0],pc=this.predC(p),tc=this.vol.gtc(p);
+const tl=tc[0]+tc[1]+tc[2];if(tl>.05){m+=(pc[0]+pc[1]+pc[2])/tl;n++}}
+const s=n?1/Math.max(1,m/n):1;
+if(s<1)for(let i=0;i<this.N;i++){this.cr[i]*=s;this.cg[i]*=s;this.cb[i]*=s}
+this.cs=s;this.vg=Math.min(14,1/Math.max(s,.07));
+/* dim/reloc thresholds and display gain follow the colour scale */
+let ml=0;for(let i=0;i<this.N;i++)ml+=(this.cr[i]+this.cg[i]+this.cb[i])/3;ml/=this.N;
+this.dimT=Math.max(.0015,.12*ml)}
 seed(i){const p=this.vol.shellInit();this.gx[i]=p[0];this.gy[i]=p[1];this.gz[i]=p[2];this.ls[i]=Math.log(this.opt.s0+this.opt.sv*this.rand());
-const c=this.vol.gtc(p);this.cr[i]=Math.max(.02,c[0]*.5);this.cg[i]=Math.max(.02,c[1]*.5);this.cb[i]=Math.max(.02,c[2]*.5)}
+const c=this.vol.gtc(p),s=this.cs,fl=Math.max(.002,.02*s);this.cr[i]=Math.max(fl,c[0]*s);this.cg[i]=Math.max(fl,c[1]*s);this.cb[i]=Math.max(fl,c[2]*s)}
 relocSeed(i){const p=this.lit[(this.rand()*this.lit.length)|0];this.gx[i]=p[0]+.04*(this.rand()-.5);this.gy[i]=p[1]+.04*(this.rand()-.5);this.gz[i]=p[2]+.04*(this.rand()-.5);this.ls[i]=this.opt.relocLs;
-const c=this.vol.gtc(p);this.cr[i]=Math.max(.02,c[0]*.4);this.cg[i]=Math.max(.02,c[1]*.4);this.cb[i]=Math.max(.02,c[2]*.4)}
+const c=this.vol.gtc(p),s=this.cs,fl=Math.max(.002,.02*s);this.cr[i]=Math.max(fl,c[0]*s);this.cg[i]=Math.max(fl,c[1]*s);this.cb[i]=Math.max(fl,c[2]*s)}
 hb(N){this.hI=new Int32Array(N);this.hG=new Float32Array(N);this.hQ=new Float32Array(N);this.hX=new Float32Array(N);this.hY=new Float32Array(N);this.hZ=new Float32Array(N);this.hS=new Float32Array(N)}
 setN(n,now){if(n===this.N)return;const cp=(a,M)=>{const b=new Float32Array(M);b.set(a.subarray(0,Math.min(a.length,M)));return b};
 const N0=this.N;this.N=n;this.gx=cp(this.gx,n);this.gy=cp(this.gy,n);this.gz=cp(this.gz,n);this.ls=cp(this.ls,n);this.cr=cp(this.cr,n);this.cg=cp(this.cg,n);this.cb=cp(this.cb,n);const pu=new Float32Array(n).fill(-9);pu.set(this.pulse.subarray(0,Math.min(N0,n)));this.pulse=pu;
@@ -241,11 +261,11 @@ if(this.ls[i]<this.opt.lsMin)this.ls[i]=this.opt.lsMin;else if(this.ls[i]>this.o
 if(flash&&G>.35){this.pulse[i]=now;out&&out.add(i)}}
 return er*er+eg*eg+eb*eb}
 step(B,now){let L=0;const dk=1/(1+this.iter/1400);
-for(let b=0;b<B;b++){const pool=this.rand()<.65?this.lit:this.S,p=pool[(this.rand()*pool.length)|0];L+=this.one(p[0]+.05*(this.rand()-.5),p[1]+.05*(this.rand()-.5),p[2]+.05*(this.rand()-.5),dk,now,false)}
+for(let b=0;b<B;b++){const u=this.rand(),pool=u<.5?this.lit:u<.75?this.S:this.dark,p=pool[(this.rand()*pool.length)|0];L+=this.one(p[0]+.05*(this.rand()-.5),p[1]+.05*(this.rand()-.5),p[2]+.05*(this.rand()-.5),dk,now,false)}
 this.loss=this.loss*.96+.04*(L/B);this.iter++;
-if(this.relocOn)for(let k=0;k<8;k++){const i=(this.rand()*this.N)|0,lum=(this.cr[i]+this.cg[i]+this.cb[i])/3;
-if(lum<.03&&this.rand()<.35){this.relocSeed(i);this.pulse[i]=now}
-else if(lum<.05){this.gx[i]+=.006*(this.rand()-.5);this.gy[i]+=.006*(this.rand()-.5);this.gz[i]+=.006*(this.rand()-.5)}}}
+if(this.relocOn)for(let k=0;k<8;k++){const i=(this.rand()*this.N)|0,lum=(this.cr[i]+this.cg[i]+this.cb[i])/3,dT=this.dimT||.03;
+if(lum<dT&&this.rand()<.35){this.relocSeed(i);this.pulse[i]=now}
+else if(lum<1.6*dT){this.gx[i]+=.006*(this.rand()-.5);this.gy[i]+=.006*(this.rand()-.5);this.gz[i]+=.006*(this.rand()-.5)}}}
 micro(p,now,out){const dk=1/(1+this.iter/1400);for(let k=0;k<8;k++)this.one(p[0]+.06*(this.rand()-.5),p[1]+.06*(this.rand()-.5),p[2]+.06*(this.rand()-.5),dk,now,true,out)}
 err(n){const M=Math.min(n||300,this.tp.length);let a=0,b=0;for(let k=0;k<M;k++){const i=(this.rand()*this.tp.length)|0,c=this.predC(this.tp[i]);
 a+=Math.abs(c[0]-this.tvc[i*3])+Math.abs(c[1]-this.tvc[i*3+1])+Math.abs(c[2]-this.tvc[i*3+2]);b+=this.tvc[i*3]+this.tvc[i*3+1]+this.tvc[i*3+2]}return a/Math.max(1e-6,b)}
@@ -255,12 +275,12 @@ sprFor(r,g,b){const mx=Math.max(r,g,b,1e-4);return this.tint(Math.min(1,r/mx),Ma
 /* splat gaussians [a,b) into grid E (dims/he from vol). Sliced so the
    per-frame cost stays bounded; exp via LUT, 2.5σ cutoff. */
 bakeSlice(E,vol,a,b){const EX=vol.EX,EY=vol.EY,EZ=vol.EZ,he=vol.he;
-const wx=2*he[0]/EX,wy=2*he[1]/EY,wz=2*he[2]/EZ,Q=6.25,QS=256/Q;
+const wx=2*he[0]/EX,wy=2*he[1]/EY,wz=2*he[2]/EZ,Q=9,QS=256/Q;
 for(let i=a;i<b;i++){const cr=this.cr[i],cg=this.cg[i],cb=this.cb[i];
-if((cr+cg+cb)/3<.008)continue;
+if((cr+cg+cb)/3<Math.min(.008,(this.dimT||.008)*.25))continue;
 const sg=Math.exp(this.ls[i]);
 const vx=(this.gx[i]/he[0]+1)/2*EX,vy=(this.gy[i]/he[1]+1)/2*EY,vz=(this.gz[i]/he[2]+1)/2*EZ;
-let rx=Math.max(1.2,2.5*sg/wx),ry=Math.max(1.2,2.5*sg/wy),rz=Math.max(1.2,2.5*sg/wz);
+let rx=Math.max(1.2,3*sg/wx),ry=Math.max(1.2,3*sg/wy),rz=Math.max(1.2,3*sg/wz);
 const v3=rx*ry*rz;if(v3>700){const sc=Math.cbrt(700/v3);rx*=sc;ry*=sc;rz*=sc}
 const x0=Math.max(0,Math.ceil(vx-rx)),x1=Math.min(EX-1,Math.floor(vx+rx));
 const y0=Math.max(0,Math.ceil(vy-ry)),y1=Math.min(EY-1,Math.floor(vy+ry));
@@ -272,7 +292,7 @@ if(q>=Q)continue;const G=EXPL[(q*QS)|0],o=(base+x)*3;
 E[o]+=cr*G;E[o+1]+=cg*G;E[o+2]+=cb*G}}}}
 bakeTo(E,vol){E.fill(0);this.bakeSlice(E,vol,0,this.N)}
 draw(g,px,S,now){g.globalCompositeOperation='lighter';
-for(let i=0;i<this.N;i++){const lum=(this.cr[i]+this.cg[i]+this.cb[i])/3,pb=this.pulse[i]>0?Math.exp(-(now-this.pulse[i])*2.5):0,a=Math.min(.85,lum*1.35+.5*pb);if(a<.04)continue;
+for(let i=0;i<this.N;i++){const lum=(this.cr[i]+this.cg[i]+this.cb[i])/3,pb=this.pulse[i]>0?Math.exp(-(now-this.pulse[i])*2.5):0,a=Math.min(.85,lum*(this.vg||1)*1.35+.5*pb);if(a<.04)continue;
 const p=px([this.gx[i],this.gy[i],this.gz[i]]),sz=Math.exp(this.ls[i])*p[2]*S*this.opt.sMul*(1+.4*pb);
 g.globalAlpha=a;g.drawImage(this.sprFor(this.cr[i],this.cg[i],this.cb[i]),p[0]-sz,p[1]-sz,sz*2,sz*2)}
 g.globalAlpha=1;g.globalCompositeOperation='source-over'}

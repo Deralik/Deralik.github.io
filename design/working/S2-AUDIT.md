@@ -442,3 +442,39 @@ actual shipped grid is 28×80×29 upright.)
 Rider (pre-existing, seen during 390 review): the method PIPE figure
 (GRT9A) draws its desktop layout at 390 — right boxes clip inside the
 canvas. Untouched by the rebuild; fix with the method-figure pass.
+
+### Owner round (2026-08-21 evening): pane colour parity + resolution
+Critique: vast colour difference cache-vs-truth panes; both too low-res.
+☑ Colour, diagnosed offline (herojs train A/B + energy decomposition):
+  the baked field carried 2.8–4× the truth's energy. Three real causes,
+  three fixes: (1) init overshoot — every gaussian seeded at the full
+  local colour so the SUM starts ~overlap-count too bright → normInit
+  measures overlap once and scales (butterfly now 0.98× energy);
+  (2) untrained space — no training sample ever landed outside content
+  (samples() rejected on sig, lit pool bright-only) → dark uniform pool
+  (25% share) + near-flat content acceptance (supernova spill .85→.14);
+  (3) thin-shell kernel limit — remaining ~1.5× in-content on the real
+  volumes is a representation floor → adopted the research renderer's
+  own cache-brightness control ("Cache brightness 2.20x" in its GUI):
+  one global scalar measured live against the reference march, applied
+  to the cache pane and the PSNR, disclosed in chipline + reference.
+  A scale-blind constants sweep followed the init change (reloc
+  thresholds, colour floor, world-splat display gain — all now derive
+  from the measured scale; a vg² gradient boost was tried and REVERTED,
+  it destabilized training).
+☑ Resolution: WebGL2 pane renderer (js/grt7-gl.js, ~140 lines) — same
+  two integrals in-shader at FULL pane resolution with trilinear grids:
+  right = 1 jittered stratified sample/frame of the truth texture, EMA
+  in an RGBA16F ping-pong; left = 28-step march of the cache texture ×
+  the brightness scalar; seam split in-shader; the paper display curve.
+  Zero-copy composition: the GL canvas sits as a positioned layer under
+  the hero canvas (blitting WebGL through 2d stalled the GPU ~100ms);
+  the 2d canvas clears the pane window and draws all UI above. CPU
+  march kept intact as the no-WebGL2/no-float-buffer fallback (RW 176).
+  Inset + PSNR stay CPU, shared via insetTick().
+☑ probe gained --gpu (headless default is SwiftShader — software GL:
+  looks right, times wrong; hardware = RTX 3080 Ti). Verified on GPU:
+  all four datasets + mobile 16.7ms/0 janky; matrix clean; gate clean.
+Riders: jitter hash is the classic sin-fract (an integer-hash attempt
+read black — never diagnosed, low value); supernova/grid moiré rings
+are the 56³ grid seen through trilinear (inherent, mild).

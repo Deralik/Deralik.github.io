@@ -7,7 +7,7 @@
    is its genuine residual, fading as it trains. The meter is
    render-space PSNR vs the fully-marched reference, on shared rays. */
 (()=>{const{fit,loop,tok,star}=GRT;const{Cam2}=GRT2;const{box,RayAnim,CamView}=GRT6;const{NebVol,DataVol,GaiaVol,CField,Meter,frustum}=GRT7;
-const KO={butterfly:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},ring:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},super:{s0:.036,sv:.013,lsMin:-4.1,lsMax:-1.9,sMul:.86,relocLs:Math.log(.045)},mech:{s0:.030,sv:.011,lsMin:-4.4,lsMax:-2.1,sMul:.82,relocLs:Math.log(.038)},crab:{s0:.038,sv:.014,lsMin:-4.0,lsMax:-1.8,sMul:.88,relocLs:Math.log(.048)},bh:{s0:.024,sv:.009,lsMin:-4.6,lsMax:-2.5,sMul:.78,relocLs:Math.log(.03)}};
+const KO={butterfly:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},ring:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},super:{s0:.030,sv:.011,lsMin:-4.3,lsMax:-2.4,sMul:.86,relocLs:Math.log(.038)},mech:{s0:.030,sv:.011,lsMin:-4.4,lsMax:-2.1,sMul:.82,relocLs:Math.log(.038)},crab:{s0:.038,sv:.014,lsMin:-4.0,lsMax:-1.8,sMul:.88,relocLs:Math.log(.048)},bh:{s0:.024,sv:.009,lsMin:-4.6,lsMax:-2.5,sMul:.78,relocLs:Math.log(.03)}};
 const NDEF={butterfly:3200,ring:3200,super:3400,mech:3600,crab:3000,bh:4200};
 class R7{
 constructor(cv,o={}){this.cv=cv;this.o=o;this.az=.9;this.vols={};
@@ -18,6 +18,8 @@ this.su=.5;this.seamU=.5;this.seamUntil=-9;this.seamDrag=false;
 this.nzc=null;this.CG=null;
 this.view=new CamView(this.eyeAt(this.oa),1.05);
 this.frameN=0;this.meter=new Meter(150);this.field=null;
+this.ric=document.createElement('canvas');this.ric.width=150;this.ric.height=105;this.rig=this.ric.getContext('2d');this.rid=this.rig.createImageData(150,105);
+this.rtl=new Float32Array(150*105*3);this.rcl=new Float32Array(150*105*3);
 this.retok();this.warm=GRT.figWarm;
 let px2,py2;
 cv.addEventListener('pointerdown',e=>{if(this.nearSeam(e)){this.seamDrag=true;cv.setPointerCapture(e.pointerId);return}
@@ -51,7 +53,7 @@ if(this.acc)this.acc.fill(0);
 const R3=this.vol.EX*this.vol.EY*this.vol.EZ*3;
 if(!this.CG||this.CG.length!==R3){this.CG=new Float32Array(R3);this.CGb=new Float32Array(R3)}
 this.field.bakeTo(this.CG,this.vol);this._bkPh=0;this.gtDirty=false;
-this._ps=undefined;this.meter.hist=[]}
+this.cbr=1;this._ps=undefined;this.meter.hist=[]}
 /* reset must re-seed the cache pane too, or the sliced bake mixes old
    and new gaussians for a few frames */
 resetField(){this.field.alloc(this.field.N);this.field.bakeTo(this.CG,this.vol);this._bkPh=0}
@@ -69,15 +71,13 @@ if(!this.nzc||this.nzW!==RW||this.nzH!==RH){
 this.nzW=RW;this.nzH=RH;
 this.nzc=document.createElement('canvas');this.nzc.width=RW;this.nzc.height=RH;this.nzg=this.nzc.getContext('2d');this.nzd=this.nzg.createImageData(RW,RH);
 this.czc=document.createElement('canvas');this.czc.width=RW;this.czc.height=RH;this.czg=this.czc.getContext('2d');this.czd=this.czg.createImageData(RW,RH);
-this.acc=new Float32Array(RW*RH*3);
-this.ric=document.createElement('canvas');this.ric.width=150;this.ric.height=105;this.rig=this.ric.getContext('2d');this.rid=this.rig.createImageData(150,105);
-this.rtl=new Float32Array(150*105*3);this.rcl=new Float32Array(150*105*3)}
+this.acc=new Float32Array(RW*RH*3)}
 const v=this.vol,E=v.grid,C=this.CG,expo=v.expo;
 const EX=v.EX,EY=v.EY,EZ=v.EZ,hx=v.he[0],hy=v.he[1],hz=v.he[2];
 const kx=.5*EX/hx,ky=.5*EY/hy,kz=.5*EZ/hz,X1=EX-1,Y1=EY-1,Z1=EZ-1;
 const cb=v.cb||[-hx,hx,-hy,hy,-hz,hz],L0=cb[0],L1=cb[1],P0=cb[2],P1=cb[3],N0=cb[4],N1=cb[5];
 const f=this.view.f,e=this.view.eye,fw=this.view.fwd,rt=this.view.right,up=this.view.up;
-const D=this.nzd.data,A=this.acc,D2=this.czd.data,M=16;
+const D=this.nzd.data,A=this.acc,D2=this.czd.data,M=16,cbr=this.cbr||1;
 /* the research renderer's display curve: 1-exp(-exposure·L), no gamma */
 const tone=(r,g,b,out,q)=>{
 out[q]=10+245*(1-Math.exp(-expo*Math.max(0,r)));
@@ -108,18 +108,24 @@ const o3=((k3*EY+j3)*EX+i3)*3;
 ar+=C[o3]*dt;ag+=C[o3+1]*dt;ab+=C[o3+2]*dt}}
 A[o]=A[o]*.88+.12*er;A[o+1]=A[o+1]*.88+.12*eg;A[o+2]=A[o+2]*.88+.12*eb;
 tone(A[o],A[o+1],A[o+2],D,q);
-tone(ar,ag,ab,D2,q)}}
-this.nzg.putImageData(this.nzd,0,0);this.czg.putImageData(this.czd,0,0);
+tone(ar*cbr,ag*cbr,ab*cbr,D2,q)}}
+this.nzg.putImageData(this.nzd,0,0);this.czg.putImageData(this.czd,0,0)}
+/* reference inset + render-space PSNR + the cache-brightness scalar —
+   shared by the GL and CPU pane paths */
+insetTick(){
 /* reference inset: the truth grid, fully marched — genuinely converged */
-if(this.frameN%4===0)this.insetMarch(E,this.rtl,this.rid);
+if(this.frameN%4===0)this.insetMarch(this.vol.grid,this.rtl,this.rid);
 /* render-space PSNR: cache march vs truth march, linear, same rays —
    %12==8 lands on an inset frame so both buffers share one camera */
-if(this.frameN%12===8){this.insetMarch(C,this.rcl,null);
-let se=0;const T=this.rtl,Q=this.rcl;
-for(let k=0;k<T.length;k++){const d=T[k]-Q[k];se+=d*d}
+if(this.frameN%12===8){this.insetMarch(this.CG,this.rcl,null);
+const T=this.rtl,Q=this.rcl;let st=0,sc=0;
+for(let k=0;k<T.length;k++){st+=T[k];sc+=Q[k]}
+/* the research renderer's own cache-brightness control, measured live:
+   ONE global scalar matching the cache march to the reference march */
+this.cbr=this.cbr*.85+.15*Math.max(.5,Math.min(2.2,st/Math.max(sc,1e-6)));
+let se=0;for(let k=0;k<T.length;k++){const d=T[k]-Q[k]*this.cbr;se+=d*d}
 const ps=10*Math.log10(1/Math.max(1e-6,se/T.length));
-this._ps=this._ps===undefined?ps:this._ps*.8+.2*ps;this.meter.push(this._ps)}
-}
+this._ps=this._ps===undefined?ps:this._ps*.8+.2*ps;this.meter.push(this._ps)}}
 insetMarch(GR,lin,img){const W=150,H=105,v=this.vol,expo=v.expo,M=22;
 const EX=v.EX,EY=v.EY,EZ=v.EZ,hx=v.he[0],hy=v.he[1],hz=v.he[2];
 const kx=.5*EX/hx,ky=.5*EY/hy,kz=.5*EZ/hz,X1=EX-1,Y1=EY-1,Z1=EZ-1;
@@ -156,11 +162,11 @@ const B=Math.max(40,Math.min(110,Math.round(150000/F.N)));F.step(B,t);if(dt<.022
 {const NB=Math.ceil(F.N/10),ph=this._bkPh|0;
 if(ph===0)this.CGb.fill(0);
 F.bakeSlice(this.CGb,this.vol,ph*NB,Math.min(F.N,(ph+1)*NB));
-if(ph===9){const t2=this.CG;this.CG=this.CGb;this.CGb=t2;this._bkPh=0}else this._bkPh=ph+1}
+if(ph===9){const t2=this.CG;this.CG=this.CGb;this.CGb=t2;this._bkPh=0;this._bkN=(this._bkN|0)+1}else this._bkPh=ph+1}
 if(this.pendingAz!==undefined){const v2=this.pendingAz;this.pendingAz=undefined;
 if(this.vol.tfr!==false){if(this.vol.em>=.99)this.vol.tf=v2/6.28;else{this.az=v2;this.setLight()}this.gtDirty=true;this._azT=t}}
 /* rebuild is ~75ms — fire once the slider rests, not while it moves */
-if(this.gtDirty&&t-(this._azT||0)>.25){this.vol.rebuild();F.refreshTruth();this.gtDirty=false}
+if(this.gtDirty&&t-(this._azT||0)>.25){this.vol.rebuild();F.refreshTruth();this.gtDirty=false;this._glVol=null}
 if(this.frameN%60===0)F.refreshTruth();
 const held=this.imgDrag||t<this.holdUntil,off=Math.abs(this.uY)+Math.abs(this.uP)>.012;
 if(!held){if(off){const k=Math.exp(-2.4*dt);this.uY*=k;this.uP*=k}else{this.uY=this.uP=0;this.oa+=dt*.06}}
@@ -176,11 +182,32 @@ if(stack){x0=8;y0=10;iw=w-16;ih=Math.round(h*.42);
 else{const split=w*.55;x0=12;y0=12;iw=split-24;ih=h-46;
   rx=split+6;rw=w-rx-6;wy=0;wh=h-130}
 this._img=[x0,y0,iw,ih];
-this.march(iw,ih,t);
 const bx=x0+this.su*iw;
+/* panes: GPU when WebGL2+float buffers exist — full pane resolution,
+   trilinear grids, same two integrals; else the CPU march */
+if(!this._glT){this._glT=1;try{this.glr=window.GRT7GL?window.GRT7GL():null}catch(e){this.glr=null}}
 g.imageSmoothingEnabled=true;
+if(this.glr){
+if(this._glVol!==this.vol){this.glr.setVol(this.vol);this._glVol=this.vol;this._glCB=-1}
+if(this._glCB!==(this._bkN|0)){this.glr.uploadC(this.CG);this._glCB=this._bkN|0}
+const dpr=Math.min(1.25,window.devicePixelRatio||1);
+this.glr.draw({w:iw*dpr,h:ih*dpr,eye:this.view.eye,fwd:this.view.fwd,rt:this.view.right,up:this.view.up,f:this.view.f,
+he:this.vol.he,cb:this.vol.cb||[-1,1,-1,1,-1,1],su:this.su,seed:this.frameN,cbr:this.cbr||1,expo:this.vol.expo});
+/* zero-copy: the GL canvas sits UNDER this one as a positioned layer;
+   this canvas clears a window over the pane and draws the UI on top
+   (blitting a WebGL canvas through 2d stalls the GPU) */
+const gc=this.glr.cv;
+if(!gc.parentNode){const par=this.cv.parentElement;if(par){if(!par.style.position)par.style.position='relative';
+gc.style.position='absolute';gc.style.pointerEvents='none';gc.style.zIndex='0';
+this.cv.style.position='relative';this.cv.style.zIndex='1';par.insertBefore(gc,this.cv)}}
+const st2=x0+'px|'+y0+'px|'+iw+'px|'+ih+'px';
+if(this._glSt!==st2){this._glSt=st2;gc.style.left=x0+'px';gc.style.top=y0+'px';gc.style.width=iw+'px';gc.style.height=ih+'px'}
+g.clearRect(x0,y0,iw,ih);
+}else{
+this.march(iw,ih,t);
 g.save();g.beginPath();g.rect(bx,y0,x0+iw-bx,ih);g.clip();g.drawImage(this.nzc,x0,y0,iw,ih);g.restore();
-g.save();g.beginPath();g.rect(x0,y0,bx-x0,ih);g.clip();g.drawImage(this.czc,x0,y0,iw,ih);g.restore();
+g.save();g.beginPath();g.rect(x0,y0,bx-x0,ih);g.clip();g.drawImage(this.czc,x0,y0,iw,ih);g.restore();}
+this.insetTick();
 g.strokeStyle=GRT.alpha(GRT.figPaper,.65);g.lineWidth=1;g.beginPath();g.moveTo(bx+.5,y0);g.lineTo(bx+.5,y0+ih);g.stroke();
 g.fillStyle=GRT.alpha(GRT.figPaper,.65);g.fillRect(bx-4,y0+ih/2-9,9,18);g.fillStyle=GRT.figWell;g.fillRect(bx-1.5,y0+ih/2-5,1,10);g.fillRect(bx+1.5,y0+ih/2-5,1,10);
 g.strokeStyle=GRT.alpha(GRT.figPaper,.25);g.strokeRect(x0+.5,y0+.5,iw-1,ih-1);

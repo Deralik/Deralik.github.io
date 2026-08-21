@@ -4,7 +4,8 @@
    glow tuning is verified against reference images before any browser run.
    usage: node scripts/herojs.mjs [kinds...]   (default: butterfly ring) */
 import {readFileSync,writeFileSync} from 'fs';
-const ctx={window:{},document:{createElement:()=>({getContext:()=>null,width:0,height:0})},performance:{now:()=>0}};
+const g2d={createRadialGradient:()=>({addColorStop(){}}),fillStyle:0,beginPath(){},arc(){},fill(){},drawImage(){},fillRect(){},globalCompositeOperation:0};
+const ctx={window:{},document:{createElement:()=>({getContext:()=>g2d,width:0,height:0})},performance:{now:()=>0}};
 globalThis.matchMedia=()=>({matches:false,addEventListener(){}});
 globalThis.getComputedStyle=()=>({getPropertyValue:()=>'#888'});
 ctx.document.documentElement={};
@@ -53,6 +54,40 @@ function march(v,eye,W=352,H=242){
   img[q+2]=Math.min(255,17+238*(1-Math.exp(-expo*Math.max(0,ab))));}}
   return img;
 }
+/* A/B mode: train the cache, bake it, march cache-vs-truth side by side.
+   usage: node scripts/herojs.mjs train <kind> [iters] */
+if(process.argv[2]==='train'){
+  const {CField}=ctx.window.GRT7;
+  const kind=process.argv[3]||'butterfly',IT=+(process.argv[4]||1500);
+  const KO={butterfly:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},
+    ring:{s0:.034,sv:.012,lsMin:-4.2,lsMax:-1.9,sMul:.85,relocLs:Math.log(.042)},
+    super:{s0:.030,sv:.011,lsMin:-4.3,lsMax:-2.4,sMul:.86,relocLs:Math.log(.038)},
+    mech:{s0:.030,sv:.011,lsMin:-4.4,lsMax:-2.1,sMul:.82,relocLs:Math.log(.038)}};
+  const NDEF={butterfly:3200,ring:3200,super:3400,mech:3600};
+  const v=mkVol(kind);v.rebuild();
+  const F=new CField(v,NDEF[kind],9,KO[kind]);
+  for(let t=0;t<IT;t++)F.step(88,t*.016);
+  const CG=new Float32Array(v.EX*v.EY*v.EZ*3);F.bakeTo(CG,v);
+  let sE=0,sC=0;for(let i=0;i<CG.length;i++){sE+=v.grid[i];sC+=CG[i]}
+  console.log(kind,'iters',IT,'grid-energy cache/truth =',(sC/sE).toFixed(3));
+  let cC=0,cT=0,eC=0;
+  for(let i=0;i<CG.length;i+=3){const tl=v.grid[i]+v.grid[i+1]+v.grid[i+2],cl=CG[i]+CG[i+1]+CG[i+2];
+    if(tl>.01){cC+=cl;cT+=tl}else eC+=cl}
+  console.log(' content cache/truth',(cC/cT).toFixed(3),' spill/truth',(eC/(cT||1)).toFixed(3),' pt-err',F.err(400).toFixed(3));
+  const E0=v.grid;
+  for(const a of[0,2.4]){
+    const it=march(v,eyeAt(v,a));
+    v.grid=CG;const ic=march(v,eyeAt(v,a));v.grid=E0;
+    const W=352,H=242,both=Buffer.alloc(W*2*H*3);
+    for(let j=0;j<H;j++){both.set(ic.subarray(j*W*3,(j+1)*W*3),j*W*2*3);
+      both.set(it.subarray(j*W*3,(j+1)*W*3),(j*W*2+W)*3)}
+    writeFileSync(`design/local/volshots/ab-${kind}-a${a.toFixed(1)}.ppm`,
+      Buffer.concat([Buffer.from(`P6\n${W*2} ${H}\n255\n`),both]));
+  }
+  console.log(' wrote A/B (left cache | right truth)');
+  process.exit(0);
+}
+
 const kinds=process.argv.slice(2).length?process.argv.slice(2):['butterfly','ring'];
 for(const kind of kinds){
   const v=mkVol(kind);const t=Date.now();v.rebuild();

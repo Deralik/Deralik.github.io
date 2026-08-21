@@ -49,7 +49,9 @@ for (let i = 0; i < 40; i++) {
   catch { await new Promise(r => setTimeout(r, 100)); }
 }
 
-const browser = await chromium.launch();
+/* --gpu: hardware GL in headless (default is SwiftShader — software GL —
+   which makes WebGL figures look right but time wrong) */
+const browser = await chromium.launch(flag('gpu') ? { args: ['--ignore-gpu-blocklist', '--enable-gpu', '--use-angle=default'] } : {});
 /* --nojs: render with JavaScript disabled (the noscript fallback path) */
 if (flag('nojs')) {
   const ctx = await browser.newContext({ viewport: { width: +opt('w', 1280), height: +opt('h', 900) }, javaScriptEnabled: false });
