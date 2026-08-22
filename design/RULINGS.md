@@ -902,3 +902,22 @@ added.
   "~10× smaller cache than NRC" is the safe variant. Status honesty
   holds: the card keeps "HPG '26 not accepted · revising" and the
   record section carries the full comparison.
+
+# Owner rulings — round 19: release prep, performance (2026-08-22)
+
+- **First-visit performance, measured then fixed** (buffered longtask
+  audit): FCP 380ms; total blocking time 724ms → 70ms. Fixes: volume
+  builds+sampling+stipples in the worker (the 568ms task); CField
+  shape-fitting chunked across idle; worker-fresh volumes skip the
+  redundant re-shade; dataset entry uses the sliced bake (no full
+  synchronous bake); the comparison figure's 200ms warm-train loop
+  sliced to ~45ms chunks; Google Fonts moved from CSS @import to head
+  links with preconnect; all 21 external scripts deferred.
+- **Loading screen: NOT added, decided on evidence** — the page paints
+  at 380ms and no task exceeds ~110ms; the D0 card ships a pre-baked
+  snapshot instantly and live systems replace placeholders as they
+  land. Nothing freezes to justify a loading screen; adding one would
+  slow the honest fast path.
+- Doc entry before the background build lands shows an empty hero for
+  a beat (placeholder card covers the morph); adopts the shared field
+  the moment it exists.

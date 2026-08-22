@@ -209,10 +209,11 @@
             : window.GRTNEB && window.GRTNEB[kind]
               ? new GaiaVol(kind, 33)
               : new NebVol(kind, 33));
-      this.vol.rebuild();
+      if (this.vol._fresh) this.vol._fresh = false;
+      else this.vol.rebuild();
       const n = NDEF[kind];
       if (this.o.nEl) this.o.nEl.value = n;
-      this.st = this.vol.stipple(520);
+      this.st = this.vol._st520 || this.vol.stipple(520);
       this.field =
         kind === 'butterfly' &&
         window.__grtBfly &&
@@ -230,8 +231,11 @@
         this.CG = new Float32Array(R3);
         this.CGb = new Float32Array(R3);
       }
-      this.field.bakeTo(this.CG, this.vol);
+      /* the pane fills through the sliced bake (≤14 frames) instead of
+         one synchronous full bake — no long task at dataset entry */
+      this.CG.fill(0);
       this._bkPh = 0;
+      this._bkN = (this._bkN | 0) + 1;
       this.gtDirty = false;
       this.cbr = 1;
       this._spp = 1;
@@ -1143,6 +1147,15 @@
             'ctr',
           ])
             v[k] = P[k];
+          const un = (f, w) => {
+            const out = [];
+            for (let i = 0; i < f.length; i += w) out.push(Array.from(f.subarray(i, i + w)));
+            return out;
+          };
+          v._S = un(P.S3, 3);
+          v._st520 = un(P.T520, 4);
+          v._st240 = un(P.T240, 4);
+          v._fresh = true; /* fully built — setVol skips the re-shade */
           j.res(v);
           if (VW.q.length) VW.w.postMessage(VW.q[0].kind);
         };
@@ -1158,7 +1171,26 @@
     if (window.__grtBfly) return window.__grtBfly;
     const vol = await R7.buildVolAsync('butterfly');
     if (window.__grtBfly) return window.__grtBfly;
-    const field = new CField(vol, NDEF.butterfly, 9, KO.butterfly);
+    /* shape-fitting runs in idle chunks — no single long task */
+    const field = new CField(vol, NDEF.butterfly, 9, { ...KO.butterfly, deferFit: true });
+    const idle = (fn) =>
+      new Promise((r) =>
+        window.requestIdleCallback
+          ? requestIdleCallback(
+              () => {
+                fn();
+                r();
+              },
+              { timeout: 600 },
+            )
+          : setTimeout(() => {
+              fn();
+              r();
+            }, 16),
+      );
+    const CH = 3000;
+    for (let a = 0; a < field.N; a += CH) await idle(() => field.fitSlice(a, a + CH));
+    await idle(() => field.finishFit());
     window.__grtBfly = { vol, field };
     return window.__grtBfly;
   };

@@ -21,10 +21,20 @@
       /* warm-start off the first paint: the same 200ms of training, run at idle;
    until it lands the field trains live in view — visually identical within
    a beat of load (handoff production task 6) */
+      /* warm in ~45ms idle slices — one 200ms block was the page's
+         second-longest first-visit task */
+      let warmLeft = 200;
       const warmup = () => {
         const bt = performance.now();
-        while (performance.now() - bt < 200) this.F.step(120, 0);
+        while (performance.now() - bt < 45 && warmLeft > 0) {
+          this.F.step(120, 0);
+          warmLeft -= 45;
+        }
         this.F.pulse.fill(-9);
+        if (warmLeft > 0)
+          window.requestIdleCallback
+            ? requestIdleCallback(warmup, { timeout: 900 })
+            : setTimeout(warmup, 60);
       };
       if (window.requestIdleCallback) requestIdleCallback(warmup, { timeout: 900 });
       else setTimeout(warmup, 60);

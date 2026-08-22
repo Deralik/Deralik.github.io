@@ -39,7 +39,8 @@ window.GRTFIELD = (() => {
    medium terminates rays, so gaussians live in the dust — a radiance
    pool dragged them into the glow halo, bloating kernel sizes and
    spilling energy box-wide */
-      this.S = vol.samples(3400);
+      this.S = vol._S || vol.samples(3400);
+      vol._S = null; /* one use — refreshes must resample */
       this.buildLit();
       /* dark pool: uniform in the box, no rejection — the field must learn its
    ZEROS too, or gaussian tails leave untrained haze where the truth is
@@ -123,15 +124,25 @@ window.GRTFIELD = (() => {
       for (let i = 0; i < N; i++) this.seed(i);
       if (this.opt.ad) {
         this.buildSBins();
-        for (let i = 0; i < N; i++) this.covFit(i);
+        /* deferFit: the caller runs fitSlice()/finishFit() across idle
+           chunks instead of one long task (the D0 background build) */
+        if (!this.opt.deferFit) for (let i = 0; i < N; i++) this.covFit(i);
       }
-      this.bMaxG = 1;
-      for (let i = 0; i < N; i++) if (this.bMx[i] > this.bMaxG) this.bMaxG = this.bMx[i];
-      this.hb(N);
-      this.buildBins();
-      this.normInit();
+      this.finishFit();
       this.iter = 0;
       this.loss = 1;
+    }
+    fitSlice(a, b) {
+      if (!this.opt.ad || !this.sbOff) return;
+      const e = Math.min(this.N, b);
+      for (let i = a; i < e; i++) this.covFit(i);
+    }
+    finishFit() {
+      this.bMaxG = 1;
+      for (let i = 0; i < this.N; i++) if (this.bMx[i] > this.bMaxG) this.bMaxG = this.bMx[i];
+      this.hb(this.N);
+      this.buildBins();
+      this.normInit();
     }
     /* sample bins over the pool — covFit's neighbour queries */
     buildSBins() {

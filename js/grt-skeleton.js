@@ -86,7 +86,7 @@
           const q = pr(p);
           return [cx + q[0] * S, cy - q[1] * S, q[2]];
         };
-      const stip = sh ? st || (st = sh.vol.stipple(240)) : pc && pc.st;
+      const stip = sh ? st || (st = sh.vol._st240 || sh.vol.stipple(240)) : pc && pc.st;
       if (stip) {
         for (const s of stip) {
           const p = px(s);

@@ -23,7 +23,20 @@ self.onmessage = (e) => {
         ? new GaiaVol(kind, 33)
         : new NebVol(kind, 33);
   vol.rebuild();
+  /* rejection sampling against the analytic density is main-thread
+     poison (~50k sig evals) — ship the pools and stipples too */
+  const pk = (arr, w) => {
+    const f = new Float32Array(arr.length * w);
+    for (let i = 0; i < arr.length; i++) for (let c = 0; c < w; c++) f[i * w + c] = arr[i][c];
+    return f;
+  };
+  const S3 = pk(vol.samples(3400), 3),
+    T520 = pk(vol.stipple(520), 4),
+    T240 = pk(vol.stipple(240), 4);
   const P = {
+    S3,
+    T520,
+    T240,
     kind,
     D: vol.D,
     DR: vol.DR,
@@ -39,7 +52,7 @@ self.onmessage = (e) => {
     ctr: vol.ctr,
   };
   const bufs = [];
-  for (const k of ['D', 'grid', 'cDe', 'cAo', 'cSt', 'aoT'])
+  for (const k of ['D', 'grid', 'cDe', 'cAo', 'cSt', 'aoT', 'S3', 'T520', 'T240'])
     if (P[k] && bufs.indexOf(P[k].buffer) < 0) bufs.push(P[k].buffer);
   postMessage(P, bufs);
 };
