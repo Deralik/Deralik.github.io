@@ -193,12 +193,14 @@ behavior, and every demo's label states exactly what is running (owner,
   also carry their central star as a bright point (the remnant the
   reference photography shows): a tight 1/r² core in the models' glow
   system — analytic in every view, never cached. LAUNCH-GATING RIDER (owner decision, 2026-08-22): the supernova's
-  reuse terms are UNCONFIRMED — the research repo's own manifest
-  records "no explicit license or terms found on the Kitware
-  item/collection; retain attribution and confirm reuse terms before
-  redistribution", and today's Open SciVis catalog does not carry the
-  dataset (the earlier "via Open SciVis" credit was wrong; corrected).
-  Before deploy: confirm terms, or ship without the supernova option. The hero
+  reuse terms are UNCONFIRMED — re-verified against the LIVE Kitware
+  source 2026-08-22 via the Girder API: the collection's terms field
+  is empty and no license exists on collection/folder/item. The folder
+  itself says "Questions go to ma@cs.ucdavis.edu" — the hosting is
+  administered under the owner's own lab director (Kwan-Liu Ma).
+  RESOLUTION PATH: one line of consent from Prof. Ma (or Dr. Blondin)
+  covers the vendored 72³ derivative with the credit already on-page.
+  Before deploy: obtain that consent, or ship without the supernova. The hero
   comparison is real computation, one integrator, one resolution, one
   fixed probe-calibrated exposure: right of the seam, an unbiased 1-spp-per-frame estimate of the
   emission–absorption integral (the medium is known — transmittance is
