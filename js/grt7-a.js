@@ -132,7 +132,7 @@
         }
         if (this.imgDrag) {
           this.uY += (e.clientX - px2) * 0.005;
-          this.uP = Math.max(-1.05, Math.min(1.05, this.uP - (e.clientY - py2) * 0.004));
+          this.uP = Math.max(-1.05, Math.min(1.05, this.uP + (e.clientY - py2) * 0.004));
           px2 = e.clientX;
           py2 = e.clientY;
           return;

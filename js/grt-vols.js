@@ -650,7 +650,12 @@ window.GRTVOLS = (() => {
     mech: {
       he: [0.9, 0.309, 0.322],
       E: [128, 44, 46],
-      kap: 48,
+      /* extinction DERIVED from the native compositing, not eyeballed:
+         per-voxel opacity = TF alpha (opacityUnitDistance 1 voxel), so
+         κ ≈ -ln(1-a)/(a·voxel) ≈ 1.3/(1.8/640) ≈ 460; 420 in practice.
+         The earlier 48 left the hand ~9× too transparent — milky layers
+         accumulating emission read as both "not solid" and "too bright" */
+      kap: 420,
       /* light-march extinction is gentler than the camera ray's: the
          scene's material carries a 0.2 ambient floor — full κ in the
          shadow march would blacken the interior parts it keeps lit */

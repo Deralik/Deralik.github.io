@@ -644,3 +644,8 @@ res) — highlights/shadows finally visible. NEE rays in cache view.
 True orbit sphere around per-volume centres (star / density centroid),
 drag flipped, pause stills everything (found the cam.auto restore
 ramp). Button icons + trimmed dataset titles. Gates green.
+
+### Owner round 15 (2026-08-22): mech extinction derived, not eyeballed
+κ 48→420 from the native per-voxel-opacity compositing law — solid +
+un-milky in one change; luminance stats matched to the reference
+figure. Vertical drag re-flipped. mech parity .41 (disclosed, gate ok).

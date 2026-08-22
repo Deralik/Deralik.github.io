@@ -778,3 +778,20 @@ added.
   trimmed to "MechHand" / "Supernova".
 - Gate: butterfly .15 · mech .14 · ring .23 · super .07; 16.7ms;
   matrix + check clean.
+
+# Owner rulings — hero round 15 (2026-08-22)
+
+- **"Still too bright, far too bright, and not solid" (mech)**: the
+  extinction was the root — κ=48 was eyeballed; DERIVING it from the
+  native compositing (per-voxel opacity = TF alpha at 1-voxel opacity
+  unit distance → κ ≈ 1.3/voxel ≈ 460) gives κ=420, ~9× more opaque.
+  The milky translucent layers WERE the brightness: emission
+  accumulating through skin that should occlude. Live pane + reference
+  inset now show a solid opaque hand with crisp tan plates; object
+  display-luminance stats sit next to the reference figure's (median
+  .76 vs .82, p90 .97 vs .93). Cost disclosed: near-total cache
+  termination pushes mech parity to .41 (isotropic-cache residual,
+  under the .5 gate) — the anisotropic upgrade remains the structural
+  answer.
+- **Vertical drag flipped back** (owner: only the vertical direction
+  was wrong after round 14's double flip).
