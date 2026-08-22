@@ -29,10 +29,7 @@
   }
   function panel(cv) {
     if (!cv) return;
-    let sh = null,
-      st = null,
-      anim = null,
-      pc = null,
+    let pc = null,
       ray = null,
       rayAt = 0,
       lastT = 0;
@@ -75,7 +72,6 @@
       const { g, w, h } = f;
       g.fillStyle = GRT.tok('--well');
       g.fillRect(0, 0, w, h);
-      sh = sh || window.__grtBfly || null;
       pc = pc || cardData();
       cam.step(dt);
       const pr = cam.proj(),
@@ -86,7 +82,7 @@
           const q = pr(p);
           return [cx + q[0] * S, cy - q[1] * S, q[2]];
         };
-      const stip = sh ? st || (st = sh.vol._st240 || sh.vol.stipple(240)) : pc && pc.st;
+      const stip = pc && pc.st;
       if (stip) {
         for (const s of stip) {
           const p = px(s);
@@ -96,28 +92,10 @@
         }
         g.globalAlpha = 1;
       }
-      if (sh) {
-        /* LIVE — the shared field the hero adopts; keeps training */
-        const F = sh.field;
-        if (F.iter < 1500) {
-          F.step(90, t);
-          F.pulse.fill(-9);
-        }
-        F.draw(g, px, S, t);
-        if (!anim) anim = new GRT6.RayAnim(sh.vol, sh.field, 83);
-        const cp = Math.cos(cam.pitch),
-          eye = [
-            cam.dist * cp * Math.cos(cam.yaw),
-            cam.dist * Math.sin(cam.pitch),
-            cam.dist * cp * Math.sin(cam.yaw),
-          ];
-        anim.update(t);
-        if (!anim.paths.length) anim.next = Math.min(anim.next, t + 1.1);
-        anim.maybeFire(t, eye);
-        anim.draw(g, px, S, t, false, GRT.tok('--onwell'), GRT.figWarm, 'TRAINING RAY');
-      } else if (pc) {
-        /* PLACEHOLDER — pre-generated snapshot, replaced when the
-           background build lands */
+      if (pc) {
+        /* the card is ENTIRELY pre-generated (owner ruling): a stable
+           baked snapshot — the real field builds in the background for
+           the doc's hero to adopt, and never swaps in here */
         g.globalCompositeOperation = 'lighter';
         for (let i = 0; i < pc.n; i += 2) {
           const p = px([
@@ -201,15 +179,10 @@
       }
       g.fillStyle = GRT.tok('--absence');
       g.font = '500 8.5px ' + GRT.tok('--mono');
-      /* honest label: the snapshot is not live training */
+      /* honest label: the card is a baked snapshot; training runs in
+         the doc's demo */
       g.fillText(
-        GRT.elide(
-          g,
-          sh
-            ? 'THE CACHE — TRAINED LIVE IN THIS PAGE'
-            : 'THE CACHE — SNAPSHOT · LIVE TRAINING STARTING',
-          w - 12,
-        ),
+        GRT.elide(g, 'THE CACHE — BAKED SNAPSHOT · TRAINS LIVE IN THE DEMO', w - 12),
         6,
         h - 6,
       );

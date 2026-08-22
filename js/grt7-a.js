@@ -1204,6 +1204,14 @@
     const CH = 3000;
     for (let a = 0; a < field.N; a += CH) await idle(() => field.fitSlice(a, a + CH));
     await idle(() => field.finishFit());
+    /* warm-train in idle slices so the doc's cache pane starts trained
+       (the D0 card never shows this field — it stays on its snapshot) */
+    for (let k = 0; k < 22; k++)
+      await idle(() => {
+        const bt = performance.now();
+        while (performance.now() - bt < 32) field.step(120, 0);
+        field.pulse.fill(-9);
+      });
     window.__grtBfly = { vol, field };
     return window.__grtBfly;
   };

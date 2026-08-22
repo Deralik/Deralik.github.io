@@ -929,3 +929,13 @@ added.
   alpha collapsed. Deferred alloc now builds bins only; normInit runs
   exactly once in the final finishFit. Verified live: vg 14 stable
   across training rays (iter 274→634), card stays dense.
+
+- Round-19 rider 2 (owner: the card still visibly changed at the
+  live swap): the swap itself was the discontinuity — a freshly-seeded
+  live field cannot match a 5000-iteration snapshot. Resolution per
+  the owner's own ruling ("entirely pre-generated... a placeholder for
+  the real cache in the demo"): the D0 card NEVER swaps — it draws the
+  baked snapshot permanently (label: "THE CACHE — BAKED SNAPSHOT ·
+  TRAINS LIVE IN THE DEMO"); the real field builds and warm-trains in
+  background idle slices purely for the doc's hero to adopt (verified:
+  adopted at iter ~190, training continues in the demo).
