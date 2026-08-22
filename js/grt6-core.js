@@ -142,6 +142,8 @@ window.GRT6 = (() => {
         V.push(q);
         p = q;
       }
+      /* a training ray must SHOW training: at least one bounce */
+      if (V.length < 3) return;
       const segStart = [],
         reach = [t0],
         cum = [0];
@@ -292,11 +294,20 @@ window.GRT6 = (() => {
           g.fill();
         }
         if (label && P.V.length > 1 && t > P.reach[1]) {
-          const p = px(P.V[1]);
+          /* label sits back along the ENTRY ray, clear of the cloud */
+          const a = P.V[0],
+            b = P.V[1],
+            dn = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) || 1,
+            k = 0.55 / dn,
+            p = px([
+              b[0] + (a[0] - b[0]) * k,
+              b[1] + (a[1] - b[1]) * k,
+              b[2] + (a[2] - b[2]) * k,
+            ]);
           g.globalAlpha = Math.min(1, (P.fEnd - t) / 0.7) * 0.6;
           g.fillStyle = conw;
           g.font = '500 8px monospace';
-          g.fillText(label, p[0] + 6, p[1] + 10);
+          g.fillText(label, p[0] + 5, p[1] - 5);
           g.globalAlpha = Math.min(1, (P.fEnd - t) / 0.7);
         }
         if (detail) {

@@ -183,16 +183,15 @@
       this.orbitOn = on;
       this.cam.auto = on ? 0.12 : 0;
     }
-    /* background pre-build: switching datasets should not hitch */
+    /* background pre-build IN THE WORKER: switching datasets should not
+       hitch, and the pre-build itself must not freeze the page */
     prewarm(kind) {
-      if (this.vols[kind]) return;
-      this.vols[kind] =
-        kind === 'super' && window.GRT_SUPERNOVA
-          ? new DataVol('super', 33, window.GRT_SUPERNOVA)
-          : window.GRTNEB && window.GRTNEB[kind]
-            ? new GaiaVol(kind, 33)
-            : new NebVol(kind, 33);
-      this.vols[kind].rebuild();
+      if (this.vols[kind] || this._warming === kind) return;
+      this._warming = kind;
+      R7.buildVolAsync(kind).then((v) => {
+        if (!this.vols[kind]) this.vols[kind] = v;
+        this._warming = null;
+      });
     }
     setVol(kind) {
       this.kind = kind;
@@ -1102,20 +1101,64 @@
         ui.textContent = 'iter ' + F.iter + ' · ' + F.N + ' gaussians · ' + this.kind;
     }
   }
-  /* shared pre-trained butterfly (the D0 card's cache view; the hero
-     adopts it in setVol — one volume, one field, trained continuously
-     across depths) */
-  R7.mkButterfly = () => {
+  /* the heavy voxel work runs in a worker (js/grt-volworker.js); the
+     main thread constructs the instance and injects the finished
+     arrays — no rebuild, no freeze */
+  const VW = { q: [], w: null };
+  R7.buildVolAsync = (kind) =>
+    new Promise((res) => {
+      if (!window.Worker) {
+        const v =
+          kind === 'super' && window.GRT_SUPERNOVA
+            ? new DataVol('super', 33, window.GRT_SUPERNOVA)
+            : window.GRTNEB && window.GRTNEB[kind]
+              ? new GaiaVol(kind, 33)
+              : new NebVol(kind, 33);
+        v.rebuild();
+        return res(v);
+      }
+      if (!VW.w) {
+        VW.w = new Worker('js/grt-volworker.js');
+        VW.w.onmessage = (e) => {
+          const j = VW.q.shift(),
+            P = e.data;
+          const v =
+            P.kind === 'super' && window.GRT_SUPERNOVA
+              ? new DataVol('super', 33, window.GRT_SUPERNOVA)
+              : window.GRTNEB && window.GRTNEB[P.kind]
+                ? new GaiaVol(P.kind, 33)
+                : new NebVol(P.kind, 33);
+          for (const k of [
+            'D',
+            'DR',
+            'grid',
+            'gmax',
+            'cDe',
+            'cAo',
+            'cSt',
+            'aoT',
+            'aoN',
+            'cb',
+            'expo',
+            'ctr',
+          ])
+            v[k] = P[k];
+          j.res(v);
+          if (VW.q.length) VW.w.postMessage(VW.q[0].kind);
+        };
+      }
+      VW.q.push({ kind, res });
+      if (VW.q.length === 1) VW.w.postMessage(kind);
+    });
+  /* shared butterfly (the D0 card's cache view; the hero adopts it in
+     setVol — one volume, one field, trained continuously across
+     depths). Async: the card shows the pre-generated placeholder until
+     this resolves. */
+  R7.mkButterfly = async () => {
     if (window.__grtBfly) return window.__grtBfly;
-    const vol =
-      window.GRTNEB && window.GRTNEB.butterfly
-        ? new GaiaVol('butterfly', 33)
-        : new NebVol('butterfly', 33);
-    vol.rebuild();
+    const vol = await R7.buildVolAsync('butterfly');
+    if (window.__grtBfly) return window.__grtBfly;
     const field = new CField(vol, NDEF.butterfly, 9, KO.butterfly);
-    const bt = performance.now();
-    while (performance.now() - bt < 350) field.step(120, 0);
-    field.pulse.fill(-9);
     window.__grtBfly = { vol, field };
     return window.__grtBfly;
   };
