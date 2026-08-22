@@ -465,3 +465,36 @@ added.
 - Perf at 12–13k: adaptive bin cells (≈ query radius), cache texture
   streamed slab-wise into a double buffer (upload stalls), world splats
   strided 2× above 9k — all four datasets 16.7 ms / 0 janky on GPU.
+
+# Owner rulings — hero round 5 (2026-08-21/22)
+
+- **The two panes are the SAME 1-spp estimator; the cache only cuts
+  variance.** Owner's conceptual spec, verbatim in substance: at 1 spp
+  the cached side merely has fewer black pixels; held still, both sides
+  converge to essentially the same image, the cache's slightly-off
+  radiances washing out to a minor residual. This SUPERSEDES the
+  "cache pane = deterministic full march of the cache field" design of
+  rounds 2–4: the left pane is now the same estimator with EARLY
+  TERMINATION INTO THE CACHE — a short real prefix (first quarter of
+  the ray, one stratified sample) and the cache supplies the remainder
+  of every sample; both panes accumulate and reset together.
+- **Match the approved reference screenshots, not just "the pipeline":**
+  the GT was voxel-blocky and halo-heavy vs the gaiashot references.
+  Fixed by Beer–Lambert absorption from the known truth density in
+  every integrator (occlusion: silhouettes, black background, the halo
+  confined behind the dust), glow re-tuned dim + tight, thinner shell
+  band, finer/stronger AO. Verified by direct side-by-side crops.
+- **No visible gaussians in the cache pane, ever** (re-affirmed live):
+  adaptive kernel sizes must keep strong overlap — σ ≈ 1.3× spacing;
+  1.0× read as individual blobs and was rejected.
+
+## Model notes (advisory, same round)
+
+- Convergence verified live: camera frozen via the debug handle, 541
+  samples held — the image flows continuously across the seam and both
+  sides match the reference inset.
+- "Press and hold to accumulate" added to the pane caption — stillness
+  is a real interaction, not a scripted state.
+- Perf at 12–13k with the dual estimator: cache texture streamed in 5
+  slabs, bake in 14 slices — butterfly/ring/mech/mobile locked 16.7 ms,
+  supernova 16.9 ms with 1–2 isolated spikes.

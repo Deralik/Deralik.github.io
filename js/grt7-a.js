@@ -1,13 +1,16 @@
-/* 7a — the hero. One integrator, one resolution, one fixed
+/* 7a — the hero. One estimator, one resolution, one fixed
    probe-calibrated exposure (the research renderer's display curve).
-   Right of the seam: an unbiased 1-spp-per-frame estimate of the
-   emission integral — accumulating while the view holds still and
-   resetting with motion, the research renderer's own accumulation
-   semantics; the noise is the estimator's variance. Left: a full march
-   of the field the cache believes (its gaussians baked to a grid —
-   never its splats) under one global cache-brightness scalar; the blur
-   is its genuine residual, fading as it trains. The meter is
-   render-space PSNR vs the fully-marched reference, on shared rays. */
+   BOTH panes take one sample per pixel per frame of the same
+   emission–absorption integral (the medium is known — transmittance is
+   deterministic, only radiance is sampled) and accumulate while the
+   view holds still, resetting with motion. Right: the raw estimator —
+   full-ray samples, high variance. Left: the same estimator with early
+   termination into the cache — a short real prefix, then the cache
+   supplies the remainder (never its splats; one global brightness
+   scalar, the research renderer's own control). Single cached frames
+   are already dense; both sides converge toward the reference, apart
+   from the cache's residual. The meter is render-space PSNR vs the
+   fully-marched reference. */
 (() => {
   const { fit, loop, tok, star } = GRT;
   const { Cam2 } = GRT2;
@@ -210,6 +213,7 @@
       if (this.o.azl)
         this.o.azl.textContent = this.vol.em >= 0.99 ? 'Transfer function' : 'Light azimuth';
       if (this.acc) this.acc.fill(0);
+      if (this.accL) this.accL.fill(0);
       const R3 = this.vol.EX * this.vol.EY * this.vol.EZ * 3;
       if (!this.CG || this.CG.length !== R3) {
         this.CG = new Float32Array(R3);
@@ -260,6 +264,7 @@
         this.czg = this.czc.getContext('2d');
         this.czd = this.czg.createImageData(RW, RH);
         this.acc = new Float32Array(RW * RH * 3);
+        this.accL = new Float32Array(RW * RH * 3);
       }
       const v = this.vol,
         E = v.grid,
@@ -291,6 +296,7 @@
         up = this.view.up;
       const D = this.nzd.data,
         A = this.acc,
+        AL = this.accL,
         D2 = this.czd.data,
         M = 16,
         cbr = this.cbr || 1,
@@ -331,9 +337,22 @@
             ag = 0,
             ab = 0;
           if (t1 > t0) {
-            const dt = (t1 - t0) / M;
-            /* right: one jittered stratified sample — unbiased, real variance */
-            const tt = t0 + ((Math.random() * M) | 0) * dt + Math.random() * dt;
+            const dt = (t1 - t0) / M,
+              kap = v.kap || 0;
+            /* right: one jittered stratified sample of the emission —
+               unbiased; its transmittance is deterministic (the medium is
+               known, as in the research method) */
+            const st = (Math.random() * M) | 0,
+              tt = t0 + st * dt + Math.random() * dt;
+            let Ts = 1;
+            if (kap)
+              for (let k = 0; k <= st; k++) {
+                const tk = t0 + (k + 0.5) * dt;
+                if (tk > tt) break;
+                Ts *= Math.exp(
+                  -kap * v.dget(e[0] + dx * tk, e[1] + dy * tk, e[2] + dz * tk) * dt,
+                );
+              }
             const p0 = e[0] + dx * tt,
               p1 = e[1] + dy * tt,
               p2 = e[2] + dz * tt;
@@ -342,31 +361,68 @@
                 j3 = Math.max(0, Math.min(Y1, ((p1 + hy) * ky) | 0)),
                 k3 = Math.max(0, Math.min(Z1, ((p2 + hz) * kz) | 0));
               const o2 = ((k3 * EY + j3) * EX + i3) * 3,
-                w = dt * M;
+                w = dt * M * Ts;
               er = E[o2] * w;
               eg = E[o2 + 1] * w;
               eb = E[o2 + 2] * w;
             }
-            /* left: full march of the cache's field */
-            for (let k = 0; k < M; k++) {
-              const tk = t0 + (k + 0.5) * dt,
+            /* left: the SAME estimator terminated early into the cache —
+               a real prefix sample, then the cache supplies the rest */
+            const sT = t0 + 0.25 * (t1 - t0),
+              tp = t0 + Math.random() * (sT - t0),
+              dtp = (sT - t0) / 6;
+            let T = 1,
+              Tp = 1,
+              got = false;
+            for (let k = 0; k < 6; k++) {
+              const tk = t0 + (k + 0.5) * dtp;
+              if (!got && tk > tp) {
+                Tp = T;
+                got = true;
+              }
+              if (kap)
+                T *= Math.exp(
+                  -kap * v.dget(e[0] + dx * tk, e[1] + dy * tk, e[2] + dz * tk) * dtp,
+                );
+            }
+            if (!got) Tp = T;
+            {
+              const x = e[0] + dx * tp,
+                y = e[1] + dy * tp,
+                z = e[2] + dz * tp;
+              const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
+                j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
+                k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
+              const o3 = ((k3 * EY + j3) * EX + i3) * 3,
+                w2 = (sT - t0) * Tp;
+              ar = E[o3] * w2;
+              ag = E[o3 + 1] * w2;
+              ab = E[o3 + 2] * w2;
+            }
+            const dts = (t1 - sT) / 12;
+            for (let k = 0; k < 12; k++) {
+              const tk = sT + (k + 0.5) * dts,
                 x = e[0] + dx * tk,
                 y = e[1] + dy * tk,
                 z = e[2] + dz * tk;
+              if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dts);
               const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
                 j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
                 k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
               const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-              ar += C[o3] * dt;
-              ag += C[o3 + 1] * dt;
-              ab += C[o3 + 2] * dt;
+              ar += C[o3] * cbr * T * dts;
+              ag += C[o3 + 1] * cbr * T * dts;
+              ab += C[o3 + 2] * cbr * T * dts;
             }
           }
           A[o] += (er - A[o]) / spp;
           A[o + 1] += (eg - A[o + 1]) / spp;
           A[o + 2] += (eb - A[o + 2]) / spp;
+          AL[o] += (ar - AL[o]) / spp;
+          AL[o + 1] += (ag - AL[o + 1]) / spp;
+          AL[o + 2] += (ab - AL[o + 2]) / spp;
           tone(A[o], A[o + 1], A[o + 2], D, q);
-          tone(ar * cbr, ag * cbr, ab * cbr, D2, q);
+          tone(AL[o], AL[o + 1], AL[o + 2], D2, q);
         }
       }
       this.nzg.putImageData(this.nzd, 0, 0);
@@ -382,10 +438,14 @@
       /* render-space PSNR: cache march vs truth march, linear, same rays,
          one shared camera — grid vs grid on both paths */
       if (this.frameN % 24 === 8) {
-        if (this.glr) this.insetMarch(this.vol.grid, this.rtl, null);
-        this.insetMarch(this.CG, this.rcl, null);
-        const T = this.rtl,
-          Q = this.rcl;
+        if (!this.ptl) {
+          this.ptl = new Float32Array(108 * 76 * 3);
+          this.pcl = new Float32Array(108 * 76 * 3);
+        }
+        this.insetMarch(this.vol.grid, this.ptl, null, 108, 76);
+        this.insetMarch(this.CG, this.pcl, null, 108, 76);
+        const T = this.ptl,
+          Q = this.pcl;
         let st = 0,
           sc = 0;
         for (let k = 0; k < T.length; k++) {
@@ -406,9 +466,9 @@
         this.meter.push(this._ps);
       }
     }
-    insetMarch(GR, lin, img) {
-      const W = 176,
-        H = 123,
+    insetMarch(GR, lin, img, W2, H2) {
+      const W = W2 || 176,
+        H = H2 || 123,
         v = this.vol,
         expo = v.expo,
         M = 22;
@@ -460,19 +520,22 @@
             ag = 0,
             ab = 0;
           if (t1 > t0) {
-            const dt = (t1 - t0) / M;
+            const dt = (t1 - t0) / M,
+              kap = v.kap || 0;
+            let T = 1;
             for (let k = 0; k < M; k++) {
               const tk = t0 + (k + 0.5) * dt,
                 x = e[0] + dx * tk,
                 y = e[1] + dy * tk,
                 z = e[2] + dz * tk;
+              if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dt);
               const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
                 j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
                 k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
               const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-              ar += GR[o3] * dt;
-              ag += GR[o3 + 1] * dt;
-              ab += GR[o3 + 2] * dt;
+              ar += GR[o3] * T * dt;
+              ag += GR[o3 + 1] * T * dt;
+              ab += GR[o3 + 2] * T * dt;
             }
           }
           const o = (j2 * W + i2) * 3;
@@ -506,14 +569,14 @@
       const B = 120;
       F.step(B, t);
       if (dt < 0.022) F.step(B, t);
-      /* cache pane source: sliced re-bake, 1/10 of the gaussians per frame,
-   swapped in whole — the pane lags training by ≤10 frames, never tears */
+      /* cache pane source: sliced re-bake, 1/14 of the gaussians per frame,
+   swapped in whole — the pane lags training by ≤14 frames, never tears */
       {
-        const NB = Math.ceil(F.N / 10),
+        const NB = Math.ceil(F.N / 14),
           ph = this._bkPh | 0;
         if (ph === 0) this.CGb.fill(0);
         F.bakeSlice(this.CGb, this.vol, ph * NB, Math.min(F.N, (ph + 1) * NB));
-        if (ph === 9) {
+        if (ph === 13) {
           const t2 = this.CG;
           this.CG = this.CGb;
           this.CGb = t2;
@@ -638,6 +701,7 @@
           S: this.vol.S || 1,
           tf: this.vol.tf,
           invG: 1 / (this.vol.gmax || 1),
+          kap: this.vol.kap || 0,
           inset: (() => {
             const iv2 = w < 560 ? [104, 74] : [176, 123];
             return [
@@ -746,7 +810,7 @@
       g.fillText(
         GRT.elide(
           g,
-          'THE RENDER — DRAG THE SEAM TO COMPARE · DRAG ELSEWHERE TO MOVE THE CAMERA',
+          'THE RENDER — DRAG THE SEAM TO COMPARE · DRAG TO MOVE · PRESS AND HOLD TO ACCUMULATE',
           iw,
         ),
         x0,

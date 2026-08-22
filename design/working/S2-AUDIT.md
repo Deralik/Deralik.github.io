@@ -522,3 +522,19 @@ stray `git checkout` reverted uncommitted core work mid-split — all
 edits were deterministic replacements and were reapplied + verified
 (A/B energy identical). Verified: herojs A/B, converged live shots,
 traces, matrix, gate, prettier.
+
+### Owner round 5 (2026-08-22 early): the estimator contract + reference match
+Owner's two rulings mid-round: (a) the difference vs the approved
+screenshots was still unaddressed → diagnosed by direct side-by-side
+(occlusion missing, halo dominant, crust soft) and fixed with
+Beer–Lambert absorption from the known medium in EVERY integrator
+(calibrate, CPU march/inset, GLSL A/B/C, herojs twin), glow .012 +
+tighter falloff, band .25, AO 52³/aoK 2.6; (b) both panes must be the
+SAME 1-spp estimator, differing only in variance → pass A now renders
+BOTH accumulations per frame (MRT): raw full-ray sample right; left =
+real prefix (first quarter, one stratified sample) + cache remainder
+under the brightness scalar. Verified: fresh frame = dense left vs
+speckle right; 541 held samples = continuous image across the seam,
+matching the inset. Labels/chipline/BRIEF now read "1 spp per frame,
+per side". Blob regression caught live by owner (σ 1.0×spacing) →
+1.3× overlap. Perf: 5-slab texture stream, 14-slice bake.

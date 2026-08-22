@@ -84,10 +84,10 @@ window.GRTFIELD = (() => {
         acc += Math.sqrt(best);
       }
       const spacing = (acc / M) * Math.cbrt(S.length / this.N);
-      const s0 = Math.max(0.013, Math.min(0.05, 1.0 * spacing));
+      const s0 = Math.max(0.015, Math.min(0.055, 1.3 * spacing));
       this.s0d = s0;
       this.svd = 0.35 * s0;
-      this.lsMinD = Math.log(0.45 * s0);
+      this.lsMinD = Math.log(0.55 * s0);
       this.lsMaxD = Math.log(2.2 * s0);
       this.relocLsD = Math.log(0.9 * s0);
     }

@@ -109,19 +109,22 @@ function march(v, eye, W = 352, H = 242) {
         ag = 0,
         ab = 0;
       if (t1 > t0) {
-        const dt = (t1 - t0) / M;
+        const dt = (t1 - t0) / M,
+          kap = v.kap || 0;
+        let T = 1;
         for (let k = 0; k < M; k++) {
           const tk = t0 + (k + 0.5) * dt,
             x = eye[0] + dx * tk,
             y = eye[1] + dy * tk,
             z = eye[2] + dz * tk;
+          if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dt);
           const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
             j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
             k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
           const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-          ar += E[o3] * dt;
-          ag += E[o3 + 1] * dt;
-          ab += E[o3 + 2] * dt;
+          ar += E[o3] * T * dt;
+          ag += E[o3 + 1] * T * dt;
+          ab += E[o3 + 2] * T * dt;
         }
       }
       const q = (j * W + i) * 3;

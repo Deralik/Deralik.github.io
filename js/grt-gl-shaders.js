@@ -4,10 +4,11 @@
    GLSL, so this is a round trip home), the data volumes sample their
    vendored grids trilinearly, and shading (official TF + glow + AO)
    matches js/grt7-core.js rebuild() term for term. Three fragments:
-   A = one jittered 1-spp estimator sample, progressive-accumulated;
-   B = 28-step march of the cache texture + display of A's accumulation,
-       split at the seam;
-   C = 48-step full march of the truth field (the reference inset). */
+   A = one 1-spp sample per pixel into TWO progressive accumulations —
+       the raw estimator, and the same estimator terminating early into
+       the cache (real prefix + cache remainder);
+   B = tones the two accumulations at the seam;
+   C = 64-step full march of the truth field (the reference inset). */
 window.GRTGLSL = (() => {
   const VS = `#version 300 es
 void main(){vec2 P[3]=vec2[3](vec2(-1,-1),vec2(3,-1),vec2(-1,3));gl_Position=vec4(P[gl_VertexID],0,1);}`;
@@ -33,7 +34,7 @@ vec3 ray(vec2 px){
      the data path samples the vendored scalar grid + the scene TF LUT. */
   const FIELD = `
 uniform int uKind;            /* 0 butterfly · 1 ring · 2 data grid */
-uniform float uS,uTf,uInvG;
+uniform float uS,uTf,uInvG,uKap;
 uniform sampler3D tD;         /* data vols: raw scalar u */
 uniform sampler3D tA;         /* baked AO over the he box */
 uniform sampler2D tLUT;       /* data vols: scene TF (rgb + alpha) by u */
@@ -83,7 +84,7 @@ float sigButterfly(vec3 w){
   vec3 qa=vec3(q.x,q.y-5.8,q.z),qb=vec3(q.x,q.y+6.2,q.z);
   float s1=sdCone(qa,5.,.05,1.4)+fbm(qa*80.)+spiralC(qa*.002);
   float s2=sdCone(qb,-5.,.015,1.4)+fbm(qb*80.)+spiralC(qb*.001);
-  return max(0.,.28-(abs(xr(s2,s1)*.45)+.086));
+  return max(0.,.25-(abs(xr(s2,s1)*.45)+.086));
 }
 float sigRing(vec3 w){
   vec3 p=rotAA(w*3.4,vec3(0.,0.,1.),1.0471976);
@@ -97,23 +98,30 @@ float sigRing(vec3 w){
   float d3=abs(neb*2.5*.8)+.12;
   float hh=clamp(.5+.5*(d2-d1),0.,1.);
   float sm=mix(d2,d1,hh)-hh*(1.-hh);
-  return max(0.,.28-xr(d3,sm));
+  return max(0.,.25-xr(d3,sm));
 }
-vec3 emission(vec3 p){
+/* the medium is known: density drives both emission and transmittance */
+float density(vec3 p){
+  if(uKind==2){
+    vec3 tc=(p/uHe+1.)*.5;
+    return texture(tLUT,vec2(texture(tD,tc).r,.5)).a;
+  }
+  return (uKind==0?sigButterfly(p):sigRing(p))*3.2;
+}
+vec3 emissionD(vec3 p,float d){
   vec3 tc=(p/uHe+1.)*.5;
   float ao=texture(tA,tc).r;
   if(uKind==2){
     vec4 lut=texture(tLUT,vec2(texture(tD,tc).r,.5));
     return lut.a*ao*lut.rgb*uInvG;
   }
-  float d=(uKind==0?sigButterfly(p):sigRing(p))*3.2;
   float lD=length(p)*uS;
   float m=min((lD+.05)/(.9*(1.+(uTf-.5)*.8)),1.);
   vec3 dust=(1.-.5*min(1.,d*1.2))*(vec3(5.6,6.3,7.)-vec3(4.1,5.1,6.3)*m);
   float lDs=max(.03,lD);
-  float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.05),T=lDs*2.3+2.6;
-  vec3 glow=.08*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1);
-  return (pow(d,1.6)*dust+glow)*ao*uInvG;
+  float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
+  vec3 glow=.012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1);
+  return (pow(d,2.0)*dust+glow)*ao*uInvG;
 }`;
 
   const TONE = `
@@ -122,59 +130,82 @@ vec4 tone(vec3 L){
   return vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec3(0.)))),1.);
 }`;
 
-  /* pass A — the estimator: ONE jittered stratified sample of the truth
-     field per pixel per frame, progressive-mean accumulated (uN = samples
-     held; motion resets it to 1 upstream) */
+  /* pass A — BOTH estimators, one sample per pixel per frame, into two
+     progressive accumulations (uN = samples held; motion resets to 1):
+     R (right pane) — the raw estimate: one stratified sample of the whole
+       ray under the known medium's transmittance;
+     L (left pane)  — the same estimator with EARLY TERMINATION INTO THE
+       CACHE: the first uTerm of the ray is sampled for real (one
+       stratified sample), and from the termination point the cache
+       supplies the remainder (a march of the cache texture under the
+       same transmittance, scaled by the cache-brightness control).
+       Its per-frame variance is only the short real prefix — that is
+       the method's point. */
   const FSA = `#version 300 es
 precision highp float;precision highp sampler3D;
-uniform sampler2D tPrev;
-uniform float uSeed,uN;
+uniform sampler2D tPrevR,tPrevL;
+uniform sampler3D tC;
+uniform float uSeed,uN,uCbr,uTerm;
 ${CAM}
 ${FIELD}
-out vec4 o;
+layout(location=0) out vec4 oR;
+layout(location=1) out vec4 oL;
 float hash(vec2 p,float s){return fract(sin(dot(p,vec2(12.9898,78.233))+s*.61803)*43758.5453);}
 void main(){
   vec2 px=gl_FragCoord.xy,uv=px/uRes;
   vec3 d=ray(px);
   vec2 tt=boxT(uEye,d);
-  vec3 rad=vec3(0.);
+  vec3 radR=vec3(0.),radL=vec3(0.);
   if(tt.y>tt.x){
-    float M=24.,h1=hash(px,uSeed),h2=hash(px.yx+vec2(31.7,17.3),uSeed+7.);
-    float dt=(tt.y-tt.x)/M,t=tt.x+(floor(h1*M)+h2)*dt;
-    rad=emission(uEye+d*t)*(tt.y-tt.x);
+    float h1=hash(px,uSeed),h2=hash(px.yx+vec2(31.7,17.3),uSeed+7.),h3=hash(px+vec2(7.1,3.7),uSeed+13.);
+    /* right: one stratified sample over the whole ray */
+    float M=24.,dt=(tt.y-tt.x)/M,st=floor(h1*M),t=tt.x+(st+h2)*dt;
+    float Tr=1.;
+    for(float k=0.;k<24.;k++){
+      float tk=tt.x+(k+.5)*dt;
+      if(tk>t)break;
+      Tr*=exp(-uKap*density(uEye+d*tk)*dt);
+    }
+    vec3 p=uEye+d*t;
+    radR=emissionD(p,density(p))*(tt.y-tt.x)*Tr;
+    /* left: real prefix (one stratified sample), then the cache */
+    float sTerm=mix(tt.x,tt.y,uTerm);
+    float tp=tt.x+h3*(sTerm-tt.x);
+    float dtp=(sTerm-tt.x)/8.;
+    float T=1.,Tp=1.;
+    bool got=false;
+    for(float k=0.;k<8.;k++){
+      float tk=tt.x+(k+.5)*dtp;
+      if(!got&&tk>tp){Tp=T;got=true;}
+      T*=exp(-uKap*density(uEye+d*tk)*dtp);
+    }
+    if(!got)Tp=T;
+    vec3 pp=uEye+d*tp;
+    radL=emissionD(pp,density(pp))*(sTerm-tt.x)*Tp;
+    /* the cache supplies the rest of the sample */
+    float dts=(tt.y-sTerm)/20.;
+    for(float k=0.;k<20.;k++){
+      vec3 q=uEye+d*(sTerm+(k+.5)*dts);
+      T*=exp(-uKap*density(q)*dts);
+      radL+=texture(tC,(q/uHe+1.)*.5).rgb*uCbr*T*dts;
+    }
   }
-  vec3 prev=texture(tPrev,uv).rgb;
-  o=vec4(prev+(rad-prev)/uN,1.);
+  vec3 pR=texture(tPrevR,uv).rgb,pL=texture(tPrevL,uv).rgb;
+  oR=vec4(pR+(radR-pR)/uN,1.);
+  oL=vec4(pL+(radL-pL)/uN,1.);
 }`;
 
-  /* pass B — the seam: left, a 28-step march of the cache texture under
-     the global cache-brightness scalar; right, pass A's accumulation */
+  /* pass B — the seam: tone the two accumulations */
   const FSB = `#version 300 es
-precision highp float;precision highp sampler3D;
-uniform sampler3D tC;
-uniform sampler2D tAcc;
-uniform float uSu,uCbr;
-${CAM}
+precision highp float;
+uniform sampler2D tAccR,tAccL;
+uniform vec2 uRes;
+uniform float uSu;
 ${TONE}
 out vec4 o;
 void main(){
-  vec2 px=gl_FragCoord.xy,uv=px/uRes;
-  vec3 L;
-  if(uv.x<uSu){
-    vec3 s=vec3(0.);
-    vec3 d=ray(px);
-    vec2 tt=boxT(uEye,d);
-    if(tt.y>tt.x){
-      float dt=(tt.y-tt.x)/28.;
-      for(float k=0.;k<28.;k++){
-        vec3 p=uEye+d*(tt.x+(k+.5)*dt);
-        s+=texture(tC,(p/uHe+1.)*.5).rgb*dt;
-      }
-    }
-    L=s*uCbr;
-  } else {
-    L=texture(tAcc,uv).rgb;
-  }
+  vec2 uv=gl_FragCoord.xy/uRes;
+  vec3 L=uv.x<uSu?texture(tAccL,uv).rgb:texture(tAccR,uv).rgb;
   o=tone(L);
 }`;
 
@@ -191,8 +222,13 @@ void main(){
   vec2 tt=boxT(uEye,d);
   vec3 s=vec3(0.);
   if(tt.y>tt.x){
-    float dt=(tt.y-tt.x)/48.;
-    for(float k=0.;k<48.;k++) s+=emission(uEye+d*(tt.x+(k+.5)*dt))*dt;
+    float dt=(tt.y-tt.x)/64.,Tr=1.;
+    for(float k=0.;k<64.;k++){
+      vec3 p=uEye+d*(tt.x+(k+.5)*dt);
+      float dd=density(p);
+      Tr*=exp(-uKap*dd*dt);
+      s+=emissionD(p,dd)*Tr*dt;
+    }
   }
   o=tone(s);
 }`;

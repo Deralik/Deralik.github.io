@@ -328,7 +328,7 @@ window.GRTVOLS = (() => {
     /* AO field as a small grid the GL shader samples trilinearly — same
        formula the EMIT bake uses (6-tap local density, exp falloff) */
     buildAO() {
-      const n = 40,
+      const n = 52,
         he = this.he,
         A = (this.aoT = this.aoT || new Float32Array(n * n * n)),
         step = (2 * he[0]) / this.EX,
@@ -383,8 +383,10 @@ window.GRTVOLS = (() => {
             dz = -eye[2] / L;
           const tr = this.boxT(eye, dx, dy, dz);
           if (!tr) continue;
-          const dt = (tr[1] - tr[0]) / M;
-          let s = 0;
+          const dt = (tr[1] - tr[0]) / M,
+            kap = this.kap || 0;
+          let s = 0,
+            T = 1;
           for (let k2 = 0; k2 < M; k2++) {
             const tt = tr[0] + (k2 + 0.5) * dt,
               p0 = eye[0] + dx * tt,
@@ -394,7 +396,8 @@ window.GRTVOLS = (() => {
               j2 = Math.max(0, Math.min(EY - 1, (((p1 / he[1] + 1) / 2) * EY) | 0)),
               k3 = Math.max(0, Math.min(EZ - 1, (((p2 / he[2] + 1) / 2) * EZ) | 0)),
               o2 = ((k3 * EY + j2) * EX + i2) * 3;
-            s += ((E[o2] + E[o2 + 1] + E[o2 + 2]) / 3) * dt;
+            if (kap) T *= Math.exp(-kap * this.dget(p0, p1, p2) * dt);
+            s += ((E[o2] + E[o2 + 1] + E[o2 + 2]) / 3) * T * dt;
           }
           if (s > 0) ls.push(s);
         }
@@ -545,6 +548,7 @@ window.GRTVOLS = (() => {
     mech: {
       he: [0.309, 0.9, 0.322],
       E: [44, 128, 46],
+      kap: 10,
       orb: 2.0,
       aoK: 3.4,
       ap: [0, 0.0625, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
@@ -563,6 +567,7 @@ window.GRTVOLS = (() => {
       he: [1, 1, 1],
       E: [72, 72, 72],
       orb: 1.75,
+      kap: 6,
       fl: (u) => (u <= 0.05 ? 0 : u >= 0.25 ? 0.05 : (0.05 * (u - 0.05)) / 0.2),
       ap: [0, 0.586, 0.625, 0.75, 0.875, 1],
       av: [0, 0, 0.068, 0.243, 0.59, 0.854],
@@ -608,6 +613,7 @@ window.GRTVOLS = (() => {
       this.EZ = T.E[2];
       this.orb = T.orb;
       if (T.aoK) this.aoK = T.aoK;
+      if (T.kap) this.kap = T.kap;
       this.grid = new Float32Array(this.EX * this.EY * this.EZ * 3);
       this.em = 1;
       this.tfr = false;
@@ -667,7 +673,9 @@ window.GRTVOLS = (() => {
       this.fn = window.GRTNEB[kind];
       this.DR = 56;
       this.S = GS[kind];
-      this.dGamma = 1.6;
+      this.dGamma = 2.0;
+      this.kap = 9;
+      this.aoK = 2.6;
     }
     sig(x, y, z) {
       return this.fn(x, y, z) * 3.2;
@@ -688,9 +696,9 @@ window.GRTVOLS = (() => {
       const S = this.S,
         lD = Math.max(0.03, Math.hypot(x, y, z) * S);
       const g1 = 0.7 / ((lD * lD + 0.12) * 10),
-        e = Math.exp(-lD * lD * lD * 0.05),
+        e = Math.exp(-lD * lD * lD * 0.09),
         T = lD * 2.3 + 2.6,
-        K = 0.08;
+        K = 0.012;
       return [
         K * (Math.max(0, 0.4 + 0.5 * Math.cos(T - 0.785)) * e + 0.57 * g1),
         K * (Math.max(0, 0.4 + 0.5 * Math.cos(T + 0.079)) * e + 1.85 * g1),

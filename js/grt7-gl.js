@@ -81,7 +81,7 @@ window.GRT7GL = function () {
     if (!S.pend) return;
     const [EX, EY, EZ] = S.dims,
       back = 1 - S.tci,
-      zStep = Math.max(1, Math.ceil(EZ / 3)),
+      zStep = Math.max(1, Math.ceil(EZ / 5)),
       z0 = S.upZ,
       z1 = Math.min(EZ, z0 + zStep),
       n = EX * EY * (z1 - z0);
@@ -107,21 +107,27 @@ window.GRT7GL = function () {
     S.aw = w;
     S.ah = h;
     for (let i = 0; i < 2; i++) {
-      if (S.acc[i]) gl.deleteTexture(S.acc[i]);
+      if (S.acc[i]) for (const t of S.acc[i]) gl.deleteTexture(t);
       if (S.fbo[i]) gl.deleteFramebuffer(S.fbo[i]);
-      const t = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, t);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.FLOAT, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      /* two attachments per accumulation: R = raw, L = cache-terminated */
+      const pair = [0, 1].map(() => {
+        const t = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.FLOAT, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        return t;
+      });
       const f = gl.createFramebuffer();
       gl.bindFramebuffer(gl.FRAMEBUFFER, f);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pair[0], 0);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, pair[1], 0);
+      gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      S.acc[i] = t;
+      S.acc[i] = pair;
       S.fbo[i] = f;
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -142,6 +148,7 @@ window.GRT7GL = function () {
     gl.uniform1f(U(p, 'uS'), o.S || 1);
     gl.uniform1f(U(p, 'uTf'), o.tf);
     gl.uniform1f(U(p, 'uInvG'), o.invG);
+    gl.uniform1f(U(p, 'uKap'), o.kap || 0);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_3D, S.tD);
     gl.uniform1i(U(p, 'tD'), 2);
@@ -264,7 +271,7 @@ window.GRT7GL = function () {
       gl.disable(gl.BLEND);
       const ni = 1 - S.ai;
 
-      /* A: estimator sample into the progressive accumulation */
+      /* A: both estimators into the two progressive accumulations */
       gl.viewport(0, 0, w, h);
       gl.bindFramebuffer(gl.FRAMEBUFFER, S.fbo[ni]);
       gl.useProgram(pA);
@@ -272,27 +279,32 @@ window.GRT7GL = function () {
       field(pA, o);
       gl.uniform2f(U(pA, 'uRes'), w, h);
       gl.uniform2f(U(pA, 'uOff'), 0, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_3D, S.tCs[S.tci]);
+      gl.uniform1i(U(pA, 'tC'), 0);
       gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, S.acc[S.ai]);
-      gl.uniform1i(U(pA, 'tPrev'), 1);
+      gl.bindTexture(gl.TEXTURE_2D, S.acc[S.ai][0]);
+      gl.uniform1i(U(pA, 'tPrevR'), 1);
+      gl.activeTexture(gl.TEXTURE5);
+      gl.bindTexture(gl.TEXTURE_2D, S.acc[S.ai][1]);
+      gl.uniform1i(U(pA, 'tPrevL'), 5);
       gl.uniform1f(U(pA, 'uSeed'), o.seed % 997);
       gl.uniform1f(U(pA, 'uN'), Math.max(1, o.spp || 1));
+      gl.uniform1f(U(pA, 'uCbr'), o.cbr);
+      gl.uniform1f(U(pA, 'uTerm'), 0.25);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-      /* B: the seam — cache march | accumulated estimate */
+      /* B: the seam — tone the two accumulations */
       gl.useProgram(pB);
-      common(pB, o);
       gl.uniform2f(U(pB, 'uRes'), w, h);
-      gl.uniform2f(U(pB, 'uOff'), 0, 0);
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_3D, S.tCs[S.tci]);
-      gl.uniform1i(U(pB, 'tC'), 0);
+      gl.bindTexture(gl.TEXTURE_2D, S.acc[ni][0]);
+      gl.uniform1i(U(pB, 'tAccR'), 0);
       gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, S.acc[ni]);
-      gl.uniform1i(U(pB, 'tAcc'), 1);
+      gl.bindTexture(gl.TEXTURE_2D, S.acc[ni][1]);
+      gl.uniform1i(U(pB, 'tAccL'), 1);
       gl.uniform1f(U(pB, 'uSu'), o.su);
-      gl.uniform1f(U(pB, 'uCbr'), o.cbr);
       gl.uniform1f(U(pB, 'uExpo'), o.expo);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
 

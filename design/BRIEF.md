@@ -164,15 +164,18 @@ behavior, and every demo's label states exactly what is running (owner,
   visible in this emission-only pipeline. RIDER: Open SciVis reachable
   over http only — re-verify its license text before deploy. The hero
   comparison is real computation, one integrator, one resolution, one
-  fixed probe-calibrated exposure: right of the seam, an unbiased
-  1-spp-per-frame estimate of the emission integral, accumulated in
-  linear radiance (its noise is genuine variance); left, a full march
-  of the field the cache believes — its gaussians baked to a grid,
-  never its splats (its blur/error is the real residual, fading with
-  training); reference inset is the true field fully marched; the meter
-  is render-space PSNR (cache march vs reference march, same rays).
-  Demo parameters the page may print: 1 spp per frame on the estimator
-  side.
+  fixed probe-calibrated exposure: right of the seam, an unbiased 1-spp-per-frame estimate of the
+  emission–absorption integral (the medium is known — transmittance is
+  deterministic, only radiance is sampled), accumulating while the view
+  is still and resetting with motion (its noise is genuine variance); left, the SAME
+  estimator with early termination into the cache — a short real
+  prefix, then the cache (baked to a grid, never its splats) supplies
+  the rest of the sample under one global brightness scalar (the
+  research renderer's own control): single cached frames are already
+  dense, and both sides converge toward the reference apart from the
+  cache's residual; reference inset is the true field fully marched;
+  the meter is render-space PSNR vs the reference. Demo parameters the
+  page may print: 1 spp per frame, per side.
 
 ## Constraints
 
