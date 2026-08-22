@@ -831,3 +831,32 @@ added.
   B 140→120. All four datasets back to 16.7ms/0 jank.
 - Gate: butterfly .23 · ring .28 · mech .41 · super .07 (the nebulae's
   resid now includes the halo-learning burden); lumgate green both.
+
+# Owner rulings — hero round 17 (2026-08-22)
+
+- **Long-hold degradation (both panes darker/blotchier over time)**:
+  ROOT CAUSE FOUND — the accumulation textures were fp16; a running
+  mean stalls past ~1000 spp (corrections drop below one ulp) and
+  pixels random-walk at the quantization step. Accumulations are fp32
+  now; measured drift 874→2975 spp: 0.01%. This also explains earlier
+  "converged but grainy" reports.
+- **Hand brightness = OWNER'S CALL, not the reference figure's**:
+  expoK 0.25 (display median 0.51 vs the figure's 0.82); the lumgate's
+  mech reference now tracks the owner target, measured live.
+- **Butterfly star**: core widened again (K2 .045, e2c .008) + a
+  physical central cavity in the density (the waist dust occluded the
+  point; nebulae have one). ALSO found: round 16's GLSL star-size edit
+  had silently missed the file (multi-edit script wrote one file, then
+  aborted before the other) — source edits go through the verifying
+  Edit tool now, not batch scripts.
+- **Cached gas softness**: gaia cache grid 88³→100³ (the trilinear
+  grid caps cached crispness). Butterfly parity fell .23→.12 — best
+  yet; ring holds .28 with the halo-learning burden.
+- **Star-region perf (profiled, twice)**: training was 71% of frame
+  time — kernels piling in the core's bin cells. Core seed share cut
+  to ~1% (a point source needs ~100 kernels, not 900) + graded lit
+  thinning. All four datasets 16.7ms/0 jank.
+- Ring striation report: not reproduced at 3000 spp post-fp32 (the
+  fp16 walk produced line-ish artifacts); if the owner still sees
+  striations they are the model's value-noise lattice — quintic fade
+  is the queued fix.

@@ -90,7 +90,9 @@ float sigButterfly(vec3 w){
   vec3 qa=vec3(q.x,q.y-5.8,q.z),qb=vec3(q.x,q.y+6.2,q.z);
   float s1=sdCone(qa,5.,.05,1.4)+fbm(qa*80.)+spiralC(qa*.002);
   float s2=sdCone(qb,-5.,.015,1.4)+fbm(qb*80.)+spiralC(qb*.001);
-  return max(0.,.25-(abs(xr(s2,s1)*.45)+.086));
+  float d0=max(0.,.25-(abs(xr(s2,s1)*.45)+.086));
+  /* the star's cavity: clear the waist dust so the remnant reads */
+  return d0*(1.-.85*exp(-4.*dot(w,w)*17.64));
 }
 float sigRing(vec3 w){
   vec3 p=rotAA(w*3.4,vec3(0.,0.,1.),1.0471976);
@@ -173,7 +175,7 @@ vec3 emissionD(vec3 p,float d){
   }
   float lDs=max(.03,lD);
   float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
-  float g2=.012/(lDs*lDs+.0012);
+  float g2=(uKind==0?.045:.012)/(lDs*lDs+(uKind==0?.008:.0012));
   vec3 glow=.012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1)+vec3(.75,.85,1.)*g2;
   return (pow(d,2.0)*dust+glow)*ao*uInvG;
 }`;

@@ -657,3 +657,11 @@ pane display stats vs the reference figures, hard gate) + root cause
 κ=420). Anisotropic kernels (covariance-fitted, geo-normalized, iso-
 equivalent identity); cache learns stars+halos (dead glowTerm removed);
 coverage-aware relocation; perf profiled → 16.7ms/0 restored ×4 sets.
+
+### Owner round 17 (2026-08-22): fp32 accumulation; owner brightness
+fp16 running mean was the long-hold darkening/blotching (fp32 → 0.01%
+drift over 2100 spp). Mech expoK .25 → owner target, lumgate tracks
+it. Butterfly star: bigger core + central cavity (+ found a silently
+missed GLSL edit from r16 — Edit-tool-only rule for source now).
+Gaia grid 100³; butterfly parity .12 (best). Perf re-profiled → 16.7/0
+×4. Gates green.

@@ -669,6 +669,9 @@ window.GRTVOLS = (() => {
          The earlier 48 left the hand ~9× too transparent — milky layers
          accumulating emission read as both "not solid" and "too bright" */
       kap: 420,
+      /* owner brightness target (round 17) — the lumgate's mech
+         reference tracks this trim, not the research figure */
+      expoK: 0.25,
       /* light-march extinction is gentler than the camera ray's: the
          scene's material carries a 0.2 ambient floor — full κ in the
          shadow march would blacken the interior parts it keeps lit */
@@ -978,8 +981,10 @@ window.GRTVOLS = (() => {
       this.he = [1.45, 1.45, 1.45];
       /* the grid scales WITH the box — the ring's filaments are ~.03
          wide and the training targets must resolve them */
-      this.EX = this.EY = this.EZ = 88;
-      this.grid = new Float32Array(88 * 88 * 88 * 3);
+      /* 100³: the cached pane samples this grid trilinearly — its
+         resolution caps cached crispness (owner: gas softer cached) */
+      this.EX = this.EY = this.EZ = 100;
+      this.grid = new Float32Array(100 * 100 * 100 * 3);
       this.DR = 64;
       this.S = GS[kind];
       this.tf = 0.5; /* centre = the colourway matched to the shaders' output */
@@ -1007,7 +1012,7 @@ window.GRTVOLS = (() => {
         m = n - base.length,
         S = this.S || 1;
       for (let i = 0; i < m; i++) {
-        const core = this.r() < 0.35,
+        const core = this.r() < 0.12,
           rr = core ? (0.02 + 0.1 * this.r()) / (S / 3.4) : 0.12 + 0.45 * this.r(),
           th = this.r() * 6.283,
           ph = Math.acos(2 * this.r() - 1);
@@ -1022,7 +1027,8 @@ window.GRTVOLS = (() => {
     /* the training pool thins near the star: a tiny bright ball needs a
        handful of kernels, not a pile that overloads its bin cells */
     litThin(p) {
-      return p[0] * p[0] + p[1] * p[1] + p[2] * p[2] < 0.018 ? 0.2 : 1;
+      const r2 = p[0] * p[0] + p[1] * p[1] + p[2] * p[2];
+      return r2 < 0.018 ? 0.15 : r2 < 0.07 ? 0.45 : 1;
     }
     /* after the shader's computeColor, radius in ITS units (lD = r·S):
    blue-white centre dust -> amber edge dust (edge colour matched to the
@@ -1080,8 +1086,8 @@ window.GRTVOLS = (() => {
         /* the central star itself (the remnant, a bright point in the
            reference photography): tight 1/r² core, bluish white */
         g2 =
-          (this.kind === 'butterfly' ? 0.02 : 0.012) /
-          (lD * lD + (this.kind === 'butterfly' ? 0.003 : 0.0012));
+          (this.kind === 'butterfly' ? 0.045 : 0.012) /
+          (lD * lD + (this.kind === 'butterfly' ? 0.008 : 0.0012));
       return [
         K * (Math.max(0, 0.4 + 0.5 * Math.cos(T - 0.785)) * e + 0.57 * g1) + 0.75 * g2,
         K * (Math.max(0, 0.4 + 0.5 * Math.cos(T + 0.079)) * e + 1.85 * g1) + 0.85 * g2,

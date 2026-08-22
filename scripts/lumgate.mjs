@@ -10,10 +10,11 @@
 */
 import { spawnSync } from 'node:child_process';
 
-/* reference_convergence_figures/<k>_radiance_scale_pair.png, native
-   panel, object mask lum>0.06 (see RULINGS round 16) */
+/* mech: OWNER brightness target (round 17, expoK 0.25 — measured live);
+   super: reference_convergence_figures native panel, object mask
+   lum>0.06 (see RULINGS rounds 16–17) */
 const REF = {
-  mech: { median: 0.823, p90: 0.925 },
+  mech: { median: 0.507, p90: 0.633 },
   super: { median: 0.864, p90: 0.91 },
 };
 const BTN = { mech: '#grt-v2', super: '#grt-v3' };

@@ -109,7 +109,10 @@ window.GRTNEB = (() => {
       cone(qx, qy + 6.2, qz, -5, 0.015, 1.4) +
       fbm(qx * 80, (qy + 6.2) * 80, qz * 80) +
       spiralC(qx * 0.001, (qy + 6.2) * 0.001, qz * 0.001);
-    return Math.max(0, 0.28 - (Math.abs(xr(s2, s1) * 0.45) + 0.086));
+    const d = Math.max(0, 0.28 - (Math.abs(xr(s2, s1) * 0.45) + 0.086));
+    /* the star's cavity: clear the waist dust so the remnant reads */
+    const r2 = (px * px + py * py + pz * pz) * 17.64;
+    return d * (1 - 0.85 * Math.exp(-4 * r2));
   }
   function ring(px, py, pz) {
     const S = 3.4;
