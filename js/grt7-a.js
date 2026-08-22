@@ -143,6 +143,19 @@
       cv.addEventListener('pointerup', up);
       cv.addEventListener('pointercancel', up);
       this.setVol('butterfly');
+      /* compile the GL renderer at idle — its ~250ms of shader compiles
+         otherwise land on the first visible frame (doc entry) */
+      const glWarm = () => {
+        if (this._glT) return;
+        this._glT = 1;
+        try {
+          this.glr = window.GRT7GL ? window.GRT7GL() : null;
+        } catch (e) {
+          this.glr = null;
+        }
+      };
+      if (window.requestIdleCallback) requestIdleCallback(glWarm, { timeout: 2500 });
+      else setTimeout(glWarm, 300);
       loop(cv, (t, dt) => this.frame(t, dt));
     }
     inImg(e) {
