@@ -636,3 +636,25 @@ added.
   medium. This also fixes the supernova's washed self-glow: it shades
   directionally with a shadowed rim. Relocation hot spots on the ring
   fixed the same round (residual-initialized relocation).
+
+# Owner rulings — hero round 10 (2026-08-22)
+
+- **The ring divergence was real** (owner's sustained-training report):
+  two mechanisms, both fixed at the root. (1) SGD-on-a-sum updates were
+  unnormalized — the sum's step scales with local overlap, and
+  relocation deliberately piles overlap onto the brightest segments;
+  past ~20 overlaps the update crosses the stability bound and the
+  zero-clamp rectifies the oscillation into a brightness ratchet. All
+  updates now normalize by the local weight sum (step bounded by the
+  learning rate regardless of pile-up). (2) A gaussian that decouples
+  from regular sampling could still be pumped by concentrated
+  ray-vertex micro-updates toward the ABSOLUTE colour clamp of 2 —
+  ~40× the working scale — becoming a stuck bright dot. The colour
+  ceiling now scales with the field's own mean (cMax ≈ 14·mean), and
+  micro-updates are damped 0.4×. Offline reproducer confirms: ring
+  grid energy went 2.86→2.56 from 1500→6000 iters (was RISING before).
+- **Stale-version failure, caught by the owner twice, now machinery**:
+  check.mjs hard-fails any commit where a js/css file changed but its
+  ?v= in index.html did not (negative-tested). The lights/solidity
+  round was invisible to the owner because grt-vols shipped twice
+  under one version.

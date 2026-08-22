@@ -599,3 +599,11 @@ Addendum: data volumes now LIT (scene lights + shadowed single
 scatter via the light-field grid — supernova shades directionally);
 reloc residual-init landed. Final gate: butterfly .23 · mech .12 ·
 ring .34 · super .31; traces 16.7/0; matrix/check clean.
+
+### Owner round 10 (2026-08-22): training divergence + version machinery
+Ring blobs = confirmed divergence; fixed at root (normalized updates,
+scale-relative colour ceiling, damped micro) — offline trend now
+converges downward. Version-bump hard gate added to check.mjs after
+shipping grt-vols twice under one ?v= (owner saw no lights). Gate:
+butterfly .18 · mech .22 (lit field is harder to fit — honest) ·
+super .30 · ring .34; traces locked; matrix clean.

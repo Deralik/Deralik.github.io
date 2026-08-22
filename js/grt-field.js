@@ -174,6 +174,10 @@ window.GRTFIELD = (() => {
       for (let i = 0; i < this.N; i++) ml += (this.cr[i] + this.cg[i] + this.cb[i]) / 3;
       ml /= this.N;
       this.dimT = Math.max(0.0015, 0.12 * ml);
+      /* colour ceiling in the field's own units: the absolute clamp of 2
+         is ~40× the working scale — a gaussian stuck there IS a bright
+         blob. Cap at a small multiple of the mean instead. */
+      this.cMax = Math.min(2, Math.max(0.04, 14 * ml));
     }
     seed(i) {
       const p = this.vol.shellInit();
@@ -201,9 +205,9 @@ window.GRTFIELD = (() => {
          piles local hot spots that a global scalar can never fix */
       const c = this.vol.gtc(p),
         pc = this.predC(p);
-      this.cr[i] = Math.min(2, Math.max(0.002, (c[0] - pc[0]) * 0.9));
-      this.cg[i] = Math.min(2, Math.max(0.002, (c[1] - pc[1]) * 0.9));
-      this.cb[i] = Math.min(2, Math.max(0.002, (c[2] - pc[2]) * 0.9));
+      this.cr[i] = Math.min(this.cMax || 2, Math.max(0.002, (c[0] - pc[0]) * 0.9));
+      this.cg[i] = Math.min(this.cMax || 2, Math.max(0.002, (c[1] - pc[1]) * 0.9));
+      this.cb[i] = Math.min(this.cMax || 2, Math.max(0.002, (c[2] - pc[2]) * 0.9));
     }
     hb(N) {
       this.hI = new Int32Array(N);
@@ -302,6 +306,7 @@ window.GRTFIELD = (() => {
       let pr = 0,
         pg = 0,
         pb = 0,
+        sw = 0,
         nh = 0;
       const [x0, x1, y0, y1, z0, z1] = this.brange(x, y, z),
         off = this.bOff,
@@ -325,6 +330,7 @@ window.GRTFIELD = (() => {
               const q = d2 / (s * s);
               if (q > 11) continue;
               const G = Math.exp(-0.5 * q);
+              sw += G;
               pr += this.cr[i] * G;
               pg += this.cg[i] * G;
               pb += this.cb[i] * G;
@@ -343,26 +349,34 @@ window.GRTFIELD = (() => {
         eg = pg - tc[1],
         eb = pb - tc[2],
         eL = (er + eg + eb) / 3;
+      /* normalize every step by the local weight sum: the SUM's correction
+         is then bounded by the learning rate no matter how many gaussians
+         pile onto a point. Unnormalized updates diverge exactly where
+         relocation concentrates capacity (the ring's bright segments) —
+         the clamp at zero rectifies the oscillation into a brightness
+         ratchet. */
+      const nrm = 1 / Math.max(1, sw);
       for (let h = 0; h < nh; h++) {
         const i = this.hI[h],
           G = this.hG[h],
           s = this.hS[h],
           lum = (this.cr[i] + this.cg[i] + this.cb[i]) / 3,
           wG = lum * G,
-          k = (dk * 0.016 * eL * wG) / (s * s);
-        this.cr[i] -= dk * 0.09 * er * G;
-        this.cg[i] -= dk * 0.09 * eg * G;
-        this.cb[i] -= dk * 0.09 * eb * G;
+          k = (dk * 0.05 * eL * wG * nrm) / (s * s);
+        this.cr[i] -= dk * 0.5 * er * G * nrm;
+        this.cg[i] -= dk * 0.5 * eg * G * nrm;
+        this.cb[i] -= dk * 0.5 * eb * G * nrm;
+        const cm = this.cMax || 2;
         if (this.cr[i] < 0) this.cr[i] = 0;
-        else if (this.cr[i] > 2) this.cr[i] = 2;
+        else if (this.cr[i] > cm) this.cr[i] = cm;
         if (this.cg[i] < 0) this.cg[i] = 0;
-        else if (this.cg[i] > 2) this.cg[i] = 2;
+        else if (this.cg[i] > cm) this.cg[i] = cm;
         if (this.cb[i] < 0) this.cb[i] = 0;
-        else if (this.cb[i] > 2) this.cb[i] = 2;
+        else if (this.cb[i] > cm) this.cb[i] = cm;
         this.gx[i] -= k * this.hX[h];
         this.gy[i] -= k * this.hY[h];
         this.gz[i] -= k * this.hZ[h];
-        this.ls[i] -= dk * 0.026 * eL * wG * this.hQ[h];
+        this.ls[i] -= dk * 0.08 * eL * wG * nrm * this.hQ[h];
         const lmn = this.lsMinD || this.opt.lsMin,
           lmx = this.lsMaxD || this.opt.lsMax;
         if (this.ls[i] < lmn) this.ls[i] = lmn;
@@ -409,7 +423,7 @@ window.GRTFIELD = (() => {
         }
     }
     micro(p, now, out) {
-      const dk = 1 / (1 + this.iter / 2200);
+      const dk = 0.4 / (1 + this.iter / 2200);
       for (let k = 0; k < 8; k++)
         this.one(
           p[0] + 0.06 * (this.rand() - 0.5),

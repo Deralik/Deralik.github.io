@@ -156,6 +156,37 @@ for (const f of textFiles.filter((f) => ext(f) === 'html')) {
   }
 }
 
+/* ── cache-busting (owner-caught failure 2026-08-22, twice): a changed
+      js/css file must carry a NEW ?v= in index.html, or browsers serve
+      the stale build ── */
+try {
+  const changed = execSync('git diff HEAD --name-only')
+    .toString()
+    .split('\n')
+    .filter((f) => /^(js|css)\//.test(f));
+  if (changed.length && existsSync('index.html')) {
+    const cur = readFileSync('index.html', 'utf8');
+    let prev = '';
+    try {
+      prev = execSync('git show HEAD:index.html', {
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).toString();
+    } catch {}
+    const esc = (f) => f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const ver = (txt, f) => {
+      const m = txt.match(new RegExp(esc(f) + '\\?v=(\\d+)'));
+      return m ? m[1] : null;
+    };
+    for (const f of changed) {
+      const vc = ver(cur, f);
+      if (vc === null) continue;
+      const vp = ver(prev, f);
+      if (vp !== null && vp === vc)
+        hard.push(`${f}: content changed but index.html still loads ?v=${vc} — bump it`);
+    }
+  }
+} catch {}
+
 /* ── formatting (owner ruling 2026-08-21: readable source ships) ── */
 if (existsSync('node_modules/.bin/prettier')) {
   const { spawnSync } = await import('child_process');
