@@ -1,7 +1,7 @@
 /* GRT hero demo volume — REAL DATA, vendored for the browser.
-   Source: supernova simulation timestep E_1296 (John M. Blondin, NCSU),
-   the "supernova" entry of the Open SciVis Datasets collection
-   (klacansky.com/open-scivis-datasets) — the same dataset the GRTCache
+   Source: core-collapse supernova timestep E_1296 (Dr. John M. Blondin,
+   NCSU), distributed via the Kitware Data collection by the DOE SciDAC
+   Institute for Ultrascale Visualization — the same dataset the GRTCache
    research repo benchmarks on. Original: 432^3 float32. This file: 6^3
    box-filtered to 72^3, mapped to the scene's official scalar domain
    (0..0.13584), quantized uint8, z-major. Prepared 2026-08-21; credit

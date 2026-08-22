@@ -186,8 +186,18 @@
     eyeCur() {
       return this.eyeAt(this.oa + this.uY, this.uP);
     }
-    setLight() {
-      this.vol.light = [1.3 * Math.cos(this.az), 1.05, 1.3 * Math.sin(this.az)];
+    /* background pre-build: switching datasets should not hitch */
+    prewarm(kind) {
+      if (this.vols[kind]) return;
+      this.vols[kind] =
+        kind === 'super' && window.GRT_SUPERNOVA
+          ? new DataVol('super', 33, window.GRT_SUPERNOVA)
+          : kind === 'mech' && window.GRT_MECHHAND
+            ? new DataVol('mech', 33, window.GRT_MECHHAND)
+            : window.GRTNEB && window.GRTNEB[kind]
+              ? new GaiaVol(kind, 33)
+              : new NebVol(kind, 33);
+      this.vols[kind].rebuild();
     }
     setVol(kind) {
       this.kind = kind;
@@ -202,7 +212,6 @@
               : window.GRTNEB && window.GRTNEB[kind]
                 ? new GaiaVol(kind, 33)
                 : new NebVol(kind, 33));
-      if (this.vol.em < 0.99) this.setLight();
       this.vol.rebuild();
       const n = NDEF[kind];
       if (this.o.nEl) this.o.nEl.value = n;
@@ -210,8 +219,6 @@
       this.field = new CField(this.vol, n, 9, KO[kind]);
       this.anim = new RayAnim(this.vol, this.field, 83);
       this.anim.eyeRef = () => this.eyeCur();
-      if (this.o.azl)
-        this.o.azl.textContent = this.vol.em >= 0.99 ? 'Transfer function' : 'Light azimuth';
       if (this.acc) this.acc.fill(0);
       if (this.accL) this.accL.fill(0);
       const R3 = this.vol.EX * this.vol.EY * this.vol.EZ * 3;
@@ -763,18 +770,12 @@
       if (this.pendingAz !== undefined) {
         const v2 = this.pendingAz;
         this.pendingAz = undefined;
-        if (this.vol.tfr !== false) {
-          if (this.vol.em >= 0.99) this.vol.tf = v2 / 6.28;
-          else {
-            this.az = v2;
-            this.setLight();
-          }
-          this.gtDirty = true;
-          this._azT = t;
-        }
+        this.vol.tf = v2 / 6.28;
+        this.gtDirty = true;
+        this._azT = t;
       }
       /* rebuild is ~75ms — fire once the slider rests, not while it moves */
-      if (this.gtDirty && t - (this._azT || 0) > 0.25) {
+      if (this.gtDirty && t - (this._azT || 0) > 0.12) {
         this.vol.rebuild();
         F.refreshTruth();
         this.gtDirty = false;
@@ -877,6 +878,9 @@
           tf: this.vol.tf,
           invG: 1 / (this.vol.gmax || 1),
           kap: this.vol.kap || 0,
+          win: this.vol.win ? this.vol.win() : null,
+          winId: !this.vol.win || Math.abs(this.vol.tf - 0.5) < 0.02 ? 1 : 0,
+          hasA: this.vol.dgAU8 ? 1 : 0,
           inset: (() => {
             const iv2 = w < 560 ? [104, 74] : [176, 123];
             return [
@@ -973,21 +977,10 @@
         x0 + 8,
         y0 + ih - 10,
       );
-      const wl = GRT.elide(
-        g,
-        stack
-          ? 'WITHOUT — 1 SPP'
-          : 'WITHOUT — 1 SPP/FRAME · ' +
-              (this._spp > 1 ? this._spp + ' HELD' : 'RESETS WITH MOTION'),
-        iw * 0.48,
-      );
+      const wl = 'WITHOUT — 1 SPP';
       g.fillText(wl, x0 + iw - 8 - g.measureText(wl).width, y0 + ih - 10);
       g.fillText(
-        GRT.elide(
-          g,
-          'THE RENDER — DRAG THE SEAM TO COMPARE · DRAG TO MOVE · PRESS AND HOLD TO ACCUMULATE',
-          iw,
-        ),
+        GRT.elide(g, 'DRAG THE SEAM · DRAG TO ORBIT · HOLD STILL TO ACCUMULATE', iw),
         x0,
         y0 + ih + 14,
       );
@@ -1032,11 +1025,6 @@
       }
       g.drawImage(this.wlc, rx, wy);
       this.anim.draw(g, px, S, t, false, this.conw, this.warm, 'TRAINING RAY');
-      if (this.vol.em < 0.99) {
-        this.anim.drawNees(g, px, this.vol.light, t, this.warm);
-        const lp = px(this.vol.light);
-        star(g, lp[0], lp[1], 6, this.warm);
-      }
       const ep = px(eye);
       g.strokeStyle = this.conw;
       g.lineWidth = 1.2;
@@ -1054,16 +1042,7 @@
       g.fillStyle = this.cab;
       g.font = '500 8.5px ' + this.mono;
       g.fillText('CAMERA', Math.min(ep[0] - 6, rx + rw - 48), ep[1] + 17);
-      if (this.anim.stats) g.fillText(GRT.elide(g, this.anim.stats, rw - 12), rx + 6, wy + 14);
-      g.fillText(
-        GRT.elide(
-          g,
-          'THE WORLD — THE CACHE AS SOFT SPLATS · TOUCHED GAUSSIANS FLASH · GRAB TO TURN',
-          rw - 12,
-        ),
-        rx + 6,
-        wy + wh - 8,
-      );
+      g.fillText('CACHE VIEW', rx + 6, wy + 14);
       g.restore();
       this.meter.draw(
         g,

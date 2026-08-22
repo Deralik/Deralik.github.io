@@ -581,3 +581,17 @@ spill → anisotropic gaussians queued as the structural upgrade.
 Final gate: super .04 · mech .13 · butterfly .23 · ring .29; traces
 16.7/0 all four + mobile; matrix + check clean. Riders: async chunked
 rebuild (switch hitch ~2s); gate wired into the pre-report habit.
+
+### Owner round 9 (2026-08-22): cleanup, live TF, provenance, solidity
+Slider removed; TF = palette sweep (gaia) / domain window (data,
+reveals supernova interior); TF re-shade ~100ms via per-voxel
+density/AO/glow caches; panes live via uniforms; prewarm() builds all
+volumes at idle (switch hitch gone; warm() was shadowed by the warm
+colour field — matrix caught it). Ring torus-distance TF; mech κ=48
+solid + sideways re-vendor; reloc residual-init (ring hot spots);
+light/azimuth path deleted; figure text pared per owner list; mobile
+method-figure overflow fixed. Supernova provenance corrected (Kitware/
+SciDAC/Blondin — NOT Open SciVis) + license UNCONFIRMED → launch-
+gating owner decision. Gate: butterfly .23 · mech .13 · ring .34 ·
+super .34 (window default reveals harder structure; cbr healthy .6-.8);
+traces 16.7/0 all + mobile; matrix/check clean.

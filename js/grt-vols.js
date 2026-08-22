@@ -310,7 +310,40 @@ window.GRTVOLS = (() => {
         EZ = this.EZ,
         he = this.he,
         E = this.grid,
-        step = (2 * he[0]) / EX;
+        step = (2 * he[0]) / EX,
+        n = EX * EY * EZ;
+      /* the expensive per-voxel pieces (density, AO, glow) depend only on
+         the volume, not the transfer function — cache them once so a TF
+         change re-shades in ~100ms instead of re-evaluating the field */
+      if (!this.cDe || this.cDe.length !== n) {
+        this.cDe = new Float32Array(n);
+        this.cAo = new Float32Array(n);
+        this.cSt = new Float32Array(n * 3);
+        for (let k = 0; k < EZ; k++)
+          for (let j = 0; j < EY; j++)
+            for (let i = 0; i < EX; i++) {
+              const x = (-1 + (2 * (i + 0.5)) / EX) * he[0],
+                y = (-1 + (2 * (j + 0.5)) / EY) * he[1],
+                z = (-1 + (2 * (k + 0.5)) / EZ) * he[2],
+                p = (k * EY + j) * EX + i;
+              this.cDe[p] = this.emitD(x, y, z);
+              const nb =
+                (this.dget(x + step, y, z) +
+                  this.dget(x - step, y, z) +
+                  this.dget(x, y + step, z) +
+                  this.dget(x, y - step, z) +
+                  this.dget(x, y, z + step) +
+                  this.dget(x, y, z - step)) /
+                6;
+              this.cAo[p] = Math.exp(-(this.aoK || 1.9) * nb);
+              const st = this.star(x, y, z);
+              if (st) {
+                this.cSt[p * 3] = st[0];
+                this.cSt[p * 3 + 1] = st[1];
+                this.cSt[p * 3 + 2] = st[2];
+              }
+            }
+      }
       let m = 0;
       for (let k = 0; k < EZ; k++)
         for (let j = 0; j < EY; j++)
@@ -318,34 +351,26 @@ window.GRTVOLS = (() => {
             const x = (-1 + (2 * (i + 0.5)) / EX) * he[0],
               y = (-1 + (2 * (j + 0.5)) / EY) * he[1],
               z = (-1 + (2 * (k + 0.5)) / EZ) * he[2],
-              o = ((k * EY + j) * EX + i) * 3;
-            const d = this.emitD(x, y, z);
-            const st = this.star(x, y, z);
-            if (d <= 0.004 && !st) {
+              p = (k * EY + j) * EX + i,
+              o = p * 3;
+            const d = this.cDe[p],
+              ao = this.cAo[p],
+              sr = this.cSt[p * 3],
+              sg2 = this.cSt[p * 3 + 1],
+              sb2 = this.cSt[p * 3 + 2];
+            if (d <= 0.004 && !sr && !sg2 && !sb2) {
               E[o] = E[o + 1] = E[o + 2] = 0;
               continue;
             }
-            /* AO from local density — depth without view-dependence */
-            const nb =
-              (this.dget(x + step, y, z) +
-                this.dget(x - step, y, z) +
-                this.dget(x, y + step, z) +
-                this.dget(x, y - step, z) +
-                this.dget(x, y, z + step) +
-                this.dget(x, y, z - step)) /
-              6;
-            const ao = Math.exp(-(this.aoK || 1.9) * nb);
             const rr = Math.hypot(x, y, z),
               c = this.tf2(d, rr, x, y, z);
             const de = this.dGamma ? Math.pow(d, this.dGamma) : d;
             let er = de * ao * c[0],
               eg = de * ao * c[1],
               eb = de * ao * c[2];
-            if (st) {
-              er += st[0] * ao;
-              eg += st[1] * ao;
-              eb += st[2] * ao;
-            }
+            er += sr * ao;
+            eg += sg2 * ao;
+            eb += sb2 * ao;
             E[o] = er;
             E[o + 1] = eg;
             E[o + 2] = eb;
@@ -624,8 +649,8 @@ window.GRTVOLS = (() => {
   }
   const DTF = {
     mech: {
-      he: [0.309, 0.9, 0.322],
-      E: [44, 128, 46],
+      he: [0.9, 0.309, 0.322],
+      E: [128, 44, 46],
       kap: 10,
       orb: 2.0,
       aoK: 3.4,
@@ -646,6 +671,7 @@ window.GRTVOLS = (() => {
       E: [72, 72, 72],
       orb: 1.75,
       kap: 6,
+      tf0: 0.3,
       fl: (u) => (u <= 0.05 ? 0 : u >= 0.25 ? 0.05 : (0.05 * (u - 0.05)) / 0.2),
       ap: [0, 0.586, 0.625, 0.75, 0.875, 1],
       av: [0, 0, 0.068, 0.243, 0.59, 0.854],
@@ -663,6 +689,23 @@ window.GRTVOLS = (() => {
     },
   };
   class DataVol extends NebVol {
+    /* the TF slider is a scalar-domain WINDOW (the control SciVis tools
+       expose): t=.5 shows the scene's official mapping; lower t expands
+       the low-u interior across the full ramp, higher t the dense end */
+    win() {
+      const t = this.tf,
+        lo = Math.max(0, Math.min(0.6, 1.2 * (t - 0.5))),
+        hi = 1 + Math.max(-0.6, Math.min(0, 1.2 * (t - 0.5)));
+      return [lo, hi];
+    }
+    uw(u) {
+      const w = this.win();
+      return Math.max(0, Math.min(1, (u - w[0]) / (w[1] - w[0])));
+    }
+    rebuild() {
+      this.cDe = null; /* the window moves density too, not just colour */
+      super.rebuild();
+    }
     /* LUT accessors for the GL layer's scene-TF texture bake */
     lut1(u, P, V) {
       return lut1(u, P, V);
@@ -705,7 +748,7 @@ window.GRTVOLS = (() => {
       if (T.kap) this.kap = T.kap;
       this.grid = new Float32Array(this.EX * this.EY * this.EZ * 3);
       this.em = 1;
-      this.tfr = false;
+      if (T.tf0 !== undefined) this.tf = T.tf0;
     }
     usamp(x, y, z) {
       return this.samp3(this.dg, x, y, z);
@@ -756,7 +799,7 @@ window.GRTVOLS = (() => {
     }
     tf2(d, r, x, y, z) {
       const T = this.T;
-      return lut3(this.usamp(x, y, z), T.cp, T.cc);
+      return lut3(this.uw(this.usamp(x, y, z)), T.cp, T.cc);
     }
   }
   /* GaiaVol — Gaia Sky nebula density models (js/grt-nebulae.js carries the
@@ -775,6 +818,7 @@ window.GRTVOLS = (() => {
       this.grid = new Float32Array(88 * 88 * 88 * 3);
       this.DR = 64;
       this.S = GS[kind];
+      this.tf = 0; /* t=0 = the colourway matched to the shaders' output */
       this.orb = kind === 'ring' ? 2.45 : 2.2;
       this.dGamma = 2.0;
       this.kap = 9;
@@ -796,10 +840,41 @@ window.GRTVOLS = (() => {
    shaders' rendered output rather than their raw constants — their td
    accumulation warms it); the tf slider moves the mix radius */
     tf2(d, r, x, y, z) {
-      const lD = r * this.S;
-      const m = Math.min(lD / (2.6 * (1 + (this.tf - 0.5) * 0.9)), 1);
-      const res = 1 - 0.5 * Math.min(1, d * 1.2);
-      return [res * (5.6 - 4.1 * m), res * (6.3 - 5.1 * m), res * (7 - 6.3 * m)];
+      const t = this.tf,
+        res = 1 - 0.5 * Math.min(1, d * 1.2);
+      if (this.kind === 'ring') {
+        /* colour keyed to the DATA's own geometry: distance from the
+           torus centreline separates the ring from the surrounding gas */
+        const S = this.S;
+        let p = rot3(x * S, y * S, z * S, 0, 0, 1, 1.0471976);
+        p = rot3(p[0], p[1], p[2], 0, 1, 0, 1.5707963);
+        const dT = Math.hypot(Math.hypot(p[0], p[1]) - 2.2, p[2]);
+        const w = Math.min(1, Math.max(0, (dT - 0.45) / 0.8));
+        const ringR = 7 + (7 - 7) * t,
+          ringG = 7.4 + (4.2 - 7.4) * t,
+          ringB = 7.8 + (6.6 - 7.8) * t;
+        const gasR = 2.3 + (1.0 - 2.3) * t,
+          gasG = 1.45 + (1.55 - 1.45) * t,
+          gasB = 0.75 + (2.7 - 0.75) * t;
+        return [
+          res * (ringR + (gasR - ringR) * w),
+          res * (ringG + (gasG - ringG) * w),
+          res * (ringB + (gasB - ringB) * w),
+        ];
+      }
+      const P = GP[this.kind],
+        m = Math.min((r * this.S) / 2.6, 1);
+      const c0r = P.a0[0] + (P.b0[0] - P.a0[0]) * t,
+        c0g = P.a0[1] + (P.b0[1] - P.a0[1]) * t,
+        c0b = P.a0[2] + (P.b0[2] - P.a0[2]) * t,
+        c1r = P.a1[0] + (P.b1[0] - P.a1[0]) * t,
+        c1g = P.a1[1] + (P.b1[1] - P.a1[1]) * t,
+        c1b = P.a1[2] + (P.b1[2] - P.a1[2]) * t;
+      return [
+        res * (c0r + (c1r - c0r) * m),
+        res * (c0g + (c1g - c0g) * m),
+        res * (c0b + (c1b - c0b) * m),
+      ];
     }
     /* the shader's additive glow, density-independent: green-cyan 1/r² core +
    the radius-keyed cosine halo (blue at lD≈1, amber by lD≈2) */
@@ -817,6 +892,36 @@ window.GRTVOLS = (() => {
       ];
     }
   }
+  function rot3(x, y, z, ax, ay, az, ang) {
+    const l = Math.hypot(ax, ay, az) || 1;
+    ax /= l;
+    ay /= l;
+    az /= l;
+    const c = Math.cos(ang),
+      s = Math.sin(ang),
+      d = x * ax + y * ay + z * az;
+    return [
+      x * c + (ay * z - az * y) * s + ax * d * (1 - c),
+      y * c + (az * x - ax * z) * s + ay * d * (1 - c),
+      z * c + (ax * y - ay * x) * s + az * d * (1 - c),
+    ];
+  }
+  /* palette pairs per nebula: a* = matched to the shaders' rendered
+     output; b* = a second colourway the slider sweeps toward */
+  const GP = {
+    butterfly: {
+      a0: [5.6, 6.3, 7],
+      a1: [1.5, 1.2, 0.7],
+      b0: [7, 3.4, 1.6],
+      b1: [0.7, 1.5, 2.8],
+    },
+    ring: {
+      a0: [5.6, 6.3, 7],
+      a1: [1.5, 1.2, 0.7],
+      b0: [6.8, 2.6, 5.4],
+      b1: [2.4, 1.2, 0.45],
+    },
+  };
   /* per-kind world->shader scale (the density ports' own fit factors) */
   const GS = { butterfly: 4.2, ring: 3.4 };
   return { NebVol, DataVol, GaiaVol };

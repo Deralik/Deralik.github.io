@@ -156,25 +156,24 @@ if which=='vendor':
     # structures keep their integrated opacity (post-classification
     # downsampling dilutes them through the nonlinear TF)
     af=pw1(uf,*MECH_A)
-    U=np.transpose(boxdown(uf,5),(0,2,1))
-    A=np.transpose(boxdown(af,5),(0,2,1))
+    U=boxdown(uf,5)
+    A=boxdown(af,5)
     vendor(U,'js/grt-vol-mechhand.js','GRT_MECHHAND',
 """/* GRT hero demo volume — REAL DATA, vendored for the browser.
    Source: MechHand industrial CT (640x220x229 float32), the "Mechanical
    Hand" benchmark volume of the GRTCache research repo. This file: 5^3
    box-filtered, mapped to the scene's official scalar domain
-   (0..0.964286), quantized uint8, long axis stored as y so the hand
-   stands upright. b64a: the scene TF's alpha CLASSIFIED AT FULL
-   RESOLUTION then filtered — thin structures keep their opacity.
-   Prepared 2026-08-22. */
+   (0..0.964286), quantized uint8, z-major (the hand lies along x).
+   b64a: the scene TF's alpha CLASSIFIED AT FULL RESOLUTION then
+   filtered — thin structures keep their opacity. Prepared 2026-08-22. */
 """,A=A)
     raw=load_raw(f'{GSRC}/E_1296.dat',(432,432,432),np.float32)
     U=np.clip(boxdown(raw,6)/0.135840,0,1)
     vendor(U,'js/grt-vol-supernova.js','GRT_SUPERNOVA',
 """/* GRT hero demo volume — REAL DATA, vendored for the browser.
-   Source: supernova simulation timestep E_1296 (John M. Blondin, NCSU),
-   the "supernova" entry of the Open SciVis Datasets collection
-   (klacansky.com/open-scivis-datasets) — the same dataset the GRTCache
+   Source: core-collapse supernova timestep E_1296 (Dr. John M. Blondin,
+   NCSU), distributed via the Kitware Data collection by the DOE SciDAC
+   Institute for Ultrascale Visualization — the same dataset the GRTCache
    research repo benchmarks on. Original: 432^3 float32. This file: 6^3
    box-filtered to 72^3, mapped to the scene's official scalar domain
    (0..0.13584), quantized uint8, z-major. Prepared 2026-08-21; credit

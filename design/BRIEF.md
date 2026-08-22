@@ -155,14 +155,21 @@ behavior, and every demo's label states exactly what is running (owner,
   by this site's own pipeline — labelled as models, never as
   observations (hourglass dropped, owner 2026-08-20) — plus two REAL
   volumes: MechHand, the research repo's industrial-CT benchmark
-  (vendored, js/grt-vol-mechhand.js), and the Open SciVis "supernova"
-  (John M. Blondin, NCSU; vendored 54³, js/grt-vol-supernova.js). Both
+  (vendored, js/grt-vol-mechhand.js), and John M. Blondin's (NCSU)
+  core-collapse supernova, distributed via Kitware Data by the DOE
+  SciDAC Institute for Ultrascale Visualization (vendored 72³,
+  js/grt-vol-supernova.js). Both
   real volumes use the research repo's own scene transfer functions
   (recovered from its scene configs 2026-08-21) and its display curve
   1−exp(−exposure·L); the supernova adds a small disclosed opacity
   floor so the shell scattering lights in the real renderer stays
-  visible in this emission-only pipeline. RIDER: Open SciVis reachable
-  over http only — re-verify its license text before deploy. The hero
+  visible in this emission-only pipeline. LAUNCH-GATING RIDER (owner decision, 2026-08-22): the supernova's
+  reuse terms are UNCONFIRMED — the research repo's own manifest
+  records "no explicit license or terms found on the Kitware
+  item/collection; retain attribution and confirm reuse terms before
+  redistribution", and today's Open SciVis catalog does not carry the
+  dataset (the earlier "via Open SciVis" credit was wrong; corrected).
+  Before deploy: confirm terms, or ship without the supernova option. The hero
   comparison is real computation, one integrator, one resolution, one
   fixed probe-calibrated exposure: right of the seam, an unbiased 1-spp-per-frame estimate of the
   emission–absorption integral (the medium is known — transmittance is

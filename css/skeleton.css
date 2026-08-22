@@ -133,6 +133,7 @@ body.mob .dh h1{font-size:28px}
 body.mob .dh .lede{font-size:14.5px}
 body.mob .dsec{margin:20px 14px 0}
 body.mob .drow{flex-direction:column;gap:14px}
+body.mob .drow .gfw{min-height:0!important;max-height:none}
 body.mob .cwrap,body.mob .cread{display:none}
 body.mob .foot{margin:20px 14px 0;flex-direction:column;gap:6px}
 body.mob .tap{display:flex;align-items:center;justify-content:center;min-height:44px}

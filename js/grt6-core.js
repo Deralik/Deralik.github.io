@@ -87,7 +87,7 @@ window.GRT6 = (() => {
     maybeFire(t, eye) {
       if (this.paths.length || t < this.next) return;
       this.fire(t, eye);
-      this.next = t + 4 + this.rand() * 2;
+      this.next = t + 2.4 + this.rand() * 1.4;
     }
     fire(t0, eye) {
       let tg = null;

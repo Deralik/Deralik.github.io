@@ -149,6 +149,9 @@ window.GRT7GL = function () {
     gl.uniform1f(U(p, 'uTf'), o.tf);
     gl.uniform1f(U(p, 'uInvG'), o.invG);
     gl.uniform1f(U(p, 'uKap'), o.kap || 0);
+    gl.uniform2f(U(p, 'uWin'), o.win ? o.win[0] : 0, o.win ? o.win[1] : 1);
+    gl.uniform1f(U(p, 'uWinId'), o.winId || 0);
+    gl.uniform1f(U(p, 'uHasA'), o.hasA || 0);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_3D, S.tD);
     gl.uniform1i(U(p, 'tD'), 2);

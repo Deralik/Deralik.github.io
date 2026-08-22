@@ -16,10 +16,10 @@ document.documentElement.dataset.theme=(s==='h-transit'||s==='k-matrix')?s:(d.ma
 ap();d.addEventListener('change',ap);})()</script>
 <link rel="stylesheet" href="css/skeleton-fonts.css?v=2">
 <link rel="stylesheet" href="css/skeleton-tokens.css?v=2">
-<link rel="stylesheet" href="css/skeleton.css?v=2">
-<link rel="stylesheet" href="css/about-skeleton.css?v=2">
-<link rel="stylesheet" href="css/cinr-skeleton.css?v=2">
-<link rel="stylesheet" href="css/grt-skeleton.css?v=2">
+<link rel="stylesheet" href="css/skeleton.css?v=3">
+<link rel="stylesheet" href="css/about-skeleton.css?v=3">
+<link rel="stylesheet" href="css/cinr-skeleton.css?v=3">
+<link rel="stylesheet" href="css/grt-skeleton.css?v=3">
 <noscript><style>
 /* no JS: the depth machine can't run, so stack every document readably —
    the mobile machine's shape. Canvases and controls compute nothing; hidden.
@@ -208,8 +208,7 @@ body{display:block;height:auto;overflow:auto}
         <div class="dh"><h1 data-slot="doc-title">GRTCache</h1><p class="lede" data-slot="lede">A radiance cache you can look at — the volume's light field held in world-space gaussians, trained while it renders.</p><p class="covq">~10× smaller cache, quality held · on par with NRC — not yet faster · HPG '26 not accepted · revising</p></div>
         <div class="dsec" style="border-top:0;padding-top:0;margin-top:16px">
           <div class="gfw" style="height:540px" data-slot="figure"><canvas id="grt-cv-hero"></canvas></div>
-          <div class="chipline">the render — one sample per pixel per frame on BOTH sides of the seam, accumulating while the view holds still and resetting with motion, as the research renderer does; right, the raw estimate of the emission–absorption integral — its noise genuine variance; left, the same estimator with rays terminating early into the trained cache, which supplies the rest of every sample (never its splats; one global cache-brightness scalar, the research renderer's own control); one fixed exposure, its display curve; inset, the true field fully marched · drag the seam · drag the render to orbit · grab the world to turn it</div>
-          <div class="chr"><span class="btn on" id="grt-v0">Butterfly</span><span class="btn" id="grt-v1">Ring</span><span class="btn" id="grt-v2">MechHand — real CT</span><span class="btn" id="grt-v3">Supernova — real data</span><span class="btn" id="grt-reset">Reset — shell cast</span><label>Gaussians<input type="range" id="grt-n" min="2000" max="20000" step="500" value="16000"></label><label><span id="grt-azl">Light azimuth</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="0.9"></label><span class="ro2" id="grt-ro">—</span></div>
+          <div class="chr"><span class="btn on" id="grt-v0">Butterfly</span><span class="btn" id="grt-v1">Ring</span><span class="btn" id="grt-v2">MechHand — real CT</span><span class="btn" id="grt-v3">Supernova — real data</span><span class="btn" id="grt-reset">Reset — shell cast</span><label><span id="grt-azl">Transfer function</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="0.9"></label><span class="ro2" id="grt-ro">—</span></div>
         </div>
         <div class="dsec"><div class="sech">The method</div>
           <div class="drow" style="gap:20px">
@@ -272,7 +271,7 @@ body{display:block;height:auto;overflow:auto}
               <p class="refm">The training scheme and termination heuristic are NRC's, adapted — the representation and its MCMC optimization are the contribution.</p></div>
             <div><p class="refk">The demonstration</p>
               <p class="refm">Every figure computes in this page. The hero is one integrator at one resolution under one fixed, probe-calibrated exposure (the research renderer's display curve): right of the seam, an unbiased 1-spp-per-frame estimate of the emission–absorption integral in linear radiance — the medium is known, so transmittance is deterministic and only radiance is sampled, the research method's own setting — accumulating while the view is still and resetting with motion, the research renderer's own accumulation semantics; the noise is genuine variance; left, the same estimator with early termination into the cache: a short real prefix, then the cache supplies the remainder of the sample — so single cached frames are already dense, and both sides converge toward the reference apart from the cache's residual. The cache contribution carries one global brightness scalar, measured live against the reference march — the research renderer exposes the same control. The meter is render-space PSNR against the fully-marched reference, with that scalar applied. Nothing else blended or sculpted.</p>
-              <p class="refm">The nebulae are density models from Gaia Sky's NGC2000 catalog (Toni Sagristà, ZAH Heidelberg; after Shadertoy work by izutionix — CC BY-NC-SA), evaluated and rendered by this page's own pipeline. MechHand and the supernova are real data — an industrial CT scan and J. M. Blondin's simulation via Open SciVis — decimated for the browser and shaded with the research renderer's own transfer functions; the supernova adds a small opacity floor of ours, so the shell that scattering lights in the real renderer stays visible in this emission-only pipeline.</p>
+              <p class="refm">The nebulae are density models from Gaia Sky's NGC2000 catalog (Toni Sagristà, ZAH Heidelberg; after Shadertoy work by izutionix — CC BY-NC-SA), evaluated and rendered by this page's own pipeline. MechHand and the supernova are real data — an industrial CT scan, and J. M. Blondin's core-collapse supernova simulation (NCSU; distributed via Kitware Data by the DOE SciDAC Institute for Ultrascale Visualization) — decimated for the browser and shaded with the research renderer's own transfer functions; the supernova adds a small opacity floor of ours, so the shell that scattering lights in the real renderer stays visible in this emission-only pipeline.</p>
               <p class="refm">Training regresses the known radiance field with the method's optimization loop — not the paper's ray-estimated targets, renderer, or scale.</p></div>
           </div>
         </div>
@@ -331,20 +330,20 @@ body{display:block;height:auto;overflow:auto}
 <script src="js/cinr-trace.js?v=2"></script>
 <script src="js/cinr-figs.js?v=2"></script>
 <script src="js/cinr-skeleton.js?v=2"></script>
-<script src="js/grt-vol-supernova.js?v=4"></script>
-<script src="js/grt-vol-mechhand.js?v=2"></script>
+<script src="js/grt-vol-supernova.js?v=5"></script>
+<script src="js/grt-vol-mechhand.js?v=3"></script>
 <script src="js/grt-nebulae.js?v=3"></script>
 <script src="js/grt-dir-core.js?v=2"></script>
 <script src="js/grt2-core.js?v=2"></script>
-<script src="js/grt6-core.js?v=2"></script>
-<script src="js/grt-vols.js?v=1"></script>
-<script src="js/grt-field.js?v=1"></script>
-<script src="js/grt7-core.js?v=6"></script>
-<script src="js/grt-gl-shaders.js?v=1"></script>
-<script src="js/grt7-gl.js?v=3"></script>
-<script src="js/grt7-a.js?v=5"></script>
+<script src="js/grt6-core.js?v=3"></script>
+<script src="js/grt-vols.js?v=3"></script>
+<script src="js/grt-field.js?v=3"></script>
+<script src="js/grt7-core.js?v=7"></script>
+<script src="js/grt-gl-shaders.js?v=3"></script>
+<script src="js/grt7-gl.js?v=5"></script>
+<script src="js/grt7-a.js?v=7"></script>
 <script src="js/grt8-core.js?v=2"></script>
 <script src="js/grt8-b.js?v=2"></script>
 <script src="js/grt9-a.js?v=2"></script>
-<script src="js/grt-skeleton.js?v=2"></script>
+<script src="js/grt-skeleton.js?v=4"></script>
 </body></html>

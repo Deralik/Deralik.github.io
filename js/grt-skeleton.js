@@ -54,7 +54,7 @@
    draws once visible anyway */
     if (hero) {
       const build = () => {
-        const R7 = new GRT7A(hero, { ui: $('grt-ro'), azl: $('grt-azl'), nEl: $('grt-n') });
+        const R7 = new GRT7A(hero, { ui: $('grt-ro'), nEl: null });
         window.__grt = R7;
         const vb = [
           ['grt-v0', 'butterfly'],
@@ -65,6 +65,8 @@
         const azw = $('grt-az') ? $('grt-az').parentElement : null;
         const azv = () => {
           if (azw) azw.style.display = R7.vol.tfr === false ? 'none' : '';
+          const az2 = $('grt-az');
+          if (az2) az2.value = R7.vol.tf * 6.28;
         };
         for (const [id, k] of vb) {
           const el = $(id);
@@ -78,13 +80,30 @@
         azv();
         const rs = $('grt-reset');
         if (rs) rs.onclick = () => R7.resetField();
-        const n = $('grt-n');
-        if (n) n.oninput = (e) => R7.field.setN(+e.target.value, performance.now() / 1000);
         const az = $('grt-az');
         if (az) az.oninput = (e) => (R7.pendingAz = +e.target.value);
       };
-      if (window.requestIdleCallback) requestIdleCallback(build, { timeout: 400 });
-      else setTimeout(build, 50);
+      const warmAll = () => {
+        const rest = ['ring', 'mech', 'super'];
+        const one = () => {
+          const k = rest.shift();
+          if (!k || !window.__grt || !window.__grt.prewarm) return;
+          window.__grt.prewarm(k);
+          if (rest.length)
+            window.requestIdleCallback
+              ? requestIdleCallback(one, { timeout: 4000 })
+              : setTimeout(one, 800);
+        };
+        window.requestIdleCallback
+          ? requestIdleCallback(one, { timeout: 4000 })
+          : setTimeout(one, 800);
+      };
+      const buildThenWarm = () => {
+        build();
+        warmAll();
+      };
+      if (window.requestIdleCallback) requestIdleCallback(buildThenWarm, { timeout: 400 });
+      else setTimeout(buildThenWarm, 50);
     }
     if ($('grt-cv-three')) new GRT8T($('grt-cv-three'));
     if ($('grt-cv-pipe')) new GRT9A($('grt-cv-pipe'));

@@ -196,12 +196,14 @@ window.GRTFIELD = (() => {
       this.gy[i] = p[1] + 0.04 * (this.rand() - 0.5);
       this.gz[i] = p[2] + 0.04 * (this.rand() - 0.5);
       this.ls[i] = this.relocLsD || this.opt.relocLs;
+      /* colour = the RESIDUAL at the landing point, not the full local
+         target — injecting full brightness on top of existing coverage
+         piles local hot spots that a global scalar can never fix */
       const c = this.vol.gtc(p),
-        s = this.cs,
-        fl = Math.max(0.002, 0.02 * s);
-      this.cr[i] = Math.max(fl, c[0] * s);
-      this.cg[i] = Math.max(fl, c[1] * s);
-      this.cb[i] = Math.max(fl, c[2] * s);
+        pc = this.predC(p);
+      this.cr[i] = Math.min(2, Math.max(0.002, (c[0] - pc[0]) * 0.9));
+      this.cg[i] = Math.min(2, Math.max(0.002, (c[1] - pc[1]) * 0.9));
+      this.cb[i] = Math.min(2, Math.max(0.002, (c[2] - pc[2]) * 0.9));
     }
     hb(N) {
       this.hI = new Int32Array(N);

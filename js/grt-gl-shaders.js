@@ -34,7 +34,8 @@ vec3 ray(vec2 px){
      the data path samples the vendored scalar grid + the scene TF LUT. */
   const FIELD = `
 uniform int uKind;            /* 0 butterfly · 1 ring · 2 data grid */
-uniform float uS,uTf,uInvG,uKap;
+uniform float uS,uTf,uInvG,uKap,uWinId,uHasA;
+uniform vec2 uWin;
 uniform sampler3D tD;         /* data vols: raw scalar u */
 uniform sampler3D tA;         /* baked AO over the he box */
 uniform sampler2D tLUT;       /* data vols: scene TF (rgb + alpha) by u */
@@ -101,9 +102,12 @@ float sigRing(vec3 w){
   return max(0.,.25-xr(d3,sm));
 }
 /* the medium is known: density drives both emission and transmittance */
+float uwv(float u){return clamp((u-uWin.x)/(uWin.y-uWin.x),0.,1.);}
 float density(vec3 p){
   if(uKind==2){
-    return texture(tD,(p/uHe+1.)*.5).g;
+    vec2 da=texture(tD,(p/uHe+1.)*.5).rg;
+    if(uWinId>.5&&uHasA>.5)return da.g;
+    return texture(tLUT,vec2(uwv(da.r),.5)).a;
   }
   return (uKind==0?sigButterfly(p):sigRing(p))*3.2;
 }
@@ -121,11 +125,28 @@ vec3 emissionD(vec3 p,float d){
   float ao=texture(tA,tc).r;
   if(uKind==2){
     vec2 da=texture(tD,tc).rg;
-    return da.g*ao*texture(tLUT,vec2(da.r,.5)).rgb*uInvG;
+    float uu=uwv(da.r);
+    float a=(uWinId>.5&&uHasA>.5)?da.g:texture(tLUT,vec2(uu,.5)).a;
+    return a*ao*texture(tLUT,vec2(uu,.5)).rgb*uInvG;
   }
+  float res=1.-.5*min(1.,d*1.2);
   float lD=length(p)*uS;
-  float m=min(lD/(2.6*(1.+(uTf-.5)*.9)),1.);
-  vec3 dust=(1.-.5*min(1.,d*1.2))*(vec3(5.6,6.3,7.)-vec3(4.1,5.1,6.3)*m);
+  vec3 dust;
+  if(uKind==1){
+    /* ring: colour keyed to the torus distance — ring pops vs gas */
+    vec3 pr=rotAA(p*uS,vec3(0.,0.,1.),1.0471976);
+    pr=rotAA(pr,vec3(0.,1.,0.),1.5707963);
+    float dT=length(vec2(length(pr.xy)-2.2,pr.z));
+    float w=clamp((dT-.45)/.8,0.,1.);
+    vec3 ringC=mix(vec3(7.,7.4,7.8),vec3(7.,4.2,6.6),uTf);
+    vec3 gasC=mix(vec3(2.3,1.45,.75),vec3(1.,1.55,2.7),uTf);
+    dust=res*mix(ringC,gasC,w);
+  } else {
+    float m=min(lD/2.6,1.);
+    vec3 c0=mix(vec3(5.6,6.3,7.),vec3(7.,3.4,1.6),uTf);
+    vec3 c1=mix(vec3(1.5,1.2,.7),vec3(.7,1.5,2.8),uTf);
+    dust=res*mix(c0,c1,m);
+  }
   float lDs=max(.03,lD);
   float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
   vec3 glow=.012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1);

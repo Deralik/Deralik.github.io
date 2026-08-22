@@ -586,3 +586,41 @@ added.
   readback trim against the true accumulations; clamp widened.
 - Known cost, rider: dataset-switch rebuild is now ~1.5–2 s
   synchronous (88³ analytic) — an async/chunked rebuild is queued.
+
+# Owner rulings — hero round 9 (2026-08-22)
+
+- **Controls carry their weight or leave**: the Gaussians slider removed
+  (lag, no visible effect); the TF slider is now a REAL control — for
+  the nebulae it sweeps palette colourways (t=0 = the matched look);
+  for the real volumes it is a scalar-domain WINDOW, the control SciVis
+  tools expose (it reveals the supernova's interior shells; official
+  mapping at centre). Figure text pared to: pane labels "WITH THE
+  CACHE — 1 SPP" / "WITHOUT — 1 SPP", one drag-hint line, "CACHE VIEW"
+  over the gaussian view; chipline removed ("soft splats" wording is
+  gone — nothing splats).
+- **TF must be interactive**: density/AO/glow are TF-independent and
+  now cached per voxel — a TF rebuild re-shades in ~100ms; the panes
+  respond instantly via uniforms; all four volumes pre-build at idle so
+  dataset switching no longer hitches.
+- **Ring vs gas separation**: the ring's TF keys colour to the torus
+  distance (TFs may key on the data's own geometry) — white-blue ring
+  against amber web.
+- **The hand is a solid object**: mech κ=48 — the skin occludes the
+  interior. Sideways orientation restored (vendor no longer transposes).
+- **Ring hot-spot pathology rooted**: relocation injected FULL local
+  brightness on top of existing coverage; relocated gaussians now
+  initialize to the RESIDUAL at the landing point.
+- **Leftover-element sweep** (owner's "Light azimuth" catch): the
+  entire light/azimuth path was vestigial (all four datasets emissive)
+  — deleted, label statically "Transfer function". A method named
+  warm() was silently shadowed by the warm accent colour field —
+  renamed prewarm() (the matrix caught it; instance fields shadow
+  class methods).
+- **Supernova attribution corrected + LAUNCH-GATING license rider**:
+  the dataset is NOT in today's Open SciVis catalog; true provenance
+  (per the research repo's manifest): Kitware Data collection, Dr. John
+  M. Blondin (NCSU), DOE SciDAC Ultrascale Visualization Institute —
+  and the manifest itself records "no explicit license found; confirm
+  reuse terms before redistribution". Owner must confirm terms or the
+  supernova ships out. Mobile method-figure clip fixed (aspect-ratio ×
+  min-height forced overflow).
