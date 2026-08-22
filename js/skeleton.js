@@ -514,6 +514,21 @@
     mark();
   }
 
+  /* résumé: placeholders self-activate when the PDF exists — the file
+     itself is copied in manually by the owner (email-only variant;
+     never built or fetched from anywhere else) */
+  fetch('resume.pdf', { method: 'HEAD' })
+    .then((r) => {
+      if (!r.ok) return;
+      document.querySelectorAll('[data-resume-pending]').forEach((el) => {
+        const a = document.createElement('a');
+        a.href = 'resume.pdf';
+        a.textContent = el.textContent.includes('—') ? 'Résumé (PDF)' : 'résumé PDF';
+        el.replaceWith(a);
+      });
+    })
+    .catch(() => {});
+
   body.classList.toggle('mob', isMob());
   fromHash();
   apply();
