@@ -990,3 +990,12 @@ Owner riders this round:
   set; mobile strip behaviour unchanged.
 - Owner mobile check: LAN server at http://192.168.1.93:8001 (same
   no-store handler, 0.0.0.0 bind; phone on the same Wi-Fi).
+
+- Round-20 riders 2 (owner): GSCache citation now links the paper
+  (Bauer, Wu, Gadirov, Ma — "GSCache: Real-Time Radiance Caching for
+  Volume Path Tracing Using 3D Gaussian Splatting", IEEE TVCG 32(1)
+  2026, https://doi.org/10.1109/TVCG.2025.3634634 — pulled from the manuscript's
+  own bibliography). The Reference block's demonstration entry cut to
+  roughly half (estimator contract in five clauses; provenance
+  tightened; every honesty commitment retained — 1 spp, genuine
+  variance, brightness scalar disclosed, PSNR vs full march, credits).
