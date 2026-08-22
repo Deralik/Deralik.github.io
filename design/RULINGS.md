@@ -999,3 +999,10 @@ Owner riders this round:
   roughly half (estimator contract in five clauses; provenance
   tightened; every honesty commitment retained — 1 spp, genuine
   variance, brightness scalar disclosed, PSNR vs full march, credits).
+
+- Round-20 rider 3 (owner): the Reference block's demonstration entry
+  no longer EXPLAINS the demo — it is a disclaimer (approximation, not
+  the paper's renderer; what is simplified: decimation, transport
+  model, training targets/scale, the brightness scalar) plus data
+  credits. "What runs" lives on the figure labels, which is where the
+  honesty rule always pointed.
