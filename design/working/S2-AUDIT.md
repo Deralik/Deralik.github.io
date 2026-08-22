@@ -665,3 +665,10 @@ it. Butterfly star: bigger core + central cavity (+ found a silently
 missed GLSL edit from r16 — Edit-tool-only rule for source now).
 Gaia grid 100³; butterfly parity .12 (best). Perf re-profiled → 16.7/0
 ×4. Gates green.
+
+### Owner round 18 (2026-08-22): MechHand removed; shared D0 butterfly
+Mech out everywhere (675KB vendor deleted; supernova now sole real
+volume — license rider is THE launch gate). D0 card shows the
+pre-trained butterfly cache (ray anim, rotation, drag) and the hero
+adopts the same vol+field — no start delay, training continuous
+across depths. Butterfly parity .11. Gates green.

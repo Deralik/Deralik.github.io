@@ -44,15 +44,6 @@
       relocLs: Math.log(0.03),
       ad: true,
     },
-    mech: {
-      s0: 0.02,
-      sv: 0.007,
-      lsMin: -4.8,
-      lsMax: -2.6,
-      sMul: 0.82,
-      relocLs: Math.log(0.024),
-      ad: true,
-    },
     crab: {
       s0: 0.038,
       sv: 0.014,
@@ -67,7 +58,6 @@
     butterfly: 12000,
     ring: 12000,
     super: 12000,
-    mech: 13000,
     crab: 3000,
     bh: 4200,
   };
@@ -199,31 +189,38 @@
       this.vols[kind] =
         kind === 'super' && window.GRT_SUPERNOVA
           ? new DataVol('super', 33, window.GRT_SUPERNOVA)
-          : kind === 'mech' && window.GRT_MECHHAND
-            ? new DataVol('mech', 33, window.GRT_MECHHAND)
-            : window.GRTNEB && window.GRTNEB[kind]
-              ? new GaiaVol(kind, 33)
-              : new NebVol(kind, 33);
+          : window.GRTNEB && window.GRTNEB[kind]
+            ? new GaiaVol(kind, 33)
+            : new NebVol(kind, 33);
       this.vols[kind].rebuild();
     }
     setVol(kind) {
       this.kind = kind;
       this.field = null;
+      /* the D0 card pre-builds and pre-trains butterfly (mkButterfly) —
+         adopt its volume AND its field: no start delay, and the card's
+         training carries straight into the hero */
+      if (kind === 'butterfly' && !this.vols.butterfly && window.__grtBfly)
+        this.vols.butterfly = window.__grtBfly.vol;
       this.vol =
         this.vols[kind] ||
         (this.vols[kind] =
           kind === 'super' && window.GRT_SUPERNOVA
             ? new DataVol('super', 33, window.GRT_SUPERNOVA)
-            : kind === 'mech' && window.GRT_MECHHAND
-              ? new DataVol('mech', 33, window.GRT_MECHHAND)
-              : window.GRTNEB && window.GRTNEB[kind]
-                ? new GaiaVol(kind, 33)
-                : new NebVol(kind, 33));
+            : window.GRTNEB && window.GRTNEB[kind]
+              ? new GaiaVol(kind, 33)
+              : new NebVol(kind, 33));
       this.vol.rebuild();
       const n = NDEF[kind];
       if (this.o.nEl) this.o.nEl.value = n;
       this.st = this.vol.stipple(520);
-      this.field = new CField(this.vol, n, 9, KO[kind]);
+      this.field =
+        kind === 'butterfly' &&
+        window.__grtBfly &&
+        window.__grtBfly.vol === this.vol &&
+        window.__grtBfly.field.N === n
+          ? window.__grtBfly.field
+          : new CField(this.vol, n, 9, KO[kind]);
       this.anim = new RayAnim(this.vol, this.field, 83);
       this.anim.eyeRef = () => this.eyeCur();
       this.anim.lights = () => (this.vol.lightsNow ? this.vol.lightsNow() : null);
@@ -1105,5 +1102,22 @@
         ui.textContent = 'iter ' + F.iter + ' · ' + F.N + ' gaussians · ' + this.kind;
     }
   }
+  /* shared pre-trained butterfly (the D0 card's cache view; the hero
+     adopts it in setVol — one volume, one field, trained continuously
+     across depths) */
+  R7.mkButterfly = () => {
+    if (window.__grtBfly) return window.__grtBfly;
+    const vol =
+      window.GRTNEB && window.GRTNEB.butterfly
+        ? new GaiaVol('butterfly', 33)
+        : new NebVol('butterfly', 33);
+    vol.rebuild();
+    const field = new CField(vol, NDEF.butterfly, 9, KO.butterfly);
+    const bt = performance.now();
+    while (performance.now() - bt < 350) field.step(120, 0);
+    field.pulse.fill(-9);
+    window.__grtBfly = { vol, field };
+    return window.__grtBfly;
+  };
   window.GRT7A = R7;
 })();

@@ -41,8 +41,8 @@ return JSON.stringify({resid:+(sd/sa).toFixed(4),structure:+(e1/e0).toFixed(3),s
 
 const kinds = process.argv.slice(2).length
   ? process.argv.slice(2)
-  : ['butterfly', 'ring', 'mech', 'super'];
-const BTN = { butterfly: null, ring: '#grt-v1', mech: '#grt-v2', super: '#grt-v3' };
+  : ['butterfly', 'ring', 'super'];
+const BTN = { butterfly: null, ring: '#grt-v1', super: '#grt-v3' };
 let fail = 0;
 for (const k of kinds) {
   const steps = ['--gpu', '--w', '1512', '--h', '950', 'goto:#/grtcache/doc', 'wait:1500'];

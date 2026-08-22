@@ -860,3 +860,27 @@ added.
   fp16 walk produced line-ish artifacts); if the owner still sees
   striations they are the model's value-noise lattice — quintic fade
   is the queued fix.
+
+# Owner rulings — round 18 (2026-08-22)
+
+- **MechHand REMOVED** (owner: "we don't seem to be able to make it
+  look like the one we render with renderapp"): button, vendored
+  675KB volume, DTF entry, KO/NDEF configs, gate entries, herojs
+  branches — all out; the reference paragraph rewritten (also fixed a
+  stale "opacity floor" claim). Counterargument voiced once before
+  executing: the real-data story now rides entirely on the supernova,
+  whose unconfirmed-license rider is launch-gating — if it too must
+  go, the demo ships models-only.
+- **D0 card = the butterfly cache view, pre-trained and SHARED**:
+  GRT7A.mkButterfly builds + warm-trains the butterfly volume/field at
+  idle; the card draws its splat cloud (stipple backdrop, training-ray
+  animation with the hero's language, auto-rotating, draggable); the
+  hero ADOPTS the same objects in setVol — verified live: card iter
+  350 → doc adopts the identical field (iter continued 574), no
+  first-dataset build delay, and training carries across depths both
+  ways. The morph now moves one object from card to doc.
+- Probe lesson: `goto:` appends to the base URL — `goto:/` and
+  `goto:index.html` hit 404 pages, which briefly read as an idle-
+  timing bug. D0 = no goto step.
+- Gate after removal: butterfly .11 (best yet) · ring .27 · super .07;
+  lumgate super green; 16.7ms/0 jank; matrix + check clean.

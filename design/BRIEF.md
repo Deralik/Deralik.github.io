@@ -153,19 +153,20 @@ behavior, and every demo's label states exactly what is running (owner,
   work by izutionix), CC BY-NC-SA accepted by the owner WITH CREDIT,
   ported as density functions (js/grt-nebulae.js) and rendered entirely
   by this site's own pipeline — labelled as models, never as
-  observations (hourglass dropped, owner 2026-08-20) — plus two REAL
-  volumes: MechHand, the research repo's industrial-CT benchmark
-  (vendored, js/grt-vol-mechhand.js), and John M. Blondin's (NCSU)
-  core-collapse supernova, distributed via Kitware Data by the DOE
-  SciDAC Institute for Ultrascale Visualization (vendored 72³,
-  js/grt-vol-supernova.js). Both
-  real volumes use the research repo's own scene definitions, read
+  observations (hourglass dropped, owner 2026-08-20) — plus one REAL
+  volume: John M. Blondin's (NCSU) core-collapse supernova, distributed
+  via Kitware Data by the DOE SciDAC Institute for Ultrascale
+  Visualization (vendored 72³, js/grt-vol-supernova.js). (MechHand was
+  the second real volume; REMOVED, owner 2026-08-22 — eight rounds
+  never matched the research renderer's look in-browser. Note the
+  real-data story now rides entirely on the supernova, whose license
+  rider below is launch-gating.) The
+  real volume uses the research repo's own scene definitions, read
   directly from its data/beautyshots scene files (2026-08-22): the
   native transfer functions (the supernova's is three thin opacity
   tents — nested translucent shells; an earlier wrong recovery plus a
-  disclosed opacity floor was replaced outright), the scenes' own
-  COLOURED lights (mech: cool-blue key below + warm fill above;
-  supernova: one warm key) and the scene material's terms — 0.2
+  disclosed opacity floor was replaced outright), the scene's own
+  COLOURED light (one warm key) and the scene material's terms — 0.2
   ambient floor, 0.8 diffuse with a gradient N·L factor — rendered as
   single scattering with shadowed transmittance through the known
   medium (gentler extinction on the light march than the camera ray,

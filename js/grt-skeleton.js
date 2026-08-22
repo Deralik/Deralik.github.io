@@ -2,16 +2,69 @@
    comparison). Mirrors cinr-skeleton.js's role. */
 (() => {
   const $ = (id) => document.getElementById(id);
-  /* Panel mini — the comparison figure's own GRTCache pane (GRT8T), background off.
-   The chip states what is true NOW: Running while frames tick, Held when the
-   loop is paused (off-screen, reduced motion) — same vocabulary as cINR's. */
+  /* Panel/card figure — the BUTTERFLY dataset's own cache view (owner
+   2026-08-22): the same pre-trained field the hero adopts at D2, so the
+   morph carries one object from card to doc and the first dataset is
+   already built when the doc opens. The chip states what is true NOW:
+   Running while frames tick, Held when the loop is paused. */
   function panel(cv) {
     if (!cv) return;
-    const t8 = new GRT8T(cv, { solo: true, label: 'THE CACHE — TRAINED LIVE IN THIS PAGE' });
+    let sh = null,
+      st = null,
+      anim = null,
+      lastT = 0;
+    const cam = new GRT2.Cam2(cv, 0.9, 0.26, 4.6);
+    cam.auto = 0.18;
+    GRT.loop(cv, (t, dt) => {
+      const f = GRT.fit(cv);
+      if (!f) return;
+      lastT = performance.now() / 1000;
+      const { g, w, h } = f;
+      g.fillStyle = GRT.tok('--well');
+      g.fillRect(0, 0, w, h);
+      sh = sh || window.__grtBfly || null;
+      if (!sh) return;
+      if (!st) st = sh.vol.stipple(240);
+      if (!anim) anim = new GRT6.RayAnim(sh.vol, sh.field, 83);
+      cam.step(dt);
+      const F = sh.field;
+      if (F.iter < 1500) {
+        F.step(90, t);
+        F.pulse.fill(-9);
+      }
+      const pr = cam.proj(),
+        S = h * 0.46,
+        cx = w / 2,
+        cy = h * 0.5,
+        px = (p) => {
+          const q = pr(p);
+          return [cx + q[0] * S, cy - q[1] * S, q[2]];
+        };
+      for (const s of st) {
+        const p = px(s);
+        g.globalAlpha = 0.05 + 0.1 * s[3];
+        g.fillStyle = GRT.figPaper;
+        g.fillRect(p[0], p[1], 1.2, 1.2);
+      }
+      g.globalAlpha = 1;
+      F.draw(g, px, S, t);
+      /* the training ray, as in the hero's cache view */
+      const cp = Math.cos(cam.pitch),
+        eye = [
+          cam.dist * cp * Math.cos(cam.yaw),
+          cam.dist * Math.sin(cam.pitch),
+          cam.dist * cp * Math.sin(cam.yaw),
+        ];
+      anim.maybeFire(t, eye);
+      anim.draw(g, px, S, t, false, GRT.tok('--onwell'), GRT.figWarm, 'TRAINING RAY');
+      g.fillStyle = GRT.tok('--absence');
+      g.font = '500 8.5px ' + GRT.tok('--mono');
+      g.fillText(GRT.elide(g, 'THE CACHE — TRAINED LIVE IN THIS PAGE', w - 12), 6, h - 6);
+    });
     const chip = $('grt-chip');
     if (chip)
       setInterval(() => {
-        const on = t8.lastT && performance.now() / 1000 - t8.lastT < 0.5;
+        const on = lastT && performance.now() / 1000 - lastT < 0.5;
         chip.textContent = on ? 'Running' : 'Held';
         chip.classList.toggle('run', !!on);
       }, 600);
@@ -59,7 +112,6 @@
         const vb = [
           ['grt-v0', 'butterfly'],
           ['grt-v1', 'ring'],
-          ['grt-v2', 'mech'],
           ['grt-v3', 'super'],
         ];
         const azw = $('grt-az') ? $('grt-az').parentElement : null;
@@ -104,7 +156,7 @@
         if (li2) li2.oninput = (e) => (R7.pendingLi = +e.target.value);
       };
       const warmAll = () => {
-        const rest = ['ring', 'mech', 'super'];
+        const rest = ['ring', 'super'];
         const one = () => {
           const k = rest.shift();
           if (!k || !window.__grt || !window.__grt.prewarm) return;
@@ -119,6 +171,9 @@
           : setTimeout(one, 800);
       };
       const buildThenWarm = () => {
+        /* the shared butterfly first (card figure + hero adoption),
+           then the hero, then the remaining volumes at idle */
+        if (window.GRT7A && GRT7A.mkButterfly) GRT7A.mkButterfly();
         build();
         warmAll();
       };

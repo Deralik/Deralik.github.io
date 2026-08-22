@@ -659,46 +659,10 @@ window.GRTVOLS = (() => {
       b = C[i];
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   }
+  /* MechHand removed (owner 2026-08-22): eight rounds never matched the
+     research renderer's look in-browser. The supernova carries the
+     real-data story. */
   const DTF = {
-    mech: {
-      he: [0.9, 0.309, 0.322],
-      E: [128, 44, 46],
-      /* extinction DERIVED from the native compositing, not eyeballed:
-         per-voxel opacity = TF alpha (opacityUnitDistance 1 voxel), so
-         κ ≈ -ln(1-a)/(a·voxel) ≈ 1.3/(1.8/640) ≈ 460; 420 in practice.
-         The earlier 48 left the hand ~9× too transparent — milky layers
-         accumulating emission read as both "not solid" and "too bright" */
-      kap: 420,
-      /* owner brightness target (round 17) — the lumgate's mech
-         reference tracks this trim, not the research figure */
-      expoK: 0.25,
-      /* light-march extinction is gentler than the camera ray's: the
-         scene's material carries a 0.2 ambient floor — full κ in the
-         shadow march would blacken the interior parts it keeps lit */
-      kapL: 6,
-      orb: 2.0,
-      aoK: 3.4,
-      /* the scene's own lights (beautyshots/scene_mechhand.json):
-         [x,y,z, I, r,g,b] — cool-blue key from below, warm fill above */
-      lights: [
-        [0.34, -1.21, 0.35, 8.5, 0.7, 0.85, 1],
-        [-0.42, 0.815, -0.31, 4.0, 1, 0.75, 0.5],
-      ],
-      /* light orbit sweeps pole-to-pole over the hand's long axis —
-         visibly re-shades; a y-orbit would barely move these lights */
-      lax: [1, 0, 0],
-      ap: [0, 0.0625, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
-      av: [0, 0.057, 0.108, 0.211, 0.335, 0.449, 0.591, 0.701, 0.83, 1],
-      cp: [0, 0.0993, 0.2855, 0.442, 0.589, 1],
-      cc: [
-        [1, 1, 1],
-        [1, 0.972, 0.93],
-        [0.961, 0.475, 0],
-        [0.8, 0, 0],
-        [0.204, 0.396, 0.643],
-        [0.361, 0.208, 0.4],
-      ],
-    },
     super: {
       he: [1, 1, 1],
       E: [72, 72, 72],

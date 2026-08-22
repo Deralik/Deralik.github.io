@@ -34,7 +34,6 @@ ctx.window.GRT = ctx.window.GRT;
 globalThis.GRT = ctx.window.GRT;
 load('js/grt-nebulae.js');
 load('js/grt-vol-supernova.js');
-load('js/grt-vol-mechhand.js');
 globalThis.GRTNEB = ctx.window.GRTNEB;
 load('js/grt-vols.js');
 load('js/grt-field.js');
@@ -44,7 +43,6 @@ globalThis.window = ctx.window;
 
 function mkVol(kind) {
   if (kind === 'super') return new DataVol('super', 33, ctx.window.GRT_SUPERNOVA);
-  if (kind === 'mech') return new DataVol('mech', 33, ctx.window.GRT_MECHHAND);
   if (ctx.window.GRTNEB[kind]) return new GaiaVol(kind, 33);
   return new NebVol(kind, 33);
 }
@@ -169,17 +167,8 @@ if (process.argv[2] === 'train') {
       relocLs: Math.log(0.03),
       ad: true,
     },
-    mech: {
-      s0: 0.02,
-      sv: 0.007,
-      lsMin: -4.8,
-      lsMax: -2.6,
-      sMul: 0.82,
-      relocLs: Math.log(0.024),
-      ad: true,
-    },
   };
-  const NDEF = { butterfly: 16000, ring: 16000, super: 16000, mech: 16000 };
+  const NDEF = { butterfly: 16000, ring: 16000, super: 16000 };
   const v = mkVol(kind);
   v.rebuild();
   const F = new CField(v, NDEF[kind], 9, KO[kind]);

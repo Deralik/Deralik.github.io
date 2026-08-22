@@ -10,14 +10,12 @@
 */
 import { spawnSync } from 'node:child_process';
 
-/* mech: OWNER brightness target (round 17, expoK 0.25 — measured live);
-   super: reference_convergence_figures native panel, object mask
-   lum>0.06 (see RULINGS rounds 16–17) */
+/* super: reference_convergence_figures native panel, object mask
+   lum>0.06 (see RULINGS rounds 16–17; mech removed round 18) */
 const REF = {
-  mech: { median: 0.507, p90: 0.633 },
   super: { median: 0.864, p90: 0.91 },
 };
-const BTN = { mech: '#grt-v2', super: '#grt-v3' };
+const BTN = { super: '#grt-v3' };
 
 const METRIC = `(()=>{const r=window.__grt;if(!r||!r.glr)return 'no-gl';
 const A=r.glr.readAcc(0),W=A.w,H=A.h,v=r.vol;
@@ -32,7 +30,7 @@ vals.sort((a,b)=>a-b);
 const pick=(p)=>vals.length?vals[Math.min(vals.length-1,Math.floor(vals.length*p))]:0;
 return JSON.stringify({median:+pick(.5).toFixed(3),p90:+pick(.9).toFixed(3),n:vals.length,spp:r._spp});})()`;
 
-const kinds = process.argv.slice(2).length ? process.argv.slice(2) : ['mech', 'super'];
+const kinds = process.argv.slice(2).length ? process.argv.slice(2) : ['super'];
 let fail = 0;
 for (const k of kinds) {
   const steps = [
