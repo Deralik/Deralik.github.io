@@ -1,58 +1,23 @@
-/* GL pane renderer for the hero — the same two integrals as the CPU path
-   (js/grt7-a.js march()), at full pane resolution with trilinear grids:
-   right of the seam, one jittered 1-spp sample of the truth field per
-   frame, EMA-accumulated in a linear float buffer; left, a 28-step march
-   of the cache's baked field under the global cache-brightness scalar;
-   one fixed exposure, the research renderer's display curve. Returns
-   null when WebGL2/float buffers are missing — the CPU path stands. */
+/* GL renderer for the hero panes (shaders: js/grt-gl-shaders.js).
+   The truth field is evaluated continuously per sample — analytic
+   densities for the nebulae, trilinear vendored grids for the real
+   volumes — so the GT side is not resolution-bound by any precomputed
+   emission grid. The cache side marches the baked cache texture. Pass A
+   accumulates the 1-spp estimator, pass B composites the seam, pass C
+   full-marches the reference inset. Returns null when WebGL2 or float
+   render targets are missing — the CPU grid path remains the fallback. */
 window.GRT7GL = function () {
   const cv = document.createElement('canvas');
-  const gl = cv.getContext('webgl2', {
-    alpha: false,
-    antialias: false,
-    preserveDrawingBuffer: false,
-  });
-  if (!gl) return null;
-  if (!gl.getExtension('EXT_color_buffer_float')) return null;
-  const VS = `#version 300 es
-void main(){vec2 P[3]=vec2[3](vec2(-1,-1),vec2(3,-1),vec2(-1,3));gl_Position=vec4(P[gl_VertexID],0,1);}`;
-  const CAM = `
-uniform vec3 uEye,uFwd,uRight,uUp,uHe,uCb0,uCb1;uniform vec2 uRes;uniform float uF;
-vec2 boxT(vec3 e,vec3 d){vec3 a=(uCb0-e)/d,b=(uCb1-e)/d;vec3 lo=min(a,b),hi=max(a,b);
-return vec2(max(max(lo.x,lo.y),max(lo.z,0.)),min(min(hi.x,hi.y),hi.z));}
-vec3 ray(vec2 px){float vx=(px.x-uRes.x*.5)/(uRes.y*uF),vy=(px.y-uRes.y*.5)/(uRes.y*uF);
-return normalize(uFwd+vx*uRight+vy*uUp);}`;
-  const FSA = `#version 300 es
-precision highp float;precision highp sampler3D;
-uniform sampler3D tE;uniform sampler2D tPrev;uniform float uSeed,uN;
-${CAM}
-out vec4 o;
-float hash(vec2 p,float s){return fract(sin(dot(p,vec2(12.9898,78.233))+s*.61803)*43758.5453);}
-void main(){vec2 px=gl_FragCoord.xy,uv=px/uRes;
-vec3 d=ray(px);vec2 tt=boxT(uEye,d);vec3 rad=vec3(0.);
-if(tt.y>tt.x){float M=24.,h1=hash(px,uSeed),h2=hash(px.yx+vec2(31.7,17.3),uSeed+7.);
-float dt=(tt.y-tt.x)/M,t=tt.x+(floor(h1*M)+h2)*dt;
-vec3 p=uEye+d*t;rad=texture(tE,(p/uHe+1.)*.5).rgb*(tt.y-tt.x);}
-vec3 prev=texture(tPrev,uv).rgb;
-o=vec4(prev+(rad-prev)/uN,1.);}`;
-  const FSB = `#version 300 es
-precision highp float;precision highp sampler3D;
-uniform sampler3D tC;uniform sampler2D tAcc;uniform float uSu,uCbr,uExpo;
-${CAM}
-out vec4 o;
-void main(){vec2 px=gl_FragCoord.xy,uv=px/uRes;vec3 L;
-if(uv.x<uSu){vec3 s=vec3(0.);vec2 tt=boxT(uEye,ray(px));
-if(tt.y>tt.x){float dt=(tt.y-tt.x)/28.;vec3 d=ray(px);
-for(float k=0.;k<28.;k++){vec3 p=uEye+d*(tt.x+(k+.5)*dt);s+=texture(tC,(p/uHe+1.)*.5).rgb*dt;}}
-L=s*uCbr;}
-else L=texture(tAcc,uv).rgb;
-o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec3(0.)))),1.);}`;
-  function sh(t, src) {
-    const s = gl.createShader(t);
+  const gl = cv.getContext('webgl2', { alpha: false, antialias: false });
+  if (!gl || !gl.getExtension('EXT_color_buffer_float') || !window.GRTGLSL) return null;
+  const { VS, FSA, FSB, FSC } = window.GRTGLSL;
+
+  function sh(type, src) {
+    const s = gl.createShader(type);
     gl.shaderSource(s, src);
     gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-      console.warn('grt7-gl', gl.getShaderInfoLog(s));
+      console.warn('grt7-gl shader:', gl.getShaderInfoLog(s));
       return null;
     }
     return s;
@@ -63,67 +28,79 @@ o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec
     gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
     gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-      console.warn('grt7-gl', gl.getProgramInfoLog(p));
+      console.warn('grt7-gl link:', gl.getProgramInfoLog(p));
       return null;
     }
     return p;
   }
   const pA = prog(FSA),
-    pB = prog(FSB);
-  if (!pA || !pB) return null;
+    pB = prog(FSB),
+    pC = prog(FSC);
+  if (!pA || !pB || !pC) return null;
   const U = (p, n) => gl.getUniformLocation(p, n);
-  function tex3() {
+
+  function tex3(filter) {
     const t = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_3D, t);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter);
+    for (const w of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T, gl.TEXTURE_WRAP_R])
+      gl.texParameteri(gl.TEXTURE_3D, w, gl.CLAMP_TO_EDGE);
     return t;
   }
   const S = {
-    tE: tex3(),
-    tC: tex3(),
+    tCs: [tex3(gl.LINEAR), tex3(gl.LINEAR)],
+    tci: 0,
+    pend: null,
+    upZ: 0,
+    tD: tex3(gl.LINEAR),
+    tA: tex3(gl.LINEAR),
+    tLUT: gl.createTexture(),
     dims: null,
-    vol: null,
     acc: [null, null],
     fbo: [null, null],
     aw: 0,
     ah: 0,
     ai: 0,
     rgba: null,
+    kind: 0,
   };
-  function upload(t, grid) {
+  gl.bindTexture(gl.TEXTURE_2D, S.tLUT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  /* cache-texture updates stream slab-wise into the BACK texture and
+     flip when complete — no per-frame upload stall, no visible tear */
+  function uploadC(CG) {
+    S.pend = CG;
+    S.upZ = 0;
+  }
+  function pumpUpload() {
+    if (!S.pend) return;
     const [EX, EY, EZ] = S.dims,
-      n = EX * EY * EZ;
-    if (!S.rgba || S.rgba.length !== n * 4) S.rgba = new Float32Array(n * 4);
-    const R = S.rgba;
+      back = 1 - S.tci,
+      zStep = Math.max(1, Math.ceil(EZ / 3)),
+      z0 = S.upZ,
+      z1 = Math.min(EZ, z0 + zStep),
+      n = EX * EY * (z1 - z0);
+    if (!S.rgba || S.rgba.length < n * 4) S.rgba = new Float32Array(n * 4);
+    const R = S.rgba,
+      CG = S.pend,
+      base = EX * EY * z0;
     for (let i = 0; i < n; i++) {
-      R[i * 4] = grid[i * 3];
-      R[i * 4 + 1] = grid[i * 3 + 1];
-      R[i * 4 + 2] = grid[i * 3 + 2];
+      R[i * 4] = CG[(base + i) * 3];
+      R[i * 4 + 1] = CG[(base + i) * 3 + 1];
+      R[i * 4 + 2] = CG[(base + i) * 3 + 2];
       R[i * 4 + 3] = 1;
     }
-    gl.bindTexture(gl.TEXTURE_3D, t);
-    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, EX, EY, EZ, gl.RGBA, gl.FLOAT, R);
-  }
-  function allocVol(vol) {
-    S.dims = [vol.EX, vol.EY, vol.EZ];
-    for (const t of [S.tE, S.tC]) {
-      gl.bindTexture(gl.TEXTURE_3D, t);
-      gl.texImage3D(
-        gl.TEXTURE_3D,
-        0,
-        gl.RGBA16F,
-        vol.EX,
-        vol.EY,
-        vol.EZ,
-        0,
-        gl.RGBA,
-        gl.FLOAT,
-        null,
-      );
+    gl.bindTexture(gl.TEXTURE_3D, S.tCs[back]);
+    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, z0, EX, EY, z1 - z0, gl.RGBA, gl.FLOAT, R);
+    S.upZ = z1;
+    if (z1 >= EZ) {
+      S.tci = back;
+      S.pend = null;
     }
   }
   function accAlloc(w, h) {
@@ -149,7 +126,8 @@ o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
-  function cam(p, o) {
+  /* camera + field uniforms shared by the passes */
+  function common(p, o) {
     gl.uniform3f(U(p, 'uEye'), o.eye[0], o.eye[1], o.eye[2]);
     gl.uniform3f(U(p, 'uFwd'), o.fwd[0], o.fwd[1], o.fwd[2]);
     gl.uniform3f(U(p, 'uRight'), o.rt[0], o.rt[1], o.rt[2]);
@@ -157,16 +135,112 @@ o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec
     gl.uniform3f(U(p, 'uHe'), o.he[0], o.he[1], o.he[2]);
     gl.uniform3f(U(p, 'uCb0'), o.cb[0], o.cb[2], o.cb[4]);
     gl.uniform3f(U(p, 'uCb1'), o.cb[1], o.cb[3], o.cb[5]);
-    gl.uniform2f(U(p, 'uRes'), cv.width, cv.height);
     gl.uniform1f(U(p, 'uF'), o.f);
   }
+  function field(p, o) {
+    gl.uniform1i(U(p, 'uKind'), S.kind);
+    gl.uniform1f(U(p, 'uS'), o.S || 1);
+    gl.uniform1f(U(p, 'uTf'), o.tf);
+    gl.uniform1f(U(p, 'uInvG'), o.invG);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_3D, S.tD);
+    gl.uniform1i(U(p, 'tD'), 2);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_3D, S.tA);
+    gl.uniform1i(U(p, 'tA'), 3);
+    gl.activeTexture(gl.TEXTURE4);
+    gl.bindTexture(gl.TEXTURE_2D, S.tLUT);
+    gl.uniform1i(U(p, 'tLUT'), 4);
+  }
+
   return {
     cv,
+    /* per-dataset setup: cache-texture dims, the AO grid, and for the
+       data volumes their scalar grid + a 256-entry scene-TF LUT */
     setVol(vol) {
-      if (!S.dims || S.dims[0] !== vol.EX || S.dims[1] !== vol.EY || S.dims[2] !== vol.EZ)
-        allocVol(vol);
-      S.vol = vol;
-      upload(S.tE, vol.grid);
+      if (!S.dims || S.dims[0] !== vol.EX || S.dims[1] !== vol.EY || S.dims[2] !== vol.EZ) {
+        S.dims = [vol.EX, vol.EY, vol.EZ];
+        for (const t of S.tCs) {
+          gl.bindTexture(gl.TEXTURE_3D, t);
+          gl.texImage3D(
+            gl.TEXTURE_3D,
+            0,
+            gl.RGBA16F,
+            vol.EX,
+            vol.EY,
+            vol.EZ,
+            0,
+            gl.RGBA,
+            gl.FLOAT,
+            null,
+          );
+        }
+        S.rgba = null;
+        S.pend = null;
+      }
+      S.kind = vol.kind === 'butterfly' ? 0 : vol.kind === 'ring' ? 1 : 2;
+      const n = vol.aoN,
+        ao = new Float32Array(vol.aoT.length);
+      ao.set(vol.aoT);
+      gl.bindTexture(gl.TEXTURE_3D, S.tA);
+      gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, n, n, n, 0, gl.RED, gl.FLOAT, ao);
+      if (S.kind === 2) {
+        gl.bindTexture(gl.TEXTURE_3D, S.tD);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        gl.texImage3D(
+          gl.TEXTURE_3D,
+          0,
+          gl.R8,
+          vol.nx,
+          vol.ny,
+          vol.nz,
+          0,
+          gl.RED,
+          gl.UNSIGNED_BYTE,
+          vol.dgU8,
+        );
+        const T = vol.T,
+          lut = new Float32Array(256 * 4);
+        for (let i = 0; i < 256; i++) {
+          const u = i / 255,
+            c = vol.lut3(u, T.cp, T.cc);
+          let a = vol.lut1(u, T.ap, T.av);
+          if (T.fl) a = Math.max(a, T.fl(u));
+          lut[i * 4] = c[0];
+          lut[i * 4 + 1] = c[1];
+          lut[i * 4 + 2] = c[2];
+          lut[i * 4 + 3] = a;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, S.tLUT);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, 256, 1, 0, gl.RGBA, gl.FLOAT, lut);
+      } else {
+        /* keep the samplers valid for the analytic path */
+        gl.bindTexture(gl.TEXTURE_3D, S.tD);
+        gl.texImage3D(
+          gl.TEXTURE_3D,
+          0,
+          gl.R8,
+          1,
+          1,
+          1,
+          0,
+          gl.RED,
+          gl.UNSIGNED_BYTE,
+          new Uint8Array(1),
+        );
+        gl.bindTexture(gl.TEXTURE_2D, S.tLUT);
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          gl.RGBA16F,
+          1,
+          1,
+          0,
+          gl.RGBA,
+          gl.FLOAT,
+          new Float32Array(4),
+        );
+      }
       if (S.aw) {
         for (const f of S.fbo) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, f);
@@ -176,10 +250,9 @@ o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       }
     },
-    uploadC(CG) {
-      upload(S.tC, CG);
-    },
+    uploadC,
     draw(o) {
+      pumpUpload();
       const w = Math.max(8, o.w | 0),
         h = Math.max(8, o.h | 0);
       if (cv.width !== w || cv.height !== h) {
@@ -187,16 +260,18 @@ o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec
         cv.height = h;
       }
       if (S.aw !== w || S.ah !== h) accAlloc(w, h);
-      gl.viewport(0, 0, w, h);
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.BLEND);
       const ni = 1 - S.ai;
+
+      /* A: estimator sample into the progressive accumulation */
+      gl.viewport(0, 0, w, h);
       gl.bindFramebuffer(gl.FRAMEBUFFER, S.fbo[ni]);
       gl.useProgram(pA);
-      cam(pA, o);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_3D, S.tE);
-      gl.uniform1i(U(pA, 'tE'), 0);
+      common(pA, o);
+      field(pA, o);
+      gl.uniform2f(U(pA, 'uRes'), w, h);
+      gl.uniform2f(U(pA, 'uOff'), 0, 0);
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, S.acc[S.ai]);
       gl.uniform1i(U(pA, 'tPrev'), 1);
@@ -204,10 +279,14 @@ o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec
       gl.uniform1f(U(pA, 'uN'), Math.max(1, o.spp || 1));
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+      /* B: the seam — cache march | accumulated estimate */
       gl.useProgram(pB);
-      cam(pB, o);
+      common(pB, o);
+      gl.uniform2f(U(pB, 'uRes'), w, h);
+      gl.uniform2f(U(pB, 'uOff'), 0, 0);
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_3D, S.tC);
+      gl.bindTexture(gl.TEXTURE_3D, S.tCs[S.tci]);
       gl.uniform1i(U(pB, 'tC'), 0);
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, S.acc[ni]);
@@ -216,6 +295,23 @@ o=vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec
       gl.uniform1f(U(pB, 'uCbr'), o.cbr);
       gl.uniform1f(U(pB, 'uExpo'), o.expo);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      /* C: the reference inset — the truth field fully marched */
+      if (o.inset) {
+        const [ix, iy, iw2, ih2] = o.inset; /* device px, y from the top */
+        const vy = h - iy - ih2;
+        gl.viewport(ix, vy, iw2, ih2);
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(ix, vy, iw2, ih2);
+        gl.useProgram(pC);
+        common(pC, o);
+        field(pC, o);
+        gl.uniform2f(U(pC, 'uRes'), iw2, ih2);
+        gl.uniform2f(U(pC, 'uOff'), ix, vy);
+        gl.uniform1f(U(pC, 'uExpo'), o.expo);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.disable(gl.SCISSOR_TEST);
+      }
       S.ai = ni;
     },
   };

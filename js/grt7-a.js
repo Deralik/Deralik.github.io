@@ -11,7 +11,7 @@
 (() => {
   const { fit, loop, tok, star } = GRT;
   const { Cam2 } = GRT2;
-  const { box, RayAnim, CamView } = GRT6;
+  const { RayAnim, CamView } = GRT6;
   const { NebVol, DataVol, GaiaVol, CField, Meter, frustum } = GRT7;
   const KO = {
     butterfly: {
@@ -21,6 +21,7 @@
       lsMax: -2.4,
       sMul: 0.85,
       relocLs: Math.log(0.03),
+      ad: true,
     },
     ring: {
       s0: 0.026,
@@ -29,6 +30,7 @@
       lsMax: -2.4,
       sMul: 0.85,
       relocLs: Math.log(0.03),
+      ad: true,
     },
     super: {
       s0: 0.026,
@@ -37,6 +39,7 @@
       lsMax: -2.5,
       sMul: 0.86,
       relocLs: Math.log(0.03),
+      ad: true,
     },
     mech: {
       s0: 0.02,
@@ -45,6 +48,7 @@
       lsMax: -2.6,
       sMul: 0.82,
       relocLs: Math.log(0.024),
+      ad: true,
     },
     crab: {
       s0: 0.038,
@@ -56,7 +60,14 @@
     },
     bh: { s0: 0.024, sv: 0.009, lsMin: -4.6, lsMax: -2.5, sMul: 0.78, relocLs: Math.log(0.03) },
   };
-  const NDEF = { butterfly: 8000, ring: 8000, super: 8400, mech: 9000, crab: 3000, bh: 4200 };
+  const NDEF = {
+    butterfly: 12000,
+    ring: 12000,
+    super: 12000,
+    mech: 13000,
+    crab: 3000,
+    bh: 4200,
+  };
   class R7 {
     constructor(cv, o = {}) {
       this.cv = cv;
@@ -364,11 +375,14 @@
     /* reference inset + render-space PSNR + the cache-brightness scalar —
    shared by the GL and CPU pane paths */
     insetTick() {
-      /* reference inset: the truth grid, fully marched — genuinely converged */
-      if (this.frameN % 4 === 0) this.insetMarch(this.vol.grid, this.rtl, this.rid);
-      /* render-space PSNR: cache march vs truth march, linear, same rays —
-   %12==8 lands on an inset frame so both buffers share one camera */
-      if (this.frameN % 12 === 8) {
+      /* CPU-path display inset: the truth grid, fully marched (the GL
+         path draws its own continuous inset in pass C) */
+      if (!this.glr && this.frameN % 4 === 0)
+        this.insetMarch(this.vol.grid, this.rtl, this.rid);
+      /* render-space PSNR: cache march vs truth march, linear, same rays,
+         one shared camera — grid vs grid on both paths */
+      if (this.frameN % 24 === 8) {
+        if (this.glr) this.insetMarch(this.vol.grid, this.rtl, null);
         this.insetMarch(this.CG, this.rcl, null);
         const T = this.rtl,
           Q = this.rcl;
@@ -621,6 +635,18 @@
           cbr: this.cbr || 1,
           expo: this.vol.expo,
           spp: this._spp,
+          S: this.vol.S || 1,
+          tf: this.vol.tf,
+          invG: 1 / (this.vol.gmax || 1),
+          inset: (() => {
+            const iv2 = w < 560 ? [104, 74] : [176, 123];
+            return [
+              Math.round((iw - iv2[0] - 12) * dpr),
+              Math.round(10 * dpr),
+              Math.round(iv2[0] * dpr),
+              Math.round(iv2[1] * dpr),
+            ];
+          })(),
         });
         /* zero-copy: the GL canvas sits UNDER this one as a positioned layer;
    this canvas clears a window over the pane and draws the UI on top
@@ -677,7 +703,9 @@
       g.strokeStyle = GRT.alpha(GRT.figPaper, 0.25);
       g.strokeRect(x0 + 0.5, y0 + 0.5, iw - 1, ih - 1);
       const iv = stack ? [104, 74] : [176, 123];
-      g.drawImage(this.ric, x0 + iw - iv[0] - 12, y0 + 10, iv[0], iv[1]);
+      /* GL path renders the inset itself (pass C, through the cleared
+         window); the CPU path blits its grid march */
+      if (!this.glr) g.drawImage(this.ric, x0 + iw - iv[0] - 12, y0 + 10, iv[0], iv[1]);
       g.strokeRect(x0 + iw - iv[0] - 12.5, y0 + 9.5, iv[0] + 1, iv[1] + 1);
       g.fillStyle = this.cab;
       g.font = '500 8.5px ' + this.mono;
@@ -736,7 +764,7 @@
       g.beginPath();
       g.rect(rx, wy, rw, wh);
       g.clip();
-      /* heavy static layer (box, stars, splat cloud) at 30Hz; live parts 60 */
+      /* heavy static layer (stars, splat cloud) at 30Hz; live parts 60 */
       const rwi = Math.max(1, rw | 0),
         whi = Math.max(1, wh | 0);
       if (!this.wlc || this.wlc.width !== rwi || this.wlc.height !== whi) {
@@ -753,7 +781,6 @@
             return [cx - rx + q[0] * S, cy - wy - q[1] * S, q[2]];
           };
         wg.clearRect(0, 0, rwi, whi);
-        box(wg, pxL, this.vol.he);
         for (const s of this.st) {
           const p = pxL(s);
           wg.globalAlpha = 0.04 + 0.1 * s[3];

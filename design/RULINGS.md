@@ -436,3 +436,32 @@ added.
   (herojs train) shows cone filaments + halo learned; mech/supernova
   hold a stable ~1.5× in-content energy (thin-shell kernel-mass floor)
   absorbed by the disclosed cache-brightness scalar.
+
+# Owner rulings — hero round 4 (2026-08-21)
+
+- **The GT must be the continuous field, not a voxelization.** "Is one
+  of these faked?" — nothing was, but every view marched a ~56³ EMIT
+  grid while the approved references evaluated the density functions
+  continuously; the owner correctly spotted the blockiness and the
+  too-circular halo. The GPU path now evaluates the truth field per
+  sample (analytic nebula densities in GLSL — a round trip home, the
+  ports came from GLSL; finer vendored grids for the real volumes).
+- **No volume bound drawn in the world view** (sets extend past it).
+- **All three views must conceptually converge to the same result** —
+  the cache side should read as the more complete image and approach
+  the GT, not sit blurrier than an accumulated estimate.
+- **Single files stay digestible** — the 1200-line renderer core split
+  by responsibility (vols / field / aggregator / GL / shaders).
+
+## Model notes (advisory, same round)
+
+- Precompute grids remain for: training targets, calibration, PSNR
+  pair (grid-vs-grid, labelled), CPU fallback. The panes and inset are
+  continuous on the GL path.
+- Cache sharpness: sizes now derived from measured content spacing at
+  the chosen N (σ ≈ 1.0× spacing — 0.62× tried and rejected: grainy
+  gaps; sum-of-gaussians needs overlap); defaults 12–13k gaussians.
+  A/B: butterfly energy 1.00 with cone texture; mech resolves fingers.
+- Perf at 12–13k: adaptive bin cells (≈ query radius), cache texture
+  streamed slab-wise into a double buffer (upload stalls), world splats
+  strided 2× above 9k — all four datasets 16.7 ms / 0 janky on GPU.

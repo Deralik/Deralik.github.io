@@ -36,6 +36,8 @@ load('js/grt-nebulae.js');
 load('js/grt-vol-supernova.js');
 load('js/grt-vol-mechhand.js');
 globalThis.GRTNEB = ctx.window.GRTNEB;
+load('js/grt-vols.js');
+load('js/grt-field.js');
 load('js/grt7-core.js');
 const { NebVol, DataVol, GaiaVol } = ctx.window.GRT7;
 globalThis.window = ctx.window;
@@ -144,6 +146,7 @@ if (process.argv[2] === 'train') {
       lsMax: -2.4,
       sMul: 0.85,
       relocLs: Math.log(0.03),
+      ad: true,
     },
     ring: {
       s0: 0.026,
@@ -152,6 +155,7 @@ if (process.argv[2] === 'train') {
       lsMax: -2.4,
       sMul: 0.85,
       relocLs: Math.log(0.03),
+      ad: true,
     },
     super: {
       s0: 0.026,
@@ -160,6 +164,7 @@ if (process.argv[2] === 'train') {
       lsMax: -2.5,
       sMul: 0.86,
       relocLs: Math.log(0.03),
+      ad: true,
     },
     mech: {
       s0: 0.02,
@@ -168,9 +173,10 @@ if (process.argv[2] === 'train') {
       lsMax: -2.6,
       sMul: 0.82,
       relocLs: Math.log(0.024),
+      ad: true,
     },
   };
-  const NDEF = { butterfly: 8000, ring: 8000, super: 8400, mech: 9000 };
+  const NDEF = { butterfly: 12000, ring: 12000, super: 12000, mech: 13000 };
   const v = mkVol(kind);
   v.rebuild();
   const F = new CField(v, NDEF[kind], 9, KO[kind]);

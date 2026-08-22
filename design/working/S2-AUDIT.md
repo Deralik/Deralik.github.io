@@ -503,3 +503,22 @@ under one ?v=3 — versions now bump every change); code unreadable.
   to its line. RULINGS records the readable-source ruling.
 Verified: GPU traces 16.7ms/0-jank all four + mobile; matrix clean;
 gate clean; herojs harness green on formatted files.
+
+### Owner round 4 (2026-08-21 late): continuous GT + convergence + split
+Answered "is one of these faked?": no — but GT was a 56³ voxelization
+of real content; the references were continuous. Now: GLSL evaluates
+the truth field per sample (nebula densities ported back to GLSL;
+mech re-vendored /5 → 44×128×46, supernova /6 → 72³; official TFs as a
+256-LUT texture; AO as a 40³ texture; glow analytic — the inset is
+pass C, a 48-step continuous march, and matches the approved gaiashot
+look). World-view bound removed. Cache: sizes derived from content
+spacing at N (σ≈1.0×spacing), N=12–13k — butterfly cache reproduces
+cone texture at energy 1.00, mech resolves fingers. Perf relearned:
+adaptive bin cells, slab-streamed double-buffered cache texture,
+strided splat draw — 16.7ms/0-jank all datasets. grt7-core split:
+grt-vols (704) + grt-field (524) + aggregator (74) + grt7-gl (288) +
+grt-gl-shaders (201); herojs loads the same files. One incident: a
+stray `git checkout` reverted uncommitted core work mid-split — all
+edits were deterministic replacements and were reapplied + verified
+(A/B energy identical). Verified: herojs A/B, converged live shots,
+traces, matrix, gate, prettier.

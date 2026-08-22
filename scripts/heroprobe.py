@@ -147,25 +147,25 @@ which=sys.argv[1] if len(sys.argv)>1 else 'all'
 
 if which=='vendor':
     raw=load_raw(f'{GSRC}/MechHand_f_640x220x229_float32.raw',(640,220,229),np.float32)
-    U=np.clip(boxdown(raw,8)/0.964286,0,1)
+    U=np.clip(boxdown(raw,5)/0.964286,0,1)
     U=np.transpose(U,(0,2,1))   # hand upright: world y = the CT's long axis
     vendor(U,'js/grt-vol-mechhand.js','GRT_MECHHAND',
 """/* GRT hero demo volume — REAL DATA, vendored for the browser.
    Source: MechHand industrial CT (640x220x229 float32), the "Mechanical
-   Hand" benchmark volume of the GRTCache research repo. This file: 8^3
+   Hand" benchmark volume of the GRTCache research repo. This file: 5^3
    box-filtered, mapped to the scene's official scalar domain
    (0..0.964286), quantized uint8, long axis stored as y so the hand
    stands upright. Prepared 2026-08-21. */
 """)
     raw=load_raw(f'{GSRC}/E_1296.dat',(432,432,432),np.float32)
-    U=np.clip(boxdown(raw,8)/0.135840,0,1)
+    U=np.clip(boxdown(raw,6)/0.135840,0,1)
     vendor(U,'js/grt-vol-supernova.js','GRT_SUPERNOVA',
 """/* GRT hero demo volume — REAL DATA, vendored for the browser.
    Source: supernova simulation timestep E_1296 (John M. Blondin, NCSU),
    the "supernova" entry of the Open SciVis Datasets collection
    (klacansky.com/open-scivis-datasets) — the same dataset the GRTCache
-   research repo benchmarks on. Original: 432^3 float32. This file: 8^3
-   box-filtered to 54^3, mapped to the scene's official scalar domain
+   research repo benchmarks on. Original: 432^3 float32. This file: 6^3
+   box-filtered to 72^3, mapped to the scene's official scalar domain
    (0..0.13584), quantized uint8, z-major. Prepared 2026-08-21; credit
    the source wherever the demo renders. */
 """)
@@ -173,7 +173,7 @@ if which=='vendor':
 
 if which in('all','mech'):
     raw=load_raw(f'{GSRC}/MechHand_f_640x220x229_float32.raw',(640,220,229),np.float32)
-    U=np.clip(boxdown(raw,8)/0.964286,0,1)     # (29,28,80) z,y,x
+    U=np.clip(boxdown(raw,5)/0.964286,0,1)     # (29,28,80) z,y,x
     he=[1.32*e for e in (1,220/640,229/640)]
     render_set('mech',emit_grid(U,he,(104,36,37),MECH_RGB,MECH_A),he)
 
