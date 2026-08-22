@@ -205,10 +205,10 @@ body{display:block;height:auto;overflow:auto}
       <div class="face face-strip"><h4 data-slot="title">GRTCache</h4><span class="t" data-slot="tier">not accepted · revising</span></div>
       <div class="face face-doc">
         <div class="retp"><span class="bk">↑ the panel</span><span class="sl" data-slot="slug">/grtcache</span><span class="dtier only-mob">· not accepted · revising</span><span class="sp"></span><span class="secs"><span class="on">the demonstration</span><span>the method</span><span>the comparison</span><span>the record</span><span>in progress</span><span>reference</span></span></div>
-        <div class="dh"><h1 data-slot="doc-title">GRTCache</h1><p class="lede" data-slot="lede">A radiance cache you can look at — the volume's light field held in world-space gaussians, trained while it renders.</p><p class="covq">~10× smaller cache, quality held · on par with NRC — not yet faster · HPG '26 not accepted · revising</p></div>
+        <div class="dh"><h1 data-slot="doc-title">GRTCache</h1><p class="lede" data-slot="lede">A radiance cache you can look at — work-in-progress research project on caching volumetric light.</p></div>
         <div class="dsec" style="border-top:0;padding-top:0;margin-top:16px">
           <div class="gfw" style="height:540px" data-slot="figure"><canvas id="grt-cv-hero"></canvas></div>
-          <div class="chr"><span class="btn on" id="grt-v0">Butterfly</span><span class="btn" id="grt-v1">Ring</span><span class="btn" id="grt-v2">MechHand — real CT</span><span class="btn" id="grt-v3">Supernova — real data</span><span class="btn" id="grt-reset">Reset the cache</span><label><span id="grt-azl">Transfer function</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="3.14"></label><label id="grt-liw" style="display:none"><span>Lights</span><input type="range" id="grt-li" min="-3.14" max="3.14" step="0.01" value="0"></label><span class="ro2" id="grt-ro">—</span></div>
+          <div class="chr"><span class="btn on" id="grt-v0">Butterfly</span><span class="btn" id="grt-v1">Ring</span><span class="btn" id="grt-v2">MechHand — real CT</span><span class="btn" id="grt-v3">Supernova — real data</span><span class="btn" id="grt-reset">Reset the cache</span><span class="btn" id="grt-orbit">Orbit · on</span><label><span id="grt-azl">Transfer function</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="3.14"></label><label id="grt-liw" style="display:none"><span>Lights</span><input type="range" id="grt-li" min="-3.14" max="3.14" step="0.01" value="0"></label><span class="ro2" id="grt-ro">—</span></div>
         </div>
         <div class="dsec"><div class="sech">The method</div>
           <div class="drow" style="gap:20px">
@@ -230,9 +230,9 @@ body{display:block;height:auto;overflow:auto}
                 <div class="pleg"><i>2</i><span>a portion of rays extend past the termination — training suffixes, bounced further only to learn</span></div>
                 <div class="pleg"><i>3</i><span>walking back along the ray, radiance composes into a training target at every vertex; NEE at each bounce adds direct-light samples</span></div>
               </div>
+              <p class="pnote">training scheme and termination heuristic follow <a href="https://doi.org/10.1145/3450626.3459812">NRC — Müller et al. 2021</a>; what differs is what holds the radiance</p>
             </div>
           </div>
-          <p class="pnote">training scheme and termination heuristic follow <a href="https://doi.org/10.1145/3450626.3459812">NRC — Müller et al. 2021</a>; what differs is what holds the radiance</p>
         </div>
         <div class="dsec"><div class="sech">The comparison</div>
           <div class="gfw" style="height:430px"><canvas id="grt-cv-three"></canvas></div>
@@ -336,14 +336,14 @@ body{display:block;height:auto;overflow:auto}
 <script src="js/grt-dir-core.js?v=2"></script>
 <script src="js/grt2-core.js?v=2"></script>
 <script src="js/grt6-core.js?v=3"></script>
-<script src="js/grt-vols.js?v=6"></script>
+<script src="js/grt-vols.js?v=7"></script>
 <script src="js/grt-field.js?v=5"></script>
 <script src="js/grt7-core.js?v=7"></script>
 <script src="js/grt-gl-shaders.js?v=5"></script>
 <script src="js/grt7-gl.js?v=6"></script>
-<script src="js/grt7-a.js?v=9"></script>
+<script src="js/grt7-a.js?v=11"></script>
 <script src="js/grt8-core.js?v=2"></script>
-<script src="js/grt8-b.js?v=2"></script>
-<script src="js/grt9-a.js?v=2"></script>
-<script src="js/grt-skeleton.js?v=5"></script>
+<script src="js/grt8-b.js?v=3"></script>
+<script src="js/grt9-a.js?v=3"></script>
+<script src="js/grt-skeleton.js?v=6"></script>
 </body></html>

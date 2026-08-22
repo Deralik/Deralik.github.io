@@ -85,6 +85,13 @@
         azv();
         const rs = $('grt-reset');
         if (rs) rs.onclick = () => R7.resetField();
+        const ob = $('grt-orbit');
+        if (ob)
+          ob.onclick = () => {
+            R7.orbitOn = !R7.orbitOn;
+            ob.textContent = 'Orbit · ' + (R7.orbitOn ? 'on' : 'off');
+            ob.classList.toggle('on', R7.orbitOn);
+          };
         const az = $('grt-az');
         if (az) az.oninput = (e) => (R7.pendingAz = +e.target.value);
         const li2 = $('grt-li');

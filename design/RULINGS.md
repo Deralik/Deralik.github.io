@@ -717,3 +717,34 @@ added.
   improved .23→.15, ring .29→.24.
 - Gate after: super .05 · mech .13 · butterfly .15 · ring .24 (~720
   spp); trace 16.7ms/0 jank; matrix + check clean.
+
+# Owner rulings — hero round 13 + refinement list (2026-08-22)
+
+- **Round-5 "still too bright / slider does nothing / no lights in the
+  cache view"**: (a) exposure re-anchored to the midtones (p90 →
+  Reinhard 0.6) — the reference policy's p99.5→0.9 assumes their
+  heavy-tailed distribution; ours is flatter, so tail-anchoring pushed
+  whole objects into the Reinhard shoulder (white) AND masked the
+  light slider's effect. Hand and nova now sit next to their reference
+  figures. (b) "Lights not visible" meant DRAW THE LIGHTS: the cache
+  view now shows each scene light at its live position (tinted star +
+  LIGHT label); the slider moves the markers the moment it moves and
+  the field rebuilds at rest — verified end-to-end by live eval
+  (lightAz 0→2.2, field values changed, spp reset) and A/B shots.
+- **Orbit toggle** (owner ask): "Orbit · on/off" button pauses/resumes
+  the automatic camera orbit (pairs with hold-to-converge). Verified
+  live: pause freezes oa, resume restarts.
+- **Refinement list executed**: GRT lede → "A radiance cache you can
+  look at — work-in-progress research project on caching volumetric
+  light", covq line removed (not-accepted status still stated in the
+  strip + the record section); hero bottom-left = "WITH THE CACHE —
+  1 SPP" only (drag-hint line removed); NRC citation moved under the
+  training figure; training figure de-texted ("extended — training
+  only" now labels the termination point, marker 2 moved onto the
+  extension, "the direct component only" dropped); comparison figure:
+  GSCache volume enlarged (S .19→.25·h) with larger min bounce
+  distance (.42+.3 vs .28+.34), top captions removed, card labels →
+  "NRC — QUERIABLE, BUT A BLACK BOX" / "GSCACHE — ISOLATED BASED ON
+  PATH LENGTH" / "GRTCACHE (OURS) — UNIFIED & MODIFIABLE".
+- Gate: butterfly .14 · mech .13 · ring .24 · super .05 (~720 spp);
+  trace 16.7ms/0 jank; matrix + check clean.

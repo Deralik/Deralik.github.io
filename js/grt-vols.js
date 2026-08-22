@@ -519,10 +519,13 @@ window.GRTVOLS = (() => {
         }
       ls.sort((a, b) => a - b);
       if (this.tone) {
-        /* the reference-figure display policy (gsrc metrics.py): anchor =
-     p99.5 luminance, exposure puts Reinhard(e·anchor) at 0.9 */
-        const a = ls.length ? ls[Math.min(ls.length - 1, Math.floor(ls.length * 0.995))] : 1;
-        this.expo = 9.0 / Math.max(a, 1e-4);
+        /* Reinhard exposure, anchored on the MIDTONES (p90 → 0.6): the
+     reference figures anchor p99.5 → 0.9, but their brightness
+     distribution is heavy-tailed and ours is flatter — tail-anchoring
+     a flat distribution pushes the whole object into the Reinhard
+     shoulder and it washes white (owner rounds 4–5) */
+        const a = ls.length ? ls[Math.min(ls.length - 1, Math.floor(ls.length * 0.9))] : 1;
+        this.expo = 1.5 / Math.max(a, 1e-4);
         return;
       }
       const p = ls.length ? ls[Math.min(ls.length - 1, Math.floor(ls.length * 0.97))] : 1;
@@ -732,10 +735,9 @@ window.GRTVOLS = (() => {
       const n = 40,
         he = this.he,
         kap = this.T.kapL || this.kap || 0,
-        Ls = this.T.lights,
-        lax = this.T.lax || [0, 1, 0],
+        LsNow = this.lightsNow(),
         gk = this.T.gk || 0.05;
-      if (!Ls) return super.buildAO();
+      if (!LsNow) return super.buildAO();
       this.aoN = n;
       if (!this.aoT || this.aoT.length !== n * n * n * 3)
         this.aoT = new Float32Array(n * n * n * 3);
@@ -763,12 +765,8 @@ window.GRTVOLS = (() => {
             let sr = 0,
               sg = 0,
               sb = 0;
-            for (const L0 of Ls) {
-              /* the light-orbit control: the whole rig rotates about the
-                 scene's own axis (identity at slider centre) */
-              const L = this.lightAz
-                ? rot3(L0[0], L0[1], L0[2], lax[0], lax[1], lax[2], this.lightAz)
-                : L0;
+            for (const L0 of LsNow) {
+              const L = L0;
               let dx = L[0] - x,
                 dy = L[1] - y,
                 dz = L[2] - z;
@@ -799,6 +797,19 @@ window.GRTVOLS = (() => {
             A[p + 1] = 0.2 + 0.8 * sg;
             A[p + 2] = 0.2 + 0.8 * sb;
           }
+    }
+    /* the scene lights at the CURRENT orbit angle — for the light march
+       and for drawing their positions in the cache view */
+    lightsNow() {
+      const Ls = this.T.lights;
+      if (!Ls) return null;
+      const lax = this.T.lax || [0, 1, 0];
+      return Ls.map((L) => {
+        const p = this.lightAz
+          ? rot3(L[0], L[1], L[2], lax[0], lax[1], lax[2], this.lightAz)
+          : L;
+        return [p[0], p[1], p[2], L[3], L[4], L[5], L[6]];
+      });
     }
     /* LUT accessors for the GL layer's scene-TF texture bake */
     lut1(u, P, V) {

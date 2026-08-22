@@ -153,7 +153,6 @@
       /* light + NEE */
       const lp = [586, 38];
       GRT.star(ctx, lp[0], lp[1], 5, warm);
-      T(lp[0] - 4, lp[1] + 18, 'light', abs);
       for (const q of [...v, ...sfx]) {
         ctx.strokeStyle = warm;
         ctx.globalAlpha = 0.38;
@@ -168,7 +167,6 @@
       ctx.lineWidth = 1.2;
       ctx.strokeRect(cam[0] - 4, cam[1] - 4, 8, 8);
       ctx.lineWidth = 1;
-      T(cam[0], cam[1] + 18, 'camera', abs);
       ctx.strokeStyle = prose;
       ctx.lineWidth = 1.2;
       ctx.beginPath();
@@ -185,7 +183,7 @@
       /* termination into the cache */
       ctx.fillStyle = acc;
       ctx.fillRect(v[2][0] - 3, v[2][1] - 3, 6, 6);
-      T(v[2][0], v[2][1] - 14, 'terminates into the cache', abs);
+      T(v[2][0], v[2][1] - 14, 'extended — training only', abs);
       circ(v[2][0] - 108, v[2][1] - 14, '1');
       /* extended — training suffix, dashed */
       ctx.strokeStyle = prose;
@@ -201,8 +199,7 @@
         ctx.arc(q[0], q[1], 2.2, 0, 6.283);
         ctx.stroke();
       }
-      T(516, 86, 'extended — training only', abs);
-      circ(516, 100, '2');
+      circ(416, 130, '2');
       /* trace-back: targets composed walking back at every vertex */
       const chain = [...v, ...sfx];
       for (let i = chain.length - 1; i > 0; i--) {
@@ -240,12 +237,7 @@
         'walking back along the ray, radiance composes into a training target at every vertex',
         abs,
       );
-      T(
-        320,
-        228,
-        'NEE at each bounce adds direct-light samples — the direct component only',
-        abs,
-      );
+      T(320, 228, 'NEE at each bounce adds direct-light samples', abs);
     });
   };
 })();

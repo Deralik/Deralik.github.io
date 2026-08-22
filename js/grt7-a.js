@@ -86,6 +86,7 @@
       this.uY = 0;
       this.uP = 0;
       this.imgDrag = false;
+      this.orbitOn = true;
       this.holdUntil = -9;
       this.su = 0.5;
       this.seamU = 0.5;
@@ -812,7 +813,7 @@
           this.uP *= k;
         } else {
           this.uY = this.uP = 0;
-          this.oa += dt * 0.06;
+          if (this.orbitOn) this.oa += dt * 0.06;
         }
       }
       const eye = this.eyeCur();
@@ -988,24 +989,9 @@
         x0 + 8,
         y0 + 16,
       );
-      g.fillText(
-        GRT.elide(
-          g,
-          stack
-            ? 'WITH THE CACHE — NOISE-FREE'
-            : 'WITH THE CACHE — RAYS END IN ITS FIELD, NOISE-FREE',
-          iw * 0.48,
-        ),
-        x0 + 8,
-        y0 + ih - 10,
-      );
+      g.fillText(GRT.elide(g, 'WITH THE CACHE — 1 SPP', iw * 0.48), x0 + 8, y0 + ih - 10);
       const wl = 'WITHOUT — 1 SPP';
       g.fillText(wl, x0 + iw - 8 - g.measureText(wl).width, y0 + ih - 10);
-      g.fillText(
-        GRT.elide(g, 'DRAG THE SEAM · DRAG TO ORBIT · HOLD STILL TO ACCUMULATE', iw),
-        x0,
-        y0 + ih + 14,
-      );
       const pr = this.cam.proj(),
         S = Math.min(rw, wh) * 0.6,
         cx = rx + rw / 2,
@@ -1047,6 +1033,26 @@
       }
       g.drawImage(this.wlc, rx, wy);
       this.anim.draw(g, px, S, t, false, this.conw, this.warm, 'TRAINING RAY');
+      /* the scene's lights, at their live orbit positions — the slider
+         moves these markers the moment it moves */
+      if (this.vol.lightsNow) {
+        const Ls = this.vol.lightsNow() || [];
+        g.font = '500 8.5px ' + this.mono;
+        for (const L of Ls) {
+          const q = px([L[0], L[1], L[2]]),
+            qx = Math.max(rx + 12, Math.min(rx + rw - 12, q[0])),
+            qy = Math.max(wy + 12, Math.min(wy + wh - 12, q[1]));
+          GRT.star(
+            g,
+            qx,
+            qy,
+            4.5,
+            `rgb(${(L[4] * 235) | 0},${(L[5] * 225) | 0},${(L[6] * 205) | 0})`,
+          );
+          g.fillStyle = this.cab;
+          g.fillText('LIGHT', Math.min(qx + 8, rx + rw - 38), qy + 3);
+        }
+      }
       const ep = px(eye);
       g.strokeStyle = this.conw;
       g.lineWidth = 1.2;

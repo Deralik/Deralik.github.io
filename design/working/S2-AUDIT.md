@@ -629,3 +629,11 @@ Lights slider (orbit the rig; data vols only). Nebula central-star
 cores (analytic glow). Verified against the research repo's reference
 figures side-by-side. Gate: butterfly .15 · mech .13 · ring .24 ·
 super .05; 16.7ms; matrix/check clean.
+
+### Owner round 13 + refinements (2026-08-22)
+Exposure re-anchored p90→Reinhard .6 (tail-anchor washed flat
+distributions white and hid the light slider's effect). Cache view
+draws scene lights live (slider moves them; A/B verified). Orbit
+play/pause toggle. Refinement list: lede/covq, pane labels, citation
+move, training-figure cleanup, comparison-figure labels + bigger
+GSCache walk. Gates green (.14/.13/.24/.05, 16.7ms, matrix/check).

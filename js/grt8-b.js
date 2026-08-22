@@ -66,10 +66,10 @@
         return [0.3, 0, -0.2];
       };
       const walk = (p) => {
-        for (let a = 0; a < 40; a++) {
+        for (let a = 0; a < 60; a++) {
           const th = r() * 6.283,
             ph = Math.acos(2 * r() - 1),
-            L = 0.28 + 0.34 * r(),
+            L = 0.42 + 0.3 * r(),
             q = [
               p[0] + Math.sin(ph) * Math.cos(th) * L,
               p[1] + Math.cos(ph) * L,
@@ -208,9 +208,6 @@
       this.nrc(g, 0, pw, h, t);
       this.gsc(g, pw + gap, pw, h, t);
       this.ours(g, 2 * (pw + gap), pw, h, t);
-      g.fillStyle = this.cab;
-      g.font = '500 8.5px ' + this.mono;
-      g.fillText(GRT.elide(g, 'THREE WAYS TO HOLD A LIGHT FIELD', w - 12), 6, 14);
     }
     nrc(g, x0, pw, h, t) {
       g.save();
@@ -268,7 +265,7 @@
       g.font = '500 8.5px ' + this.mono;
       g.fillText('RAYS IN', x0 + 12, h * 0.24);
       g.fillText('RADIANCE OUT', bx + bw + 12, h / 2 - 12);
-      g.fillText(GRT.elide(g, 'NRC — QUERY IT; NEVER SEE IT', pw - 12), x0 + 6, h - 6);
+      g.fillText(GRT.elide(g, 'NRC — QUERIABLE, BUT A BLACK BOX', pw - 12), x0 + 6, h - 6);
       g.restore();
     }
     gsc(g, x0, pw, h, t) {
@@ -277,9 +274,9 @@
       g.rect(x0, 0, pw, h);
       g.clip();
       const pr = this.c0.proj(),
-        S = h * 0.19,
+        S = h * 0.25,
         cx = x0 + pw * 0.5,
-        cy = h * 0.28,
+        cy = h * 0.29,
         px = (p) => {
           const q = pr(p);
           return [cx + q[0] * S, cy - q[1] * S, q[2]];
@@ -428,9 +425,8 @@
       g.fillStyle = this.cab;
       g.font = '500 8.5px ' + this.mono;
       g.fillText('CAMERA', ep[0] + 10, ep[1] + 3);
-      g.fillText(GRT.elide(g, 'EACH RAY FEEDS EXACTLY ONE CACHE', pw - 12), x0 + 6, 26);
       g.fillText(
-        GRT.elide(g, 'GSCACHE — RADIANCE BY BOUNCE, IN PATH SPACE', pw - 12),
+        GRT.elide(g, 'GSCACHE — ISOLATED BASED ON PATH LENGTH', pw - 12),
         x0 + 6,
         h - 6,
       );
@@ -506,7 +502,7 @@
       g.fillStyle = this.cab;
       g.font = '500 8.5px ' + this.mono;
       g.fillText(
-        GRT.elide(g, this.label || 'GRTCACHE — THE FINISHED CACHE · GRAB TO TURN', pw - 12),
+        GRT.elide(g, this.label || 'GRTCACHE (OURS) — UNIFIED & MODIFIABLE', pw - 12),
         x0 + 6,
         h - 6,
       );

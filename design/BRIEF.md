@@ -172,9 +172,14 @@ behavior, and every demo's label states exactly what is running (owner,
   disclosed), lit field baked at 40³. A "Lights" slider orbits each
   scene's light rig about its natural axis; centre = the native
   positions. Display: the data volumes use the research repo's own
-  reference-figure pipeline (per-channel Reinhard at the p99.5
-  luminance anchor, then sRGB — gsrc metrics.py policy); the nebula
-  models keep the paper curve 1−exp(−exposure·L). The nebula models
+  reference-figure curve (per-channel Reinhard, then sRGB), with the
+  exposure anchored on the midtones (p90 → Reinhard 0.6) rather than
+  the reference policy's p99.5 tail — our approximation's brightness
+  distribution is flatter than the reference's, and tail-anchoring a
+  flat distribution washes the object white; the nebula models keep
+  the paper curve 1−exp(−exposure·L). The scene lights are drawn at
+  their live positions in the cache view, and the camera's automatic
+  orbit has a play/pause toggle. The nebula models
   also carry their central star as a bright point (the remnant the
   reference photography shows): a tight 1/r² core in the models' glow
   system — analytic in every view, never cached. LAUNCH-GATING RIDER (owner decision, 2026-08-22): the supernova's
