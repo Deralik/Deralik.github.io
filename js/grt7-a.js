@@ -337,97 +337,83 @@
             ag = 0,
             ab = 0;
           if (t1 > t0) {
-            const dt = (t1 - t0) / M,
+            const dt2 = (t1 - t0) / M,
               kap = v.kap || 0;
-            /* right: one jittered stratified sample of the emission —
-               unbiased; its transmittance is deterministic (the medium is
-               known, as in the research method) */
-            const st = (Math.random() * M) | 0,
-              tt = t0 + st * dt + Math.random() * dt;
-            let Ts = 1;
-            if (kap)
-              for (let k = 0; k <= st; k++) {
-                const tk = t0 + (k + 0.5) * dt;
-                if (tk > tt) break;
-                Ts *= Math.exp(
-                  -kap * v.dget(e[0] + dx * tk, e[1] + dy * tk, e[2] + dz * tk) * dt,
-                );
+            /* one shared sample: static per-pixel stratum offset rotated
+               by the frame index; every stratum visited in M held frames */
+            const so = (i2 * 7 + j2 * 13) % M,
+              st = (so + this.frameN) % M,
+              tt = t0 + (st + Math.random()) * dt2;
+            /* one fine march: T at the sample, total optical depth, and
+               the interpolated tau0 crossing (continuous — no banding) */
+            let tau = 0,
+              Tt = 1,
+              sTerm = t1,
+              gotT = false,
+              gotS = false;
+            if (kap) {
+              const MQ = 16,
+                dq = (t1 - t0) / MQ;
+              for (let k = 0; k < MQ; k++) {
+                const tk = t0 + (k + 0.5) * dq;
+                if (!gotT && tk > tt) {
+                  Tt = Math.exp(-tau);
+                  gotT = true;
+                }
+                const dtau = kap * v.dget(e[0] + dx * tk, e[1] + dy * tk, e[2] + dz * tk) * dq;
+                if (!gotS && tau + dtau > 0.15) {
+                  sTerm =
+                    tk -
+                    0.5 * dq +
+                    dq * Math.min(1, Math.max(0, (0.15 - tau) / Math.max(dtau, 1e-6)));
+                  gotS = true;
+                }
+                tau += dtau;
               }
-            const p0 = e[0] + dx * tt,
-              p1 = e[1] + dy * tt,
-              p2 = e[2] + dz * tt;
+              if (!gotT) Tt = Math.exp(-tau);
+            }
+            /* raw estimator (right) */
             {
+              const p0 = e[0] + dx * tt,
+                p1 = e[1] + dy * tt,
+                p2 = e[2] + dz * tt;
               const i3 = Math.max(0, Math.min(X1, ((p0 + hx) * kx) | 0)),
                 j3 = Math.max(0, Math.min(Y1, ((p1 + hy) * ky) | 0)),
                 k3 = Math.max(0, Math.min(Z1, ((p2 + hz) * kz) | 0));
               const o2 = ((k3 * EY + j3) * EX + i3) * 3,
-                w = dt * M * Ts;
-              er = E[o2] * w;
-              eg = E[o2 + 1] * w;
-              eb = E[o2 + 2] * w;
+                w2 = (t1 - t0) * Tt;
+              er = E[o2] * w2;
+              eg = E[o2 + 1] * w2;
+              eb = E[o2 + 2] * w2;
             }
-            /* left: the SAME estimator, terminated where the medium
-               reaches optical depth 0.15 — the first skin is sampled for
-               real, the cache supplies everything behind it */
-            let sT = t1;
-            if (kap) {
-              const dq = (t1 - t0) / 16;
-              let tau = 0;
-              for (let k = 0; k < 16; k++) {
-                const tk = t0 + (k + 0.5) * dq;
-                tau += kap * v.dget(e[0] + dx * tk, e[1] + dy * tk, e[2] + dz * tk) * dq;
-                if (tau > 0.15) {
-                  sT = t0 + (k + 1) * dq;
-                  break;
-                }
-              }
-            }
-            const tp = t0 + Math.random() * (sT - t0),
-              dtp = (sT - t0) / 6;
-            let T = 1,
-              Tp = 1,
-              got = false;
-            for (let k = 0; k < 6; k++) {
-              const tk = t0 + (k + 0.5) * dtp;
-              if (!got && tk > tp) {
-                Tp = T;
-                got = true;
-              }
-              if (kap)
-                T *= Math.exp(
-                  -kap * v.dget(e[0] + dx * tk, e[1] + dy * tk, e[2] + dz * tk) * dtp,
-                );
-            }
-            if (!got) Tp = T;
-            {
-              const x = e[0] + dx * tp,
-                y = e[1] + dy * tp,
-                z = e[2] + dz * tp;
-              const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
-                j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
-                k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
-              const o3 = ((k3 * EY + j3) * EX + i3) * 3,
-                w2 = (sT - t0) * Tp;
-              ar = E[o3] * w2;
-              ag = E[o3 + 1] * w2;
-              ab = E[o3 + 2] * w2;
-            }
-            const dts = Math.max(1e-6, t1 - sT) / 12;
-            if (sT < t1)
+            /* cached estimator (left): continuous policy — the cache
+               carries fraction w of the sample, the shared sample the rest */
+            const w = Math.min(1, tau / 0.15);
+            let cr2 = 0,
+              cg2 = 0,
+              cb2 = 0;
+            if (gotS) {
+              let Ts = Math.exp(-0.15);
+              const dts = (t1 - sTerm) / 12;
               for (let k = 0; k < 12; k++) {
-                const tk = sT + (k + 0.5) * dts,
+                const tk = sTerm + (k + 0.5) * dts,
                   x = e[0] + dx * tk,
                   y = e[1] + dy * tk,
                   z = e[2] + dz * tk;
-                if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dts);
+                if (kap) Ts *= Math.exp(-kap * v.dget(x, y, z) * dts);
                 const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
                   j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
                   k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
                 const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-                ar += C[o3] * cbr * T * dts;
-                ag += C[o3 + 1] * cbr * T * dts;
-                ab += C[o3 + 2] * cbr * T * dts;
+                cr2 += C[o3] * cbr * Ts * dts;
+                cg2 += C[o3 + 1] * cbr * Ts * dts;
+                cb2 += C[o3 + 2] * cbr * Ts * dts;
               }
+            }
+            const fr = 1 - w + w * (tt < sTerm ? 1 : 0);
+            ar = er * fr + w * cr2;
+            ag = eg * fr + w * cg2;
+            ab = eb * fr + w * cb2;
           }
           A[o] += (er - A[o]) / spp;
           A[o + 1] += (eg - A[o + 1]) / spp;

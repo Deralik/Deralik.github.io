@@ -522,3 +522,30 @@ added.
 - Frozen-camera parity re-verified at the new extent: the image is
   continuous across the seam and matches the reference inset.
 - Perf: all four datasets + mobile at 16.7–16.8 ms, ≤1 isolated spike.
+
+# Owner rulings — hero round 7 (2026-08-22)
+
+- **Explore root causes, never band-aid** (restated for this round's
+  symptom list). Findings, each traced to a mechanism:
+  · Zebra stripes on the cached 1 spp = QUANTIZED termination depth
+    (32-step snapping) + a binary cache policy (thin gas got no cache
+    beside fully-cached neighbours). Fixed structurally: the τ0
+    crossing is interpolated (continuous), and the policy is a
+    continuous per-pixel blend w = τ_total/τ0 — one SHARED sample
+    serves both estimators, so it stays exactly 1 spp per side.
+  · Converged grain = pure-random strata (1/√N). Now the stratum
+    rotates deterministically with the frame index per pixel — all 24
+    strata visited within 24 held frames; still unbiased, still 1 spp.
+  · Uniform nebula colour + dead TF slider = the radius mix saturated
+    once the box grew (m→1 everywhere → edge colour everywhere). The
+    mix is now keyed to the content's radial span and the slider
+    visibly remaps it.
+  · MechHand "much thinner than the dataset" = post-classification
+    downsampling (filtering the scalar THEN applying the nonlinear TF
+    dilutes thin sheets). The vendor now classifies alpha at FULL CT
+    resolution and filters that (b64a channel; GL samples it directly).
+  · Ring cache mush = the box expansion silently HALVED effective
+    training-target resolution; grids now scale with the box (88³).
+    A local-occupancy kernel-size refinement was tried and REVERTED
+    (halo cells got giant kernels — spill exploded).
+- **Ring camera moved further out** (orb 2.45; butterfly 2.2).

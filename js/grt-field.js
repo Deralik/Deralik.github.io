@@ -37,14 +37,15 @@ window.GRTFIELD = (() => {
       this.rand = rng(seed || 17);
       /* pools sample by EMISSION, not density — parts of the field that glow
    without medium (the nebula halos) must be learnable too */
-      this.S = vol.radSamples(2600);
+      this.S = vol.radSamples(3400);
       this.buildLit();
       /* dark pool: uniform in the box, no rejection — the field must learn its
    ZEROS too, or gaussian tails leave untrained haze where the truth is
    black (the pane marches through empty space; the training samples
    otherwise never land there) */
       this.dark = [];
-      for (let i = 0; i < 1400; i++)
+      const nd = Math.round(1400 * vol.he[0] * vol.he[1] * vol.he[2]);
+      for (let i = 0; i < nd; i++)
         this.dark.push([
           (this.rand() * 2 - 1) * vol.he[0],
           (this.rand() * 2 - 1) * vol.he[1],
@@ -61,7 +62,7 @@ window.GRTFIELD = (() => {
       for (const p of this.S) {
         const c = this.vol.gtc(p),
           lu = (c[0] + c[1] + c[2]) / 3;
-        if (lu > 0.04 && this.rand() < lu * 1.6) this.lit.push(p);
+        if (lu > 0.04 && this.rand() < Math.min(1, lu * lu * 4)) this.lit.push(p);
       }
       if (!this.lit.length) this.lit = this.S;
     }
@@ -236,7 +237,7 @@ window.GRTFIELD = (() => {
       this.buildBins();
     }
     refreshTruth() {
-      this.S = this.vol.radSamples(2600);
+      this.S = this.vol.radSamples(3400);
       this.buildLit();
     }
     /* bin-range helper: cell index bounds around (x,y,z) at radius qR */

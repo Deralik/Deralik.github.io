@@ -549,3 +549,17 @@ noise: fixed-fraction termination → optical-depth termination
 prefix). Verified: cones complete corner-to-corner, ring web rendered
 by the cache, uniform grain, frozen-camera parity across the seam,
 traces locked. Blur now rests on cache capacity alone (N slider).
+
+### Owner round 7 (2026-08-22): zebra, grain, TF, thin mech, ring res
+All five symptoms root-caused (see RULINGS): interpolated + blended
+τ-termination (shared-sample, still 1 spp/side); frame-rotated strata;
+content-keyed TF mix (slider live again); mech pre-classified alpha
+vendored at full CT res (file 675KB, RG texture); gaia grids scale
+with the box (88³ — the 64³-over-1.45-box regression trained the ring
+toward mush). Tried+reverted: per-gaussian local-occupancy sizes
+(halo blowup). Pools scale with box volume; lit weighting lu².
+Verified live: ring web legible at 1 spp cached, no stripes; held ring
+= web + white ring + blue core continuous across the seam; mech
+thicker with its real segmented wrist; traces 16.7 all datasets +
+mobile; matrix + gate green. Offline A/B energy metric is now partly
+confounded by the enlarged dim halo band — visual A/B is primary.

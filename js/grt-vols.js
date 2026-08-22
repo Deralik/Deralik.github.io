@@ -617,6 +617,17 @@ window.GRTVOLS = (() => {
       }
       this.dg = g;
       this.dgU8 = u8; /* raw bytes for the GL data texture */
+      if (src.b64a) {
+        const ba = atob(src.b64a),
+          ga = new Float32Array(g.length),
+          ua = new Uint8Array(g.length);
+        for (let q = 0; q < ga.length; q++) {
+          ua[q] = ba.charCodeAt(q);
+          ga[q] = ua[q] / 255;
+        }
+        this.dgA = ga;
+        this.dgAU8 = ua;
+      }
       this.he = T.he;
       this.EX = T.E[0];
       this.EY = T.E[1];
@@ -629,10 +640,12 @@ window.GRTVOLS = (() => {
       this.tfr = false;
     }
     usamp(x, y, z) {
+      return this.samp3(this.dg, x, y, z);
+    }
+    samp3(g, x, y, z) {
       const nx = this.nx,
         ny = this.ny,
         nz = this.nz,
-        g = this.dg,
         he = this.he;
       const fx = ((x / he[0] + 1) / 2) * (nx - 1),
         fy = ((y / he[1] + 1) / 2) * (ny - 1),
@@ -655,6 +668,9 @@ window.GRTVOLS = (() => {
       return (c00 * (1 - v) + c10 * v) * (1 - w) + (c01 * (1 - v) + c11 * v) * w;
     }
     dget(x, y, z) {
+      /* pre-classified alpha when the vendor carries it (thin structures
+         keep their opacity); else the scene LUT over the scalar */
+      if (this.dgA) return this.samp3(this.dgA, x, y, z);
       const T = this.T,
         u = this.usamp(x, y, z);
       let a = lut1(u, T.ap, T.av);
@@ -685,10 +701,13 @@ window.GRTVOLS = (() => {
          |p|≈1.45, the ring's gas shell past 1.1) — the box must hold the
          whole volume or the extremities are amputated everywhere */
       this.he = [1.45, 1.45, 1.45];
-      this.EX = this.EY = this.EZ = 64;
-      this.grid = new Float32Array(64 * 64 * 64 * 3);
+      /* the grid scales WITH the box — the ring's filaments are ~.03
+         wide and the training targets must resolve them */
+      this.EX = this.EY = this.EZ = 88;
+      this.grid = new Float32Array(88 * 88 * 88 * 3);
       this.DR = 64;
       this.S = GS[kind];
+      this.orb = kind === 'ring' ? 2.45 : 2.2;
       this.dGamma = 2.0;
       this.kap = 9;
       this.aoK = 2.6;
@@ -702,7 +721,7 @@ window.GRTVOLS = (() => {
    accumulation warms it); the tf slider moves the mix radius */
     tf2(d, r, x, y, z) {
       const lD = r * this.S;
-      const m = Math.min((lD + 0.05) / (0.9 * (1 + (this.tf - 0.5) * 0.8)), 1);
+      const m = Math.min(lD / (2.6 * (1 + (this.tf - 0.5) * 0.9)), 1);
       const res = 1 - 0.5 * Math.min(1, d * 1.2);
       return [res * (5.6 - 4.1 * m), res * (6.3 - 5.1 * m), res * (7 - 6.3 * m)];
     }

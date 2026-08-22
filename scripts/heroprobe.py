@@ -136,27 +136,38 @@ def render_set(name,E,he,azs=(0,1.2,2.4,3.8,5.0)):
         L=march(E,he,eye_at(a))
         Image.fromarray(tone(L,expo)).save(f'{OUT}/hero-{name}-a{a:.1f}.png')
 
-def vendor(U,path,var,head):
+def vendor(U,path,var,head,A=None):
     import base64
     b=base64.b64encode((np.clip(U,0,1)*255+.5).astype(np.uint8).tobytes()).decode()
     nz,ny,nx=U.shape
-    open(path,'w').write(f"{head}window.{var}={{nx:{nx},ny:{ny},nz:{nz},b64:'{b}'}};\n")
+    extra=''
+    if A is not None:
+        ba=base64.b64encode((np.clip(A,0,1)*255+.5).astype(np.uint8).tobytes()).decode()
+        extra=f",b64a:'{ba}'"
+    open(path,'w').write(f"{head}window.{var}={{nx:{nx},ny:{ny},nz:{nz},b64:'{b}'{extra}}};\n")
     print(path,U.shape,os.path.getsize(path)//1024,'KB')
 
 which=sys.argv[1] if len(sys.argv)>1 else 'all'
 
 if which=='vendor':
     raw=load_raw(f'{GSRC}/MechHand_f_640x220x229_float32.raw',(640,220,229),np.float32)
-    U=np.clip(boxdown(raw,5)/0.964286,0,1)
-    U=np.transpose(U,(0,2,1))   # hand upright: world y = the CT's long axis
+    uf=np.clip(raw/0.964286,0,1)
+    # pre-classified alpha at FULL resolution, then filtered — thin
+    # structures keep their integrated opacity (post-classification
+    # downsampling dilutes them through the nonlinear TF)
+    af=pw1(uf,*MECH_A)
+    U=np.transpose(boxdown(uf,5),(0,2,1))
+    A=np.transpose(boxdown(af,5),(0,2,1))
     vendor(U,'js/grt-vol-mechhand.js','GRT_MECHHAND',
 """/* GRT hero demo volume — REAL DATA, vendored for the browser.
    Source: MechHand industrial CT (640x220x229 float32), the "Mechanical
    Hand" benchmark volume of the GRTCache research repo. This file: 5^3
    box-filtered, mapped to the scene's official scalar domain
    (0..0.964286), quantized uint8, long axis stored as y so the hand
-   stands upright. Prepared 2026-08-21. */
-""")
+   stands upright. b64a: the scene TF's alpha CLASSIFIED AT FULL
+   RESOLUTION then filtered — thin structures keep their opacity.
+   Prepared 2026-08-22. */
+""",A=A)
     raw=load_raw(f'{GSRC}/E_1296.dat',(432,432,432),np.float32)
     U=np.clip(boxdown(raw,6)/0.135840,0,1)
     vendor(U,'js/grt-vol-supernova.js','GRT_SUPERNOVA',

@@ -81,7 +81,7 @@ window.GRT7GL = function () {
     if (!S.pend) return;
     const [EX, EY, EZ] = S.dims,
       back = 1 - S.tci,
-      zStep = Math.max(1, Math.ceil(EZ / 5)),
+      zStep = Math.max(1, Math.ceil(EZ / 8)),
       z0 = S.upZ,
       z1 = Math.min(EZ, z0 + zStep),
       n = EX * EY * (z1 - z0);
@@ -192,19 +192,36 @@ window.GRT7GL = function () {
       gl.bindTexture(gl.TEXTURE_3D, S.tA);
       gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, n, n, n, 0, gl.RED, gl.FLOAT, ao);
       if (S.kind === 2) {
+        /* RG: R = the scalar (colour lookup), G = alpha — pre-classified
+           at full res when the vendor carries it, else from the LUT */
+        const n2 = vol.dgU8.length,
+          rg = new Uint8Array(n2 * 2);
+        for (let i = 0; i < n2; i++) {
+          rg[i * 2] = vol.dgU8[i];
+          let a;
+          if (vol.dgAU8) a = vol.dgAU8[i];
+          else {
+            const u = vol.dgU8[i] / 255,
+              T = vol.T;
+            let av = vol.lut1(u, T.ap, T.av);
+            if (T.fl) av = Math.max(av, T.fl(u));
+            a = Math.min(255, (av * 255 + 0.5) | 0);
+          }
+          rg[i * 2 + 1] = a;
+        }
         gl.bindTexture(gl.TEXTURE_3D, S.tD);
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         gl.texImage3D(
           gl.TEXTURE_3D,
           0,
-          gl.R8,
+          gl.RG8,
           vol.nx,
           vol.ny,
           vol.nz,
           0,
-          gl.RED,
+          gl.RG,
           gl.UNSIGNED_BYTE,
-          vol.dgU8,
+          rg,
         );
         const T = vol.T,
           lut = new Float32Array(256 * 4);
@@ -292,6 +309,7 @@ window.GRT7GL = function () {
       gl.uniform1f(U(pA, 'uN'), Math.max(1, o.spp || 1));
       gl.uniform1f(U(pA, 'uCbr'), o.cbr);
       gl.uniform1f(U(pA, 'uTau'), 0.15);
+      gl.uniform1f(U(pA, 'uFrame'), (o.seed | 0) % 24);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 

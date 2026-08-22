@@ -103,8 +103,7 @@ float sigRing(vec3 w){
 /* the medium is known: density drives both emission and transmittance */
 float density(vec3 p){
   if(uKind==2){
-    vec3 tc=(p/uHe+1.)*.5;
-    return texture(tLUT,vec2(texture(tD,tc).r,.5)).a;
+    return texture(tD,(p/uHe+1.)*.5).g;
   }
   return (uKind==0?sigButterfly(p):sigRing(p))*3.2;
 }
@@ -112,11 +111,11 @@ vec3 emissionD(vec3 p,float d){
   vec3 tc=(p/uHe+1.)*.5;
   float ao=texture(tA,tc).r;
   if(uKind==2){
-    vec4 lut=texture(tLUT,vec2(texture(tD,tc).r,.5));
-    return lut.a*ao*lut.rgb*uInvG;
+    vec2 da=texture(tD,tc).rg;
+    return da.g*ao*texture(tLUT,vec2(da.r,.5)).rgb*uInvG;
   }
   float lD=length(p)*uS;
-  float m=min((lD+.05)/(.9*(1.+(uTf-.5)*.8)),1.);
+  float m=min(lD/(2.6*(1.+(uTf-.5)*.9)),1.);
   vec3 dust=(1.-.5*min(1.,d*1.2))*(vec3(5.6,6.3,7.)-vec3(4.1,5.1,6.3)*m);
   float lDs=max(.03,lD);
   float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
@@ -145,7 +144,7 @@ vec4 tone(vec3 L){
 precision highp float;precision highp sampler3D;
 uniform sampler2D tPrevR,tPrevL;
 uniform sampler3D tC;
-uniform float uSeed,uN,uCbr,uTau;
+uniform float uSeed,uN,uCbr,uTau,uFrame;
 ${CAM}
 ${FIELD}
 layout(location=0) out vec4 oR;
@@ -157,47 +156,43 @@ void main(){
   vec2 tt=boxT(uEye,d);
   vec3 radR=vec3(0.),radL=vec3(0.);
   if(tt.y>tt.x){
-    float h1=hash(px,uSeed),h2=hash(px.yx+vec2(31.7,17.3),uSeed+7.),h3=hash(px+vec2(7.1,3.7),uSeed+13.);
-    /* right: one stratified sample over the whole ray */
-    float M=24.,dt=(tt.y-tt.x)/M,st=floor(h1*M),t=tt.x+(st+h2)*dt;
-    float Tr=1.;
-    for(float k=0.;k<24.;k++){
-      float tk=tt.x+(k+.5)*dt;
-      if(tk>t)break;
-      Tr*=exp(-uKap*density(uEye+d*tk)*dt);
-    }
-    vec3 p=uEye+d*t;
-    radR=emissionD(p,density(p))*(tt.y-tt.x)*Tr;
-    /* left: the same estimator, terminated where the medium reaches
-       optical depth uTau — like the research heuristic, termination
-       follows the FIRST INTERACTION, so every surface's skin is sampled
-       for real and the cache supplies everything behind it */
-    float MS=32.,dq=(tt.y-tt.x)/MS,tau=0.,sTerm=tt.y;
+    /* ONE shared sample: per-pixel stratum offset (static) rotated by the
+       frame index — every stratum is visited within M held frames */
+    float M=24.,so=floor(hash(px,3.)*M),h2=hash(px.yx+vec2(31.7,17.3),uSeed+7.);
+    float dt=(tt.y-tt.x)/M,st=mod(so+uFrame,M),t=tt.x+(st+h2)*dt;
+    /* one fine march: transmittance at the sample, total optical depth,
+       and the interpolated tau0 crossing (continuous — no banding) */
+    float MS=32.,dq=(tt.y-tt.x)/MS,tau=0.,Tt=1.,sTerm=tt.y;
+    bool gotT=false,gotS=false;
     for(float k=0.;k<32.;k++){
       float tk=tt.x+(k+.5)*dq;
-      tau+=uKap*density(uEye+d*tk)*dq;
-      if(tau>uTau){sTerm=tt.x+(k+1.)*dq;break;}
+      if(!gotT&&tk>t){Tt=exp(-tau);gotT=true;}
+      float dtau=uKap*density(uEye+d*tk)*dq;
+      if(!gotS&&tau+dtau>uTau){
+        sTerm=tk-.5*dq+dq*clamp((uTau-tau)/max(dtau,1e-6),0.,1.);
+        gotS=true;
+      }
+      tau+=dtau;
     }
-    float tp=tt.x+h3*(sTerm-tt.x);
-    float dtp=(sTerm-tt.x)/8.;
-    float T=1.,Tp=1.;
-    bool got=false;
-    for(float k=0.;k<8.;k++){
-      float tk=tt.x+(k+.5)*dtp;
-      if(!got&&tk>tp){Tp=T;got=true;}
-      T*=exp(-uKap*density(uEye+d*tk)*dtp);
-    }
-    if(!got)Tp=T;
-    vec3 pp=uEye+d*tp;
-    radL=emissionD(pp,density(pp))*(sTerm-tt.x)*Tp;
-    if(sTerm<tt.y){
-      float dts=(tt.y-sTerm)/20.;
+    if(!gotT)Tt=exp(-tau);
+    /* raw estimator (right) */
+    vec3 p=uEye+d*t;
+    radR=emissionD(p,density(p))*(tt.y-tt.x)*Tt;
+    /* cached estimator (left): continuous policy — the cache carries a
+       fraction w of the sample, the same shared sample carries the rest.
+       w follows the medium (0 in empty space, 1 once tau0 is reached),
+       so thin gas blends smoothly instead of flipping regimes */
+    float w=clamp(tau/uTau,0.,1.);
+    vec3 cm=vec3(0.);
+    if(gotS){
+      float Ts=exp(-uTau),dts=(tt.y-sTerm)/20.;
       for(float k=0.;k<20.;k++){
         vec3 q=uEye+d*(sTerm+(k+.5)*dts);
-        T*=exp(-uKap*density(q)*dts);
-        radL+=texture(tC,(q/uHe+1.)*.5).rgb*uCbr*T*dts;
+        Ts*=exp(-uKap*density(q)*dts);
+        cm+=texture(tC,(q/uHe+1.)*.5).rgb*uCbr*Ts*dts;
       }
     }
+    radL=radR*((1.-w)+w*(t<sTerm?1.:0.))+w*cm;
   }
   vec3 pR=texture(tPrevR,uv).rgb,pL=texture(tPrevL,uv).rgb;
   oR=vec4(pR+(radR-pR)/uN,1.);
