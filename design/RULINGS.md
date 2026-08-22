@@ -891,3 +891,14 @@ added.
   ray therefore lived forever and blocked new fires. update() wired
   in; card cadence capped at ~1.1s between rays (livelier than the
   hero's 2.4–3.8s); bounces + pulse flashes now visible on the card.
+
+- Round-18 rider 2 (owner, D0 GRT card copy): subtitle → "a cache of
+  volumetric light — encoded by ray-traced gaussians"; trend → "~10×
+  smaller memory footprint than NRC"; the "on par with NRC — not yet
+  faster" line removed. ADVISORY (voiced, owner to confirm): "memory
+  footprint" reads broader than the sanctioned "smaller cache" — the
+  CACHE is 13.7× smaller (28 vs 382.7 MB) but peak VRAM is HIGHER than
+  NRC's (5.1 vs 3.2 GB, BRIEF); if a skimmer could read total memory,
+  "~10× smaller cache than NRC" is the safe variant. Status honesty
+  holds: the card keeps "HPG '26 not accepted · revising" and the
+  record section carries the full comparison.
