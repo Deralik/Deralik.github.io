@@ -131,8 +131,8 @@
           return;
         }
         if (this.imgDrag) {
-          this.uY -= (e.clientX - px2) * 0.005;
-          this.uP = Math.max(-1.05, Math.min(1.05, this.uP + (e.clientY - py2) * 0.004));
+          this.uY += (e.clientX - px2) * 0.005;
+          this.uP = Math.max(-1.05, Math.min(1.05, this.uP - (e.clientY - py2) * 0.004));
           px2 = e.clientX;
           py2 = e.clientY;
           return;
@@ -174,18 +174,24 @@
         Math.abs(mx - (R[0] + this.su * R[2])) < 12
       );
     }
+    /* a TRUE orbit sphere around the volume's own centre (the star for
+       the nebulae, the density centroid for the data volumes): pitch
+       changes direction only, never the distance */
     eyeAt(a, p) {
       p = p || 0;
       const R = (this.vol && this.vol.orb) || 2.1,
+        c = (this.vol && this.vol.ctr) || [0, 0, 0],
         hr = Math.cos(p);
-      return [
-        R * hr * Math.cos(a),
-        0.5 + 0.28 * Math.sin(0.6 * a) + R * Math.sin(p),
-        R * hr * Math.sin(a),
-      ];
+      return [c[0] + R * hr * Math.cos(a), c[1] + R * Math.sin(p), c[2] + R * hr * Math.sin(a)];
     }
     eyeCur() {
-      return this.eyeAt(this.oa + this.uY, this.uP);
+      return this.eyeAt(this.oa + this.uY, this.uP + 0.13);
+    }
+    /* pause/resume every automatic motion: the main orbit, the snap-back,
+       and the cache view's own slow turn */
+    setOrbit(on) {
+      this.orbitOn = on;
+      this.cam.auto = on ? 0.12 : 0;
     }
     /* background pre-build: switching datasets should not hitch */
     prewarm(kind) {
@@ -220,6 +226,7 @@
       this.field = new CField(this.vol, n, 9, KO[kind]);
       this.anim = new RayAnim(this.vol, this.field, 83);
       this.anim.eyeRef = () => this.eyeCur();
+      this.anim.lights = () => (this.vol.lightsNow ? this.vol.lightsNow() : null);
       if (this.acc) this.acc.fill(0);
       if (this.accL) this.accL.fill(0);
       const R3 = this.vol.EX * this.vol.EY * this.vol.EZ * 3;
@@ -762,7 +769,8 @@
       g.fillStyle = this.cw;
       g.fillRect(0, 0, w, h);
       if (!F) return;
-      if (!this.cam.dr) this.cam.auto += (0.12 - this.cam.auto) * Math.min(1, dt * 1.2);
+      if (!this.cam.dr)
+        this.cam.auto += ((this.orbitOn ? 0.12 : 0) - this.cam.auto) * Math.min(1, dt * 1.2);
       this.cam.step(dt);
       const B = 140;
       F.step(B, t);
@@ -806,18 +814,20 @@
       }
       const held = this.imgDrag || t < this.holdUntil,
         off = Math.abs(this.uY) + Math.abs(this.uP) > 0.012;
-      if (!held) {
+      /* paused orbit = a fully still stage: no auto-advance, and a
+         dragged view STAYS where the user left it (no snap-back) */
+      if (!held && this.orbitOn) {
         if (off) {
           const k = Math.exp(-2.4 * dt);
           this.uY *= k;
           this.uP *= k;
         } else {
           this.uY = this.uP = 0;
-          if (this.orbitOn) this.oa += dt * 0.06;
+          this.oa += dt * 0.06;
         }
       }
       const eye = this.eyeCur();
-      this.view.setEye(eye);
+      this.view.setEye(eye, this.vol.ctr);
       /* the estimator accumulates only while the view holds still and resets
    with motion — the research renderer's frame-accumulation semantics */
       {
@@ -904,6 +914,9 @@
           win: this.vol.win ? this.vol.win() : null,
           winId: !this.vol.win || Math.abs(this.vol.tf - 0.5) < 0.02 ? 1 : 0,
           hasA: this.vol.dgAU8 ? 1 : 0,
+          lights: this.vol.lightsNow ? this.vol.lightsNow() : null,
+          gs: this.vol.nx ? (2 * this.vol.he[0]) / this.vol.nx : 0.02,
+          gk: (this.vol.T && this.vol.T.gk) || 0.05,
           inset: (() => {
             const iv2 = w < 560 ? [104, 74] : [176, 123];
             return [
@@ -1041,7 +1054,7 @@
         for (const L of Ls) {
           const q = px([L[0], L[1], L[2]]),
             qx = Math.max(rx + 12, Math.min(rx + rw - 12, q[0])),
-            qy = Math.max(wy + 12, Math.min(wy + wh - 12, q[1]));
+            qy = Math.max(wy + 24, Math.min(wy + wh - 12, q[1]));
           GRT.star(
             g,
             qx,

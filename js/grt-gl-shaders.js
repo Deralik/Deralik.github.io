@@ -36,6 +36,11 @@ vec3 ray(vec2 px){
 uniform int uKind;            /* 0 butterfly · 1 ring · 2 data grid */
 uniform float uS,uTf,uInvG,uKap,uWinId,uHasA;
 uniform vec2 uWin;
+/* the scene lights (data volumes): xyz + intensity, colour, count —
+   the tA channels hold each light's baked shadow transmittance */
+uniform vec4 uL0,uL1,uL2;
+uniform vec3 uLC0,uLC1,uLC2;
+uniform float uNL,uGs,uGk;
 uniform sampler3D tD;         /* data vols: raw scalar u */
 uniform sampler3D tA;         /* baked AO over the he box */
 uniform sampler2D tLUT;       /* data vols: scene TF (rgb + alpha) by u */
@@ -130,7 +135,31 @@ vec3 emissionD(vec3 p,float d){
     vec2 da=texture(tD,tc).rg;
     float uu=uwv(da.r);
     float a=(uWinId>.5&&uHasA>.5)?da.g:texture(tLUT,vec2(uu,.5)).a;
-    return a*ao*texture(tLUT,vec2(uu,.5)).rgb*uInvG;
+    vec3 irr=ao;
+    if(uNL>.5){
+      /* sharp terms live here at the DATA's resolution: N·L off the
+         density gradient + distance falloff + light colour; only the
+         shadow transmittance comes from the baked channels */
+      vec3 gv=vec3(
+        density(p+vec3(uGs,0.,0.))-density(p-vec3(uGs,0.,0.)),
+        density(p+vec3(0.,uGs,0.))-density(p-vec3(0.,uGs,0.)),
+        density(p+vec3(0.,0.,uGs))-density(p-vec3(0.,0.,uGs)));
+      float gm=length(gv)/(2.*uGs),gw=min(1.,gm*uGk);
+      vec3 nn=gm>1e-6?-gv/length(gv):vec3(0.);
+      irr=vec3(.2);
+      for(int l=0;l<3;l++){
+        if(float(l)>=uNL)break;
+        vec4 Lp=l==0?uL0:l==1?uL1:uL2;
+        vec3 Lc=l==0?uLC0:l==1?uLC1:uLC2;
+        vec3 dv=Lp.xyz-p;
+        float dist=max(length(dv),1e-4);
+        dv/=dist;
+        float lam=1.-gw+gw*max(0.,dot(nn,dv));
+        float shl=l==0?ao.r:l==1?ao.g:ao.b;
+        irr+=(.8*lam*shl*Lp.w/(dist*dist+.35))*Lc;
+      }
+    }
+    return a*irr*texture(tLUT,vec2(uu,.5)).rgb*uInvG;
   }
   float res=1.-.5*min(1.,d*1.2);
   float lD=length(p)*uS;

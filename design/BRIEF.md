@@ -171,7 +171,16 @@ behavior, and every demo's label states exactly what is running (owner,
   medium (gentler extinction on the light march than the camera ray,
   disclosed), lit field baked at 40³. A "Lights" slider orbits each
   scene's light rig about its natural axis; centre = the native
-  positions. Display: the data volumes use the research repo's own
+  positions, and every bounce of the cache-view training ray draws its
+  NEE shadow ray to each light. Camera: a true orbit sphere around the
+  volume's own centre (the star for the nebulae, the density centroid
+  for the data volumes); pausing the orbit stills every automatic
+  motion, including drag snap-back and the cache view's turn.
+  Lighting split: the 40³ texture bakes only per-light shadow
+  transmittance; N·L (off the data's own gradient), distance falloff,
+  light colour, and the 0.2 ambient floor are computed per emission
+  sample at data resolution — that is what keeps highlights and
+  shadows sharp. Display: the data volumes use the research repo's own
   reference-figure curve (per-channel Reinhard, then sRGB), with the
   exposure anchored on the midtones (p90 → Reinhard 0.6) rather than
   the reference policy's p99.5 tail — our approximation's brightness

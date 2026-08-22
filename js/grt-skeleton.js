@@ -86,12 +86,18 @@
         const rs = $('grt-reset');
         if (rs) rs.onclick = () => R7.resetField();
         const ob = $('grt-orbit');
-        if (ob)
-          ob.onclick = () => {
-            R7.orbitOn = !R7.orbitOn;
-            ob.textContent = 'Orbit · ' + (R7.orbitOn ? 'on' : 'off');
-            ob.classList.toggle('on', R7.orbitOn);
+        if (ob) {
+          const IC = {
+            /* pause bars while orbiting, play triangle while paused */
+            on: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="5.6" y1="3.5" x2="5.6" y2="12.5"/><line x1="10.4" y1="3.5" x2="10.4" y2="12.5"/></g></svg>',
+            off: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M5.2 3.4v9.2L13 8z" fill="currentColor"/></svg>',
           };
+          ob.onclick = () => {
+            R7.setOrbit(!R7.orbitOn);
+            const k = R7.orbitOn ? 'on' : 'off';
+            ob.innerHTML = IC[k] + 'Orbit · ' + k;
+          };
+        }
         const az = $('grt-az');
         if (az) az.oninput = (e) => (R7.pendingAz = +e.target.value);
         const li2 = $('grt-li');

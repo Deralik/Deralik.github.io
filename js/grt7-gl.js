@@ -152,6 +152,15 @@ window.GRT7GL = function () {
     gl.uniform2f(U(p, 'uWin'), o.win ? o.win[0] : 0, o.win ? o.win[1] : 1);
     gl.uniform1f(U(p, 'uWinId'), o.winId || 0);
     gl.uniform1f(U(p, 'uHasA'), o.hasA || 0);
+    const Ls = o.lights || [];
+    gl.uniform1f(U(p, 'uNL'), Ls.length);
+    gl.uniform1f(U(p, 'uGs'), o.gs || 0.02);
+    gl.uniform1f(U(p, 'uGk'), o.gk || 0.05);
+    for (let l = 0; l < 3; l++) {
+      const L = Ls[l] || [0, 0, 0, 0, 0, 0, 0];
+      gl.uniform4f(U(p, 'uL' + l), L[0], L[1], L[2], L[3]);
+      gl.uniform3f(U(p, 'uLC' + l), L[4], L[5], L[6]);
+    }
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_3D, S.tD);
     gl.uniform1i(U(p, 'tD'), 2);

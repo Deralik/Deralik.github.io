@@ -748,3 +748,33 @@ added.
   PATH LENGTH" / "GRTCACHE (OURS) — UNIFIED & MODIFIABLE".
 - Gate: butterfly .14 · mech .13 · ring .24 · super .05 (~720 spp);
   trace 16.7ms/0 jank; matrix + check clean.
+
+# Owner rulings — hero round 14 (2026-08-22)
+
+- **"Yet to see highlights or shadows"**: the sharp lighting terms were
+  being baked through the 40³ grid, whose trilinear blur averages lit
+  and unlit faces. Split: the texture now bakes ONLY per-light shadow
+  transmittance (one light per channel); N·L off the data's own
+  gradient, distance falloff, light colour, and the ambient floor are
+  computed per emission sample at data resolution (GLSL + the JS aoAt
+  twin — the shared pipeline picks it up everywhere). Highlights and
+  shadowed seams now visible on the hand; directional shells on the
+  nova.
+- **NEE in the cache view**: every reached bounce of the training ray
+  draws thin warm shadow rays to each scene light (data vols only) —
+  the training figure's language, live.
+- **Camera geometry** (owner: under = closer, above = further): eyeAt
+  had a +0.5 lift and a bob term on top of the look-at-origin aim — a
+  lifted sphere. Now a TRUE sphere around the volume's own centre:
+  nebulae = the star (origin); data volumes = the density centroid
+  (wrist-heavy mass centre for the hand; mid-blob for the off-centre
+  nova). Verified live: |eye−ctr| = 2.0 at pitch 0 and 0.8. Drag
+  directions flipped per owner.
+- **Pause = a fully still stage**: gating covers the main orbit, the
+  drag snap-back (a dragged view stays put), and the cache view's own
+  turn (a per-frame ramp was silently restoring cam.auto — it now
+  targets 0 while paused). Buttons: reset + orbit carry icons
+  (circular-arrow; pause bars ↔ play triangle swap), dataset titles
+  trimmed to "MechHand" / "Supernova".
+- Gate: butterfly .15 · mech .14 · ring .23 · super .07; 16.7ms;
+  matrix + check clean.

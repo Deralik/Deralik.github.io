@@ -16,9 +16,10 @@ window.GRT6 = (() => {
       this.f = f || 1.05;
       this.setEye(eye);
     }
-    setEye(eye) {
+    setEye(eye, at) {
       this.eye = eye;
-      this.fwd = norm([-eye[0], -eye[1], -eye[2]]);
+      const c = at || [0, 0, 0];
+      this.fwd = norm([c[0] - eye[0], c[1] - eye[1], c[2] - eye[2]]);
       this.right = norm(cross(this.fwd, [0, 1, 0]));
       this.up = cross(this.right, this.fwd);
     }
@@ -260,6 +261,27 @@ window.GRT6 = (() => {
           g.beginPath();
           g.arc(p[0], p[1], 1.8, 0, 6.283);
           g.fill();
+        }
+        /* NEE: when the scene has lights, each reached bounce sends a
+           direct-light sample — a thin warm shadow ray to every light */
+        const Ls = this.lights ? this.lights() : null;
+        if (Ls) {
+          const fa = Math.min(1, (P.fEnd - t) / 0.7);
+          g.strokeStyle = cacc;
+          g.lineWidth = 0.8;
+          for (let i = 1; i < P.V.length; i++) {
+            if (t < P.reach[i]) break;
+            const p = px(P.V[i]);
+            for (const L of Ls) {
+              const q = px([L[0], L[1], L[2]]);
+              g.globalAlpha = fa * 0.32;
+              g.beginPath();
+              g.moveTo(p[0], p[1]);
+              g.lineTo(q[0], q[1]);
+              g.stroke();
+            }
+          }
+          g.globalAlpha = Math.min(1, (P.fEnd - t) / 0.7);
         }
         const fr = this.front(P, t);
         if (fr && t < P.reach[P.reach.length - 1]) {

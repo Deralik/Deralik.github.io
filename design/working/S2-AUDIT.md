@@ -637,3 +637,10 @@ draws scene lights live (slider moves them; A/B verified). Orbit
 play/pause toggle. Refinement list: lede/covq, pane labels, citation
 move, training-figure cleanup, comparison-figure labels + bigger
 GSCache walk. Gates green (.14/.13/.24/.05, 16.7ms, matrix/check).
+
+### Owner round 14 (2026-08-22): sharp lighting + camera geometry
+Lighting split (bake shadows only; N·L/falloff/colour analytic at data
+res) — highlights/shadows finally visible. NEE rays in cache view.
+True orbit sphere around per-volume centres (star / density centroid),
+drag flipped, pause stills everything (found the cam.auto restore
+ramp). Button icons + trimmed dataset titles. Gates green.

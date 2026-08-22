@@ -26,6 +26,7 @@ window.GRTVOLS = (() => {
       this.grid = new Float32Array(this.EX * this.EY * this.EZ * 3);
       this.expo = 1;
       this.tone = 0; /* 0 = paper curve; 1 = Reinhard+sRGB (data vols) */
+      this.ctr = [0, 0, 0]; /* orbit centre — the nebulae's star */
       this.gmax = 1;
       this.light = [1.15, 1.05, 0.45];
       this.pal = PAL[kind];
@@ -725,18 +726,40 @@ window.GRTVOLS = (() => {
     rebuild() {
       this.cDe = null; /* the window moves density too, not just colour */
       super.rebuild();
+      /* orbit centre = the density centroid (the wrist-heavy mass centre
+         for the hand; the middle of the off-centre blob for the nova) */
+      const EX = this.EX,
+        EY = this.EY,
+        EZ = this.EZ,
+        he = this.he;
+      let m = 0,
+        mx = 0,
+        my = 0,
+        mz = 0;
+      for (let k = 0; k < EZ; k++)
+        for (let j = 0; j < EY; j++)
+          for (let i = 0; i < EX; i++) {
+            const d = this.cDe[(k * EY + j) * EX + i];
+            if (d <= 0.004) continue;
+            m += d;
+            mx += d * (-1 + (2 * (i + 0.5)) / EX);
+            my += d * (-1 + (2 * (j + 0.5)) / EY);
+            mz += d * (-1 + (2 * (k + 0.5)) / EZ);
+          }
+      this.ctr = m > 0 ? [(mx / m) * he[0], (my / m) * he[1], (mz / m) * he[2]] : [0, 0, 0];
     }
-    /* these are LIT volumes, not emissive ones (their scenes carry
-       spherical lights; the TF rgb is scattering albedo): the per-voxel
-       grid the shader samples as "ao" is the light field — irradiance
-       from the scene's own lights with transmittance marched through
-       the known medium. Single scattering, deterministic. */
+    /* these are LIT volumes, not emissive ones. The baked part of the
+       lighting is ONLY the smooth term: per-light shadow transmittance
+       exp(-τ), one light per channel (≤3 lights). The sharp terms — the
+       material's N·L off the data's own gradient, distance falloff,
+       light colour, the ambient floor — are computed analytically per
+       emission sample (aoAt below + the GL shader), so highlights and
+       shadows keep the DATA's resolution, not the 40³ grid's */
     buildAO() {
       const n = 40,
         he = this.he,
         kap = this.T.kapL || this.kap || 0,
-        LsNow = this.lightsNow(),
-        gk = this.T.gk || 0.05;
+        LsNow = this.lightsNow();
       if (!LsNow) return super.buildAO();
       this.aoN = n;
       if (!this.aoT || this.aoT.length !== n * n * n * 3)
@@ -748,25 +771,11 @@ window.GRTVOLS = (() => {
           for (let i = 0; i < n; i++) {
             const x = (-1 + (2 * (i + 0.5)) / n) * he[0],
               y = (-1 + (2 * (j + 0.5)) / n) * he[1],
-              z = (-1 + (2 * (k + 0.5)) / n) * he[2];
-            /* the scene material's N·L diffuse term: surface normal from
-               the density gradient, faded out where the field is flat
-               (fuzzy interiors stay isotropically lit) */
-            const gs = he[0] / n,
-              gx = this.dget(x + gs, y, z) - this.dget(x - gs, y, z),
-              gy = this.dget(x, y + gs, z) - this.dget(x, y - gs, z),
-              gz = this.dget(x, y, z + gs) - this.dget(x, y, z - gs),
-              gm = Math.hypot(gx, gy, gz) / (2 * gs),
-              gw = Math.min(1, gm * gk),
-              gi = gm > 1e-6 ? -1 / (gm * 2 * gs) : 0,
-              nX = gx * gi,
-              nY = gy * gi,
-              nZ = gz * gi;
-            let sr = 0,
-              sg = 0,
-              sb = 0;
-            for (const L0 of LsNow) {
-              const L = L0;
+              z = (-1 + (2 * (k + 0.5)) / n) * he[2],
+              p = ((k * n + j) * n + i) * 3;
+            A[p] = A[p + 1] = A[p + 2] = 1;
+            for (let l = 0; l < Math.min(3, LsNow.length); l++) {
+              const L = LsNow[l];
               let dx = L[0] - x,
                 dy = L[1] - y,
                 dz = L[2] - z;
@@ -785,18 +794,47 @@ window.GRTVOLS = (() => {
                 const tq = (q + 0.5) * dt;
                 tau += kap * this.dget(x + dx * tq, y + dy * tq, z + dz * tq) * dt;
               }
-              const lam = 1 - gw + gw * Math.max(0, nX * dx + nY * dy + nZ * dz),
-                w = (lam * L0[3] * Math.exp(-tau)) / (dist * dist + 0.35);
-              sr += w * L0[4];
-              sg += w * L0[5];
-              sb += w * L0[6];
+              A[p + l] = Math.exp(-tau);
             }
-            /* the scene's material terms: 0.2 ambient floor + 0.8 diffuse */
-            const p = ((k * n + j) * n + i) * 3;
-            A[p] = 0.2 + 0.8 * sr;
-            A[p + 1] = 0.2 + 0.8 * sg;
-            A[p + 2] = 0.2 + 0.8 * sb;
           }
+    }
+    /* full irradiance at a point: baked shadow channels × the analytic
+       sharp terms. Feeds the whole shared pipeline (grid bake, targets,
+       calibrate) through the same aoAt contract the nebulae use. */
+    aoAt(x, y, z) {
+      const sh = super.aoAt(x, y, z),
+        Ls = this.lightsNow();
+      if (!Ls) return sh;
+      const gs = (2 * this.he[0]) / this.nx,
+        gk = this.T.gk || 0.05,
+        gx = this.dget(x + gs, y, z) - this.dget(x - gs, y, z),
+        gy = this.dget(x, y + gs, z) - this.dget(x, y - gs, z),
+        gz = this.dget(x, y, z + gs) - this.dget(x, y, z - gs),
+        gm = Math.hypot(gx, gy, gz) / (2 * gs),
+        gw = Math.min(1, gm * gk),
+        gi = gm > 1e-6 ? -1 / (gm * 2 * gs) : 0,
+        nX = gx * gi,
+        nY = gy * gi,
+        nZ = gz * gi;
+      let r = 0.2,
+        g2 = 0.2,
+        b = 0.2;
+      for (let l = 0; l < Math.min(3, Ls.length); l++) {
+        const L = Ls[l];
+        let dx = L[0] - x,
+          dy = L[1] - y,
+          dz = L[2] - z;
+        const dist = Math.hypot(dx, dy, dz) || 1e-4;
+        dx /= dist;
+        dy /= dist;
+        dz /= dist;
+        const lam = 1 - gw + gw * Math.max(0, nX * dx + nY * dy + nZ * dz),
+          w = (0.8 * lam * sh[l] * L[3]) / (dist * dist + 0.35);
+        r += w * L[4];
+        g2 += w * L[5];
+        b += w * L[6];
+      }
+      return [r, g2, b];
     }
     /* the scene lights at the CURRENT orbit angle — for the light march
        and for drawing their positions in the cache view */
