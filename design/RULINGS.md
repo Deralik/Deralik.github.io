@@ -624,3 +624,15 @@ added.
   reuse terms before redistribution". Owner must confirm terms or the
   supernova ships out. Mobile method-figure clip fixed (aspect-ratio ×
   min-height forced overflow).
+
+## Round 9 addendum (owner, 2026-08-22): the real volumes are LIT
+
+- MechHand and the supernova are NOT emissive — their scenes carry
+  spherical lights and the TF rgb is scattering albedo (the study's
+  findings). They now render as lit single-scattering media: the
+  per-voxel grid the integrators sample as "ao" is the LIGHT FIELD —
+  irradiance from the scenes' own lights (positions/intensities from
+  the configs) with shadow transmittance marched through the known
+  medium. This also fixes the supernova's washed self-glow: it shades
+  directionally with a shadowed rim. Relocation hot spots on the ring
+  fixed the same round (residual-initialized relocation).

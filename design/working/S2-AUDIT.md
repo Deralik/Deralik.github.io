@@ -595,3 +595,7 @@ SciDAC/Blondin — NOT Open SciVis) + license UNCONFIRMED → launch-
 gating owner decision. Gate: butterfly .23 · mech .13 · ring .34 ·
 super .34 (window default reveals harder structure; cbr healthy .6-.8);
 traces 16.7/0 all + mobile; matrix/check clean.
+Addendum: data volumes now LIT (scene lights + shadowed single
+scatter via the light-field grid — supernova shades directionally);
+reloc residual-init landed. Final gate: butterfly .23 · mech .12 ·
+ring .34 · super .31; traces 16.7/0; matrix/check clean.

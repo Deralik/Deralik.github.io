@@ -672,6 +672,7 @@ window.GRTVOLS = (() => {
       orb: 1.75,
       kap: 6,
       tf0: 0.3,
+      lights: [[1.86, 1.48, 1.73, 12.0]],
       fl: (u) => (u <= 0.05 ? 0 : u >= 0.25 ? 0.05 : (0.05 * (u - 0.05)) / 0.2),
       ap: [0, 0.586, 0.625, 0.75, 0.875, 1],
       av: [0, 0, 0.068, 0.243, 0.59, 0.854],
@@ -705,6 +706,52 @@ window.GRTVOLS = (() => {
     rebuild() {
       this.cDe = null; /* the window moves density too, not just colour */
       super.rebuild();
+    }
+    /* these are LIT volumes, not emissive ones (their scenes carry
+       spherical lights; the TF rgb is scattering albedo): the per-voxel
+       grid the shader samples as "ao" is the light field — irradiance
+       from the scene's own lights with transmittance marched through
+       the known medium. Single scattering, deterministic. */
+    buildAO() {
+      const n = 40,
+        he = this.he,
+        kap = this.kap || 0,
+        Ls = this.T.lights;
+      if (!Ls) return super.buildAO();
+      this.aoN = n;
+      if (!this.aoT || this.aoT.length !== n * n * n) this.aoT = new Float32Array(n * n * n);
+      const A = this.aoT,
+        K = 16;
+      for (let k = 0; k < n; k++)
+        for (let j = 0; j < n; j++)
+          for (let i = 0; i < n; i++) {
+            const x = (-1 + (2 * (i + 0.5)) / n) * he[0],
+              y = (-1 + (2 * (j + 0.5)) / n) * he[1],
+              z = (-1 + (2 * (k + 0.5)) / n) * he[2];
+            let s = 0;
+            for (const L of Ls) {
+              let dx = L[0] - x,
+                dy = L[1] - y,
+                dz = L[2] - z;
+              const dist = Math.hypot(dx, dy, dz) || 1e-4;
+              dx /= dist;
+              dy /= dist;
+              dz /= dist;
+              /* march toward the light until the box exit */
+              const ax = dx > 0 ? (he[0] - x) / dx : dx < 0 ? (-he[0] - x) / dx : 1e9,
+                ay = dy > 0 ? (he[1] - y) / dy : dy < 0 ? (-he[1] - y) / dy : 1e9,
+                az = dz > 0 ? (he[2] - z) / dz : dz < 0 ? (-he[2] - z) / dz : 1e9;
+              const tEnd = Math.min(dist, Math.min(ax, ay, az)),
+                dt = tEnd / K;
+              let tau = 0;
+              for (let q = 0; q < K; q++) {
+                const tq = (q + 0.5) * dt;
+                tau += kap * this.dget(x + dx * tq, y + dy * tq, z + dz * tq) * dt;
+              }
+              s += (L[3] * Math.exp(-tau)) / (dist * dist + 0.35);
+            }
+            A[(k * n + j) * n + i] = s;
+          }
     }
     /* LUT accessors for the GL layer's scene-TF texture bake */
     lut1(u, P, V) {

@@ -160,7 +160,10 @@ behavior, and every demo's label states exactly what is running (owner,
   SciDAC Institute for Ultrascale Visualization (vendored 72³,
   js/grt-vol-supernova.js). Both
   real volumes use the research repo's own scene transfer functions
-  (recovered from its scene configs 2026-08-21) and its display curve
+  AND its scene lights (recovered from its configs) — they are lit
+  scattering media rendered as single scattering with shadowed
+  transmittance through the known medium, not emissive — and its
+  display curve
   1−exp(−exposure·L); the supernova adds a small disclosed opacity
   floor so the shell scattering lights in the real renderer stays
   visible in this emission-only pipeline. LAUNCH-GATING RIDER (owner decision, 2026-08-22): the supernova's
