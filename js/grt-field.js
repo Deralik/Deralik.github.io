@@ -35,9 +35,11 @@ window.GRTFIELD = (() => {
       this.vol = vol;
       this.opt = opts || SIZES;
       this.rand = rng(seed || 17);
-      /* pools sample by EMISSION, not density — parts of the field that glow
-   without medium (the nebula halos) must be learnable too */
-      this.S = vol.radSamples(3400);
+      /* pools sample by DENSITY: the cache is only queried where the
+   medium terminates rays, so gaussians live in the dust — a radiance
+   pool dragged them into the glow halo, bloating kernel sizes and
+   spilling energy box-wide */
+      this.S = vol.samples(3400);
       this.buildLit();
       /* dark pool: uniform in the box, no rejection — the field must learn its
    ZEROS too, or gaussian tails leave untrained haze where the truth is
@@ -85,7 +87,7 @@ window.GRTFIELD = (() => {
         acc += Math.sqrt(best);
       }
       const spacing = (acc / M) * Math.cbrt(S.length / this.N);
-      const s0 = Math.max(0.015, Math.min(0.055, 1.3 * spacing));
+      const s0 = Math.max(0.014, Math.min(0.05, 1.15 * spacing));
       this.s0d = s0;
       this.svd = 0.35 * s0;
       this.lsMinD = Math.log(0.55 * s0);
@@ -237,7 +239,7 @@ window.GRTFIELD = (() => {
       this.buildBins();
     }
     refreshTruth() {
-      this.S = this.vol.radSamples(3400);
+      this.S = this.vol.samples(3400);
       this.buildLit();
     }
     /* bin-range helper: cell index bounds around (x,y,z) at radius qR */
@@ -372,7 +374,7 @@ window.GRTFIELD = (() => {
     }
     step(B, now) {
       let L = 0;
-      const dk = 1 / (1 + this.iter / 1400);
+      const dk = 1 / (1 + this.iter / 2200);
       if (this.iter % 30 === 0) this.buildBins();
       for (let b = 0; b < B; b++) {
         const u = this.rand(),
@@ -405,7 +407,7 @@ window.GRTFIELD = (() => {
         }
     }
     micro(p, now, out) {
-      const dk = 1 / (1 + this.iter / 1400);
+      const dk = 1 / (1 + this.iter / 2200);
       for (let k = 0; k < 8; k++)
         this.one(
           p[0] + 0.06 * (this.rand() - 0.5),
@@ -502,7 +504,7 @@ window.GRTFIELD = (() => {
       g.globalCompositeOperation = 'lighter';
       /* at high N, draw every 2nd splat — the cloud stays dense and the
          layer redraw stays inside the frame budget */
-      const step = this.N > 9000 ? 2 : 1;
+      const step = this.N > 14000 ? 3 : this.N > 9000 ? 2 : 1;
       for (let i = 0; i < this.N; i += step) {
         const lum = (this.cr[i] + this.cg[i] + this.cb[i]) / 3,
           pb = this.pulse[i] > 0 ? Math.exp(-(now - this.pulse[i]) * 2.5) : 0,

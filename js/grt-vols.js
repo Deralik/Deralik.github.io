@@ -227,6 +227,74 @@ window.GRTVOLS = (() => {
         c11 = at(i, j1, k1) * (1 - u) + at(i1, j1, k1) * u;
       return (c00 * (1 - v) + c10 * v) * (1 - w) + (c01 * (1 - v) + c11 * v) * w;
     }
+    /* emission density: what the EMIT grid and emitAt() shade. Default =
+       the cached density; GaiaVol overrides with the analytic field so
+       grid, display, targets, and exposure share ONE set of units */
+    emitD(x, y, z) {
+      return this.dget(x, y, z);
+    }
+    /* continuous emission at a point — the same math rebuild() bakes,
+       evaluated exactly (analytic density, AO from the baked field) */
+    aoAt(x, y, z) {
+      const n = this.aoN,
+        A = this.aoT,
+        he = this.he;
+      if (!A) return 1;
+      const fx = Math.min(n - 1.001, Math.max(0, ((x / he[0] + 1) / 2) * n - 0.5)),
+        fy = Math.min(n - 1.001, Math.max(0, ((y / he[1] + 1) / 2) * n - 0.5)),
+        fz = Math.min(n - 1.001, Math.max(0, ((z / he[2] + 1) / 2) * n - 0.5));
+      const i = fx | 0,
+        j = fy | 0,
+        k = fz | 0,
+        u = fx - i,
+        v = fy - j,
+        w = fz - k,
+        i1 = Math.min(i + 1, n - 1),
+        j1 = Math.min(j + 1, n - 1),
+        k1 = Math.min(k + 1, n - 1);
+      const at = (I, J, K) => A[(K * n + J) * n + I];
+      const c00 = at(i, j, k) * (1 - u) + at(i1, j, k) * u,
+        c10 = at(i, j1, k) * (1 - u) + at(i1, j1, k) * u,
+        c01 = at(i, j, k1) * (1 - u) + at(i1, j, k1) * u,
+        c11 = at(i, j1, k1) * (1 - u) + at(i1, j1, k1) * u;
+      return (c00 * (1 - v) + c10 * v) * (1 - w) + (c01 * (1 - v) + c11 * v) * w;
+    }
+    /* the known glow term alone (zero for volumes without one) */
+    glowAt(x, y, z) {
+      const st = this.star(x, y, z);
+      if (!st) return null;
+      const ao = this.aoAt(x, y, z),
+        inv = 1 / (this.gmax || 1);
+      return [st[0] * ao * inv, st[1] * ao * inv, st[2] * ao * inv];
+    }
+    /* the medium's own emission (no glow) — what the cache learns */
+    emitDust(x, y, z) {
+      const d = this.emitD(x, y, z);
+      if (d <= 0.004) return [0, 0, 0];
+      const ao = this.aoAt(x, y, z),
+        de = this.dGamma ? Math.pow(d, this.dGamma) : d,
+        c = this.tf2(d, Math.hypot(x, y, z), x, y, z),
+        inv = 1 / (this.gmax || 1);
+      return [de * ao * c[0] * inv, de * ao * c[1] * inv, de * ao * c[2] * inv];
+    }
+    emitAt(x, y, z) {
+      const d = this.emitD(x, y, z),
+        st = this.star(x, y, z);
+      if (d <= 0.004 && !st) return [0, 0, 0];
+      const ao = this.aoAt(x, y, z),
+        de = this.dGamma ? Math.pow(d, this.dGamma) : d,
+        c = this.tf2(d, Math.hypot(x, y, z), x, y, z),
+        inv = 1 / (this.gmax || 1);
+      let er = de * ao * c[0],
+        eg = de * ao * c[1],
+        eb = de * ao * c[2];
+      if (st) {
+        er += st[0] * ao;
+        eg += st[1] * ao;
+        eb += st[2] * ao;
+      }
+      return [er * inv, eg * inv, eb * inv];
+    }
     /* default TF keeps the procedural language; subclasses override */
     tf2(d, r, x, y, z) {
       const sp = Math.max(0, Math.min(1, this.spec(x, y, z) + (this.tf - 0.5) * 0.8));
@@ -251,7 +319,7 @@ window.GRTVOLS = (() => {
               y = (-1 + (2 * (j + 0.5)) / EY) * he[1],
               z = (-1 + (2 * (k + 0.5)) / EZ) * he[2],
               o = ((k * EY + j) * EX + i) * 3;
-            const d = this.dget(x, y, z);
+            const d = this.emitD(x, y, z);
             const st = this.star(x, y, z);
             if (d <= 0.004 && !st) {
               E[o] = E[o + 1] = E[o + 2] = 0;
@@ -714,6 +782,14 @@ window.GRTVOLS = (() => {
     }
     sig(x, y, z) {
       return this.fn(x, y, z) * 3.2;
+    }
+    emitD(x, y, z) {
+      return this.sig(x, y, z);
+    }
+    /* training targets: the medium's CONTINUOUS emission only — the
+       glow is a known analytic term the renderer computes, not caches */
+    gtc(p) {
+      return this.emitDust(p[0], p[1], p[2]);
     }
     /* after the shader's computeColor, radius in ITS units (lD = r·S):
    blue-white centre dust -> amber edge dust (edge colour matched to the

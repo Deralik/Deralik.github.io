@@ -563,3 +563,21 @@ Verified live: ring web legible at 1 spp cached, no stripes; held ring
 thicker with its real segmented wrist; traces 16.7 all datasets +
 mobile; matrix + gate green. Offline A/B energy metric is now partly
 confounded by the enlarged dim halo band — visual A/B is primary.
+
+### Owner round 8 (2026-08-22, long): the gate, the wave, the parity chase
+Owner caught: no real gate + zebra unfixed + converged blur where the
+bands were + deterministic wave on the raw pane. Built herogate.mjs
+(frozen dual-readback parity + diff image). Then an elimination-driven
+chain, each step measured: jittered march phases (quadrature bands
+gone — diff image clean of stripes); decorrelated per-pixel strata
+strides (wave gone); units coherence (grid ← analytic density; the
+1.6×/27× mismatch explained the blown core and pinned cbr); glow
+moved from cached to computed (dust-only targets, density pools);
+cbr = grid prior + held-still readback trim, clamp [.15,2.5], snap
+init. Dead ends recorded: pool scaling and per-gaussian local sizes
+(reverted), analytic pairMarch (350ms — reverted to grid prior).
+Floor measured by pinning cbr: ring .26 = isotropic inter-filament
+spill → anisotropic gaussians queued as the structural upgrade.
+Final gate: super .04 · mech .13 · butterfly .23 · ring .29; traces
+16.7/0 all four + mobile; matrix + check clean. Riders: async chunked
+rebuild (switch hitch ~2s); gate wired into the pre-report habit.

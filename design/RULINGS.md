@@ -549,3 +549,40 @@ added.
     A local-occupancy kernel-size refinement was tried and REVERTED
     (halo cells got giant kernels — spill exploded).
 - **Ring camera moved further out** (orb 2.45; butterfly 2.2).
+
+# Owner rulings — hero round 8 (2026-08-22)
+
+- **"Was no gate checked before you reported?"** — correct: none
+  existed that could catch banding or converged parity; downscaled
+  stills were the whole check. scripts/herogate.mjs now freezes the
+  camera, converges both accumulations, reads them back pixel-aligned,
+  and reports resid (displayed cached vs raw) + a diff image; it
+  hard-fails above 0.5 and runs before hero claims are reported.
+- **Sampling must be stochastic** — the frame-rotated strata swept all
+  pixels' depths in lockstep (the wave). Each pixel now walks the
+  strata with its own random phase AND its own co-prime stride:
+  stochastic across the screen, still all-strata-in-24-held-frames.
+- **The zebra's real root was quadrature, not termination depth**: the
+  deterministic cache march's error forms iso-depth bands that never
+  average out. Every deterministic march now runs a per-frame jittered
+  phase; the parity diff shows no periodic structure.
+- **The glow is computed, not cached**: box-filling analytic glow is
+  ~30–50% of ray integrals in coherent units; isotropic dust-scale
+  kernels cannot represent it. The cache learns the MEDIUM's radiance
+  (dust-only targets, density pools, zero-pinned tails); the known
+  glow term is computed along cache suffixes like transmittance is.
+- **Units coherence**: grid emission now uses the analytic density
+  (emitD hook) so grid, display, targets, exposure, and calibration
+  share one scale (the smoothed-density grid ran 1.6× dim with 27×
+  dimmer peaks — the source of the blown ring core and a mis-clamped
+  brightness control).
+- **Measured wall, queued upgrade**: with calibration pinned optimal,
+  ring's converged parity floor is ~0.26 — inter-filament spill of
+  ISOTROPIC kernels (σ ≈ filament spacing cannot stay out of the
+  gaps). The research method's own representation (anisotropic
+  gaussians) is the structural fix — queued as a feature, not patched.
+  Current parity (720 spp): supernova .04 · mech .13 · butterfly .23 ·
+  ring .29. Brightness control now: cheap grid-pair prior + held-still
+  readback trim against the true accumulations; clamp widened.
+- Known cost, rider: dataset-switch rebuild is now ~1.5–2 s
+  synchronous (88³ analytic) — an async/chunked rebuild is queued.

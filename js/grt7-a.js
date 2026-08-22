@@ -342,7 +342,9 @@
             /* one shared sample: static per-pixel stratum offset rotated
                by the frame index; every stratum visited in M held frames */
             const so = (i2 * 7 + j2 * 13) % M,
-              st = (so + this.frameN) % M,
+              strides = [1, 5, 7, 11, 13, 17, 19, 23],
+              stride = strides[(i2 * 31 + j2 * 17) % 8],
+              st = (so + stride * this.frameN) % M,
               tt = t0 + (st + Math.random()) * dt2;
             /* one fine march: T at the sample, total optical depth, and
                the interpolated tau0 crossing (continuous — no banding) */
@@ -353,9 +355,10 @@
               gotS = false;
             if (kap) {
               const MQ = 16,
-                dq = (t1 - t0) / MQ;
+                dq = (t1 - t0) / MQ,
+                jq = Math.random();
               for (let k = 0; k < MQ; k++) {
-                const tk = t0 + (k + 0.5) * dq;
+                const tk = t0 + (k + jq) * dq;
                 if (!gotT && tk > tt) {
                   Tt = Math.exp(-tau);
                   gotT = true;
@@ -394,9 +397,10 @@
               cb2 = 0;
             if (gotS) {
               let Ts = Math.exp(-0.15);
-              const dts = (t1 - sTerm) / 12;
+              const dts = (t1 - sTerm) / 12,
+                jc = Math.random();
               for (let k = 0; k < 12; k++) {
-                const tk = sTerm + (k + 0.5) * dts,
+                const tk = sTerm + (k + jc) * dts,
                   x = e[0] + dx * tk,
                   y = e[1] + dy * tk,
                   z = e[2] + dz * tk;
@@ -404,10 +408,11 @@
                 const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
                   j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
                   k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
-                const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-                cr2 += C[o3] * cbr * Ts * dts;
-                cg2 += C[o3 + 1] * cbr * Ts * dts;
-                cb2 += C[o3 + 2] * cbr * Ts * dts;
+                const o3 = ((k3 * EY + j3) * EX + i3) * 3,
+                  gw = v.glowAt ? v.glowAt(x, y, z) : null;
+                cr2 += (C[o3] * cbr + (gw ? gw[0] : 0)) * Ts * dts;
+                cg2 += (C[o3 + 1] * cbr + (gw ? gw[1] : 0)) * Ts * dts;
+                cb2 += (C[o3 + 2] * cbr + (gw ? gw[2] : 0)) * Ts * dts;
               }
             }
             const fr = 1 - w + w * (tt < sTerm ? 1 : 0);
@@ -437,33 +442,196 @@
         this.insetMarch(this.vol.grid, this.rtl, this.rid);
       /* render-space PSNR: cache march vs truth march, linear, same rays,
          one shared camera — grid vs grid on both paths */
-      if (this.frameN % 24 === 8) {
-        if (!this.ptl) {
-          this.ptl = new Float32Array(108 * 76 * 3);
-          this.pcl = new Float32Array(108 * 76 * 3);
-        }
-        this.insetMarch(this.vol.grid, this.ptl, null, 108, 76);
-        this.insetMarch(this.CG, this.pcl, null, 108, 76);
-        const T = this.ptl,
-          Q = this.pcl;
+      if (this.frameN % 30 === 8) {
+        /* the calibration pair measures WHAT THE PANE DISPLAYS: one march
+           per ray computing the full truth, the truth prefix, and the
+           cache suffix under the same termination policy — cbr is the
+           usage-weighted match of cache suffix to truth suffix, and the
+           meter is the displayed pane's PSNR vs the reference */
+        this.pairMarch(96, 64);
+        const TF = this.pTf,
+          TP = this.pTp,
+          CS = this.pCs,
+          PW = this.pW;
         let st = 0,
           sc = 0;
-        for (let k = 0; k < T.length; k++) {
-          st += T[k];
-          sc += Q[k];
+        for (let px2 = 0; px2 < PW.length; px2++) {
+          const w = PW[px2];
+          for (let c = 0; c < 3; c++) {
+            const q = px2 * 3 + c;
+            st += w * (TF[q] - TP[q]);
+            sc += w * CS[q];
+          }
         }
-        /* the research renderer's own cache-brightness control, measured live:
-   ONE global scalar matching the cache march to the reference march */
-        this.cbr =
-          this.cbr * 0.85 + 0.15 * Math.max(0.5, Math.min(2.2, st / Math.max(sc, 1e-6)));
+        const cbrT = Math.max(0.15, Math.min(2.5, st / Math.max(sc, 1e-6)));
+        this.cbr = this._ps === undefined ? cbrT : this.cbr * 0.6 + 0.4 * cbrT;
         let se = 0;
-        for (let k = 0; k < T.length; k++) {
-          const d = T[k] - Q[k] * this.cbr;
-          se += d * d;
+        for (let px2 = 0; px2 < PW.length; px2++) {
+          const w = PW[px2];
+          for (let c = 0; c < 3; c++) {
+            const q = px2 * 3 + c;
+            const disp = (1 - w) * TF[q] + w * (TP[q] + this.cbr * CS[q]);
+            const d = TF[q] - disp;
+            se += d * d;
+          }
         }
-        const ps = 10 * Math.log10(1 / Math.max(1e-6, se / T.length));
+        const ps = 10 * Math.log10(1 / Math.max(1e-6, se / TF.length));
         this._ps = this._ps === undefined ? ps : this._ps * 0.8 + 0.2 * ps;
         this.meter.push(this._ps);
+      }
+      /* held-still trim: the CPU pair approximates the GPU panes; when the
+         view is held long enough for parity to be visible, calibrate the
+         brightness control against the ACTUAL accumulations */
+      if (this.glr && this._spp > 90 && this.frameN % 60 === 0) {
+        const A = this.glr.readAcc(0),
+          B = this.glr.readAcc(1);
+        let sa = 1e-9,
+          sb = 1e-9;
+        for (let i = 0; i < A.buf.length; i += 16) {
+          sa += A.buf[i] + A.buf[i + 1] + A.buf[i + 2];
+          sb += B.buf[i] + B.buf[i + 1] + B.buf[i + 2];
+        }
+        const g = Math.max(0.8, Math.min(1.25, Math.pow(sa / sb, 0.5)));
+        this.cbr = Math.max(0.1, Math.min(2.5, this.cbr * g));
+      }
+    }
+    /* one march per ray: truth full (pTf), truth prefix before the tau0
+       crossing (pTp), cache suffix after it (pCs), and the policy weight
+       w = min(1, tau/tau0) (pW) */
+    pairMarch(W, H) {
+      const v = this.vol,
+        M = 22,
+        TAU0 = 0.15;
+      if (!this.pTf || this.pTf.length !== W * H * 3) {
+        this.pTf = new Float32Array(W * H * 3);
+        this.pTp = new Float32Array(W * H * 3);
+        this.pCs = new Float32Array(W * H * 3);
+        this.pW = new Float32Array(W * H);
+      }
+      const EX = v.EX,
+        EY = v.EY,
+        EZ = v.EZ,
+        hx = v.he[0],
+        hy = v.he[1],
+        hz = v.he[2],
+        kap = v.kap || 0,
+        useGrid = true /* post-coherence the grid IS the analytic field
+          discretized — the cheap prior; the held-still readback trims
+          the final scale against the true panes */,
+        G = v.grid,
+        C = this.CG;
+      const kx = (0.5 * EX) / hx,
+        ky = (0.5 * EY) / hy,
+        kz = (0.5 * EZ) / hz,
+        X1 = EX - 1,
+        Y1 = EY - 1,
+        Z1 = EZ - 1;
+      const cb = v.cb || [-hx, hx, -hy, hy, -hz, hz],
+        L0 = cb[0],
+        L1 = cb[1],
+        P0 = cb[2],
+        P1 = cb[3],
+        N0 = cb[4],
+        N1 = cb[5];
+      const f = this.view.f,
+        e = this.view.eye,
+        fw = this.view.fwd,
+        rt = this.view.right,
+        up = this.view.up;
+      for (let j2 = 0; j2 < H; j2++) {
+        const vy = (H / 2 - (j2 + 0.5)) / (H * f);
+        for (let i2 = 0; i2 < W; i2++) {
+          const vx = (i2 + 0.5 - W / 2) / (H * f);
+          let dx = fw[0] + vx * rt[0] + vy * up[0],
+            dy = fw[1] + vx * rt[1] + vy * up[1],
+            dz = fw[2] + vx * rt[2] + vy * up[2];
+          const nn = 1 / Math.hypot(dx, dy, dz);
+          dx *= nn;
+          dy *= nn;
+          dz *= nn;
+          const ax = (L0 - e[0]) / dx,
+            bx2 = (L1 - e[0]) / dx,
+            ay = (P0 - e[1]) / dy,
+            by = (P1 - e[1]) / dy,
+            az = (N0 - e[2]) / dz,
+            bz = (N1 - e[2]) / dz;
+          const t0 = Math.max(Math.min(ax, bx2), Math.min(ay, by), Math.min(az, bz), 0);
+          const t1 = Math.min(Math.max(ax, bx2), Math.max(ay, by), Math.max(az, bz));
+          let tfr = 0,
+            tfg = 0,
+            tfb = 0,
+            tpr = 0,
+            tpg = 0,
+            tpb = 0,
+            csr = 0,
+            csg = 0,
+            csb = 0,
+            tau = 0,
+            T = 1,
+            crossed = false;
+          if (t1 > t0) {
+            const dt = (t1 - t0) / M;
+            for (let k = 0; k < M; k++) {
+              const tk = t0 + (k + 0.5) * dt,
+                x = e[0] + dx * tk,
+                y = e[1] + dy * tk,
+                z = e[2] + dz * tk;
+              if (kap) {
+                tau += kap * v.dget(x, y, z) * dt;
+                T = Math.exp(-tau);
+              }
+              let er2, eg2, eb2;
+              if (useGrid) {
+                const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
+                  j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
+                  k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
+                const o3 = ((k3 * EY + j3) * EX + i3) * 3;
+                er2 = G[o3];
+                eg2 = G[o3 + 1];
+                eb2 = G[o3 + 2];
+              } else {
+                const c2 = v.emitAt(x, y, z);
+                er2 = c2[0];
+                eg2 = c2[1];
+                eb2 = c2[2];
+              }
+              tfr += er2 * T * dt;
+              tfg += eg2 * T * dt;
+              tfb += eb2 * T * dt;
+              if (!crossed && tau > TAU0) crossed = true;
+              if (!crossed) {
+                tpr += er2 * T * dt;
+                tpg += eg2 * T * dt;
+                tpb += eb2 * T * dt;
+              } else {
+                const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
+                  j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
+                  k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
+                const o3 = ((k3 * EY + j3) * EX + i3) * 3;
+                csr += C[o3] * T * dt;
+                csg += C[o3 + 1] * T * dt;
+                csb += C[o3 + 2] * T * dt;
+                const gw = v.glowAt ? v.glowAt(x, y, z) : null;
+                if (gw) {
+                  tpr += gw[0] * T * dt;
+                  tpg += gw[1] * T * dt;
+                  tpb += gw[2] * T * dt;
+                }
+              }
+            }
+          }
+          const o = (j2 * W + i2) * 3;
+          this.pTf[o] = tfr;
+          this.pTf[o + 1] = tfg;
+          this.pTf[o + 2] = tfb;
+          this.pTp[o] = tpr;
+          this.pTp[o + 1] = tpg;
+          this.pTp[o + 2] = tpb;
+          this.pCs[o] = csr;
+          this.pCs[o + 1] = csg;
+          this.pCs[o + 2] = csb;
+          this.pW[j2 * W + i2] = Math.min(1, tau / TAU0);
+        }
       }
     }
     insetMarch(GR, lin, img, W2, H2) {
@@ -529,13 +697,21 @@
                 y = e[1] + dy * tk,
                 z = e[2] + dz * tk;
               if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dt);
-              const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
-                j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
-                k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
-              const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-              ar += GR[o3] * T * dt;
-              ag += GR[o3 + 1] * T * dt;
-              ab += GR[o3 + 2] * T * dt;
+              if (GR) {
+                const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
+                  j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
+                  k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
+                const o3 = ((k3 * EY + j3) * EX + i3) * 3;
+                ar += GR[o3] * T * dt;
+                ag += GR[o3 + 1] * T * dt;
+                ab += GR[o3 + 2] * T * dt;
+              } else {
+                /* GR = null → the CONTINUOUS truth (what the panes show) */
+                const c = v.emitAt(x, y, z);
+                ar += c[0] * T * dt;
+                ag += c[1] * T * dt;
+                ab += c[2] * T * dt;
+              }
             }
           }
           const o = (j2 * W + i2) * 3;
@@ -566,7 +742,7 @@
       if (!F) return;
       if (!this.cam.dr) this.cam.auto += (0.12 - this.cam.auto) * Math.min(1, dt * 1.2);
       this.cam.step(dt);
-      const B = 120;
+      const B = 140;
       F.step(B, t);
       if (dt < 0.022) F.step(B, t);
       /* cache pane source: sliced re-bake, 1/14 of the gaussians per frame,
@@ -605,7 +781,6 @@
         this._glVol = null;
         this._spp = 1;
       }
-      if (this.frameN % 60 === 0) F.refreshTruth();
       const held = this.imgDrag || t < this.holdUntil,
         off = Math.abs(this.uY) + Math.abs(this.uP) > 0.012;
       if (!held) {

@@ -179,7 +179,7 @@ if (process.argv[2] === 'train') {
       ad: true,
     },
   };
-  const NDEF = { butterfly: 12000, ring: 12000, super: 12000, mech: 13000 };
+  const NDEF = { butterfly: 16000, ring: 16000, super: 16000, mech: 16000 };
   const v = mkVol(kind);
   v.rebuild();
   const F = new CField(v, NDEF[kind], 9, KO[kind]);

@@ -107,6 +107,15 @@ float density(vec3 p){
   }
   return (uKind==0?sigButterfly(p):sigRing(p))*3.2;
 }
+/* the known glow alone — computed along cache suffixes, never cached */
+vec3 glowTerm(vec3 p){
+  if(uKind==2)return vec3(0.);
+  vec3 tc=(p/uHe+1.)*.5;
+  float ao=texture(tA,tc).r;
+  float lD=length(p)*uS,lDs=max(.03,lD);
+  float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
+  return .012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1)*ao*uInvG;
+}
 vec3 emissionD(vec3 p,float d){
   vec3 tc=(p/uHe+1.)*.5;
   float ao=texture(tA,tc).r;
@@ -158,14 +167,26 @@ void main(){
   if(tt.y>tt.x){
     /* ONE shared sample: per-pixel stratum offset (static) rotated by the
        frame index — every stratum is visited within M held frames */
+    /* stratified-progressive, decorrelated: each pixel walks the strata
+       with its own random phase AND its own co-prime stride — stochastic
+       across the screen every frame (no coherent wave), yet every pixel
+       visits all M strata within M held frames, so the accumulation
+       converges to a clean image */
     float M=24.,so=floor(hash(px,3.)*M),h2=hash(px.yx+vec2(31.7,17.3),uSeed+7.);
-    float dt=(tt.y-tt.x)/M,st=mod(so+uFrame,M),t=tt.x+(st+h2)*dt;
+    float sid=floor(hash(px+vec2(5.1,9.7),5.)*8.);
+    float stride=sid<1.?1.:sid<2.?5.:sid<3.?7.:sid<4.?11.:sid<5.?13.:sid<6.?17.:sid<7.?19.:23.;
+    float dt=(tt.y-tt.x)/M,st=mod(so+stride*uFrame,M),t=tt.x+(st+h2)*dt;
     /* one fine march: transmittance at the sample, total optical depth,
        and the interpolated tau0 crossing (continuous — no banding) */
+    /* every deterministic march runs with a per-frame jittered phase:
+       quadrature error becomes noise the accumulation averages away —
+       fixed-phase marches leave structured (banded) error that never
+       converges out */
+    float jq=hash(px+vec2(11.3,29.1),uSeed+31.);
     float MS=32.,dq=(tt.y-tt.x)/MS,tau=0.,Tt=1.,sTerm=tt.y;
     bool gotT=false,gotS=false;
     for(float k=0.;k<32.;k++){
-      float tk=tt.x+(k+.5)*dq;
+      float tk=tt.x+(k+jq)*dq;
       if(!gotT&&tk>t){Tt=exp(-tau);gotT=true;}
       float dtau=uKap*density(uEye+d*tk)*dq;
       if(!gotS&&tau+dtau>uTau){
@@ -185,9 +206,10 @@ void main(){
     float w=clamp(tau/uTau,0.,1.);
     vec3 cm=vec3(0.);
     if(gotS){
-      float Ts=exp(-uTau),dts=(tt.y-sTerm)/20.;
-      for(float k=0.;k<20.;k++){
-        vec3 q=uEye+d*(sTerm+(k+.5)*dts);
+      float jc=hash(px+vec2(3.7,17.9),uSeed+43.);
+      float Ts=exp(-uTau),dts=(tt.y-sTerm)/28.;
+      for(float k=0.;k<28.;k++){
+        vec3 q=uEye+d*(sTerm+(k+jc)*dts);
         Ts*=exp(-uKap*density(q)*dts);
         cm+=texture(tC,(q/uHe+1.)*.5).rgb*uCbr*Ts*dts;
       }

@@ -162,6 +162,19 @@ window.GRT7GL = function () {
 
   return {
     cv,
+    /* debug/gate: read one accumulation (0 = raw, 1 = cached) — the
+       parity gate diffs them pixel-aligned on a frozen camera */
+    readAcc(i) {
+      const w = cv.width,
+        h = cv.height,
+        buf = new Float32Array(w * h * 4);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, S.fbo[S.ai]);
+      gl.readBuffer(gl.COLOR_ATTACHMENT0 + i);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.FLOAT, buf);
+      gl.readBuffer(gl.COLOR_ATTACHMENT0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      return { w, h, buf };
+    },
     /* per-dataset setup: cache-texture dims, the AO grid, and for the
        data volumes their scalar grid + a 256-entry scene-TF LUT */
     setVol(vol) {
