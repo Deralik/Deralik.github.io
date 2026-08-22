@@ -67,6 +67,11 @@
           if (azw) azw.style.display = R7.vol.tfr === false ? 'none' : '';
           const az2 = $('grt-az');
           if (az2) az2.value = R7.vol.tf * 6.28;
+          /* the light-orbit slider exists only for the lit data volumes */
+          const liw = $('grt-liw');
+          if (liw) liw.style.display = R7.vol.T && R7.vol.T.lights ? '' : 'none';
+          const li = $('grt-li');
+          if (li) li.value = R7.vol.lightAz || 0;
         };
         for (const [id, k] of vb) {
           const el = $(id);
@@ -82,6 +87,8 @@
         if (rs) rs.onclick = () => R7.resetField();
         const az = $('grt-az');
         if (az) az.oninput = (e) => (R7.pendingAz = +e.target.value);
+        const li2 = $('grt-li');
+        if (li2) li2.oninput = (e) => (R7.pendingLi = +e.target.value);
       };
       const warmAll = () => {
         const rest = ['ring', 'mech', 'super'];

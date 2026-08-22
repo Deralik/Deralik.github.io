@@ -208,7 +208,7 @@ body{display:block;height:auto;overflow:auto}
         <div class="dh"><h1 data-slot="doc-title">GRTCache</h1><p class="lede" data-slot="lede">A radiance cache you can look at — the volume's light field held in world-space gaussians, trained while it renders.</p><p class="covq">~10× smaller cache, quality held · on par with NRC — not yet faster · HPG '26 not accepted · revising</p></div>
         <div class="dsec" style="border-top:0;padding-top:0;margin-top:16px">
           <div class="gfw" style="height:540px" data-slot="figure"><canvas id="grt-cv-hero"></canvas></div>
-          <div class="chr"><span class="btn on" id="grt-v0">Butterfly</span><span class="btn" id="grt-v1">Ring</span><span class="btn" id="grt-v2">MechHand — real CT</span><span class="btn" id="grt-v3">Supernova — real data</span><span class="btn" id="grt-reset">Reset the cache</span><label><span id="grt-azl">Transfer function</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="3.14"></label><span class="ro2" id="grt-ro">—</span></div>
+          <div class="chr"><span class="btn on" id="grt-v0">Butterfly</span><span class="btn" id="grt-v1">Ring</span><span class="btn" id="grt-v2">MechHand — real CT</span><span class="btn" id="grt-v3">Supernova — real data</span><span class="btn" id="grt-reset">Reset the cache</span><label><span id="grt-azl">Transfer function</span><input type="range" id="grt-az" min="0" max="6.28" step="0.01" value="3.14"></label><label id="grt-liw" style="display:none"><span>Lights</span><input type="range" id="grt-li" min="-3.14" max="3.14" step="0.01" value="0"></label><span class="ro2" id="grt-ro">—</span></div>
         </div>
         <div class="dsec"><div class="sech">The method</div>
           <div class="drow" style="gap:20px">
@@ -336,14 +336,14 @@ body{display:block;height:auto;overflow:auto}
 <script src="js/grt-dir-core.js?v=2"></script>
 <script src="js/grt2-core.js?v=2"></script>
 <script src="js/grt6-core.js?v=3"></script>
-<script src="js/grt-vols.js?v=5"></script>
+<script src="js/grt-vols.js?v=6"></script>
 <script src="js/grt-field.js?v=5"></script>
 <script src="js/grt7-core.js?v=7"></script>
-<script src="js/grt-gl-shaders.js?v=4"></script>
-<script src="js/grt7-gl.js?v=5"></script>
-<script src="js/grt7-a.js?v=8"></script>
+<script src="js/grt-gl-shaders.js?v=5"></script>
+<script src="js/grt7-gl.js?v=6"></script>
+<script src="js/grt7-a.js?v=9"></script>
 <script src="js/grt8-core.js?v=2"></script>
 <script src="js/grt8-b.js?v=2"></script>
 <script src="js/grt9-a.js?v=2"></script>
-<script src="js/grt-skeleton.js?v=4"></script>
+<script src="js/grt-skeleton.js?v=5"></script>
 </body></html>

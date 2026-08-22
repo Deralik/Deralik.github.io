@@ -115,14 +115,17 @@ float density(vec3 p){
 vec3 glowTerm(vec3 p){
   if(uKind==2)return vec3(0.);
   vec3 tc=(p/uHe+1.)*.5;
-  float ao=texture(tA,tc).r;
+  vec3 ao=texture(tA,tc).rgb;
   float lD=length(p)*uS,lDs=max(.03,lD);
   float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
-  return .012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1)*ao*uInvG;
+  /* the central star itself — the remnant the photos show as a bright
+     point: a tight 1/r² core on top of the broad halo */
+  float g2=.012/(lDs*lDs+.0012);
+  return (.012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1)+vec3(.75,.85,1.)*g2)*ao*uInvG;
 }
 vec3 emissionD(vec3 p,float d){
   vec3 tc=(p/uHe+1.)*.5;
-  float ao=texture(tA,tc).r;
+  vec3 ao=texture(tA,tc).rgb;
   if(uKind==2){
     vec2 da=texture(tD,tc).rg;
     float uu=uwv(da.r);
@@ -153,14 +156,24 @@ vec3 emissionD(vec3 p,float d){
   }
   float lDs=max(.03,lD);
   float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
-  vec3 glow=.012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1);
+  float g2=.012/(lDs*lDs+.0012);
+  vec3 glow=.012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1)+vec3(.75,.85,1.)*g2;
   return (pow(d,2.0)*dust+glow)*ao*uInvG;
 }`;
 
   const TONE = `
-uniform float uExpo;
+uniform float uExpo,uTone;
+/* two display curves, both the research repo's own: the nebulae keep the
+   paper curve 1-exp(-e·L); the data volumes use the reference-figure
+   pipeline (per-channel Reinhard at the p99.5 anchor, then sRGB) — the
+   curve the researchers actually stare at, with the midtones intact */
 vec4 tone(vec3 L){
-  return vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*(1.-exp(-uExpo*max(L,vec3(0.)))),1.);
+  vec3 x=uExpo*max(L,vec3(0.)),d;
+  if(uTone>.5){
+    vec3 m=x/(1.+x);
+    d=mix(12.92*m,1.055*pow(m,vec3(1./2.4))-.055,step(vec3(.0031308),m));
+  } else d=1.-exp(-x);
+  return vec4(vec3(10.,13.,17.)/255.+vec3(245.,242.,238.)/255.*d,1.);
 }`;
 
   /* pass A — BOTH estimators, one sample per pixel per frame, into two

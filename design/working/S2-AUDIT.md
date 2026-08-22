@@ -616,3 +616,16 @@ replaces; κ was 10). All re-applied with asserts + LIVE eval proof
 TF sliders default centred; reset instant via pool seeding; shellInit
 deleted. Gate: super .03 · mech .12 · butterfly .23 · ring .29;
 traces locked; matrix/check clean.
+
+### Owner round 12 (2026-08-22): the display pipeline was the invariant
+Owner's 4th "no changes" was real: exposure auto-normalization + the
+paper curve erased every lighting change visually (delivery verified
+clean — no-store server, bytes correct). Data vols now display via the
+repo's reference-figure pipeline (Reinhard@p99.5 anchor + sRGB).
+Supernova TF was a wrong recovery — native three-tent TF + 7-stop
+palette vendored from scene_supernova.json, floor deleted. RGB light
+field: coloured scene lights, 0.2 ambient + 0.8 diffuse, gradient N·L.
+Lights slider (orbit the rig; data vols only). Nebula central-star
+cores (analytic glow). Verified against the research repo's reference
+figures side-by-side. Gate: butterfly .15 · mech .13 · ring .24 ·
+super .05; 16.7ms; matrix/check clean.

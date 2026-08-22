@@ -25,6 +25,7 @@ window.GRTVOLS = (() => {
       this.orb = 2.1;
       this.grid = new Float32Array(this.EX * this.EY * this.EZ * 3);
       this.expo = 1;
+      this.tone = 0; /* 0 = paper curve; 1 = Reinhard+sRGB (data vols) */
       this.gmax = 1;
       this.light = [1.15, 1.05, 0.45];
       this.pal = PAL[kind];
@@ -239,7 +240,7 @@ window.GRTVOLS = (() => {
       const n = this.aoN,
         A = this.aoT,
         he = this.he;
-      if (!A) return 1;
+      if (!A) return [1, 1, 1];
       const fx = Math.min(n - 1.001, Math.max(0, ((x / he[0] + 1) / 2) * n - 0.5)),
         fy = Math.min(n - 1.001, Math.max(0, ((y / he[1] + 1) / 2) * n - 0.5)),
         fz = Math.min(n - 1.001, Math.max(0, ((z / he[2] + 1) / 2) * n - 0.5));
@@ -252,12 +253,16 @@ window.GRTVOLS = (() => {
         i1 = Math.min(i + 1, n - 1),
         j1 = Math.min(j + 1, n - 1),
         k1 = Math.min(k + 1, n - 1);
-      const at = (I, J, K) => A[(K * n + J) * n + I];
-      const c00 = at(i, j, k) * (1 - u) + at(i1, j, k) * u,
-        c10 = at(i, j1, k) * (1 - u) + at(i1, j1, k) * u,
-        c01 = at(i, j, k1) * (1 - u) + at(i1, j, k1) * u,
-        c11 = at(i, j1, k1) * (1 - u) + at(i1, j1, k1) * u;
-      return (c00 * (1 - v) + c10 * v) * (1 - w) + (c01 * (1 - v) + c11 * v) * w;
+      const at = (I, J, K, c) => A[((K * n + J) * n + I) * 3 + c];
+      const out = [0, 0, 0];
+      for (let c = 0; c < 3; c++) {
+        const c00 = at(i, j, k, c) * (1 - u) + at(i1, j, k, c) * u,
+          c10 = at(i, j1, k, c) * (1 - u) + at(i1, j1, k, c) * u,
+          c01 = at(i, j, k1, c) * (1 - u) + at(i1, j, k1, c) * u,
+          c11 = at(i, j1, k1, c) * (1 - u) + at(i1, j1, k1, c) * u;
+        out[c] = (c00 * (1 - v) + c10 * v) * (1 - w) + (c01 * (1 - v) + c11 * v) * w;
+      }
+      return out;
     }
     /* the known glow term alone (zero for volumes without one) */
     glowAt(x, y, z) {
@@ -265,7 +270,7 @@ window.GRTVOLS = (() => {
       if (!st) return null;
       const ao = this.aoAt(x, y, z),
         inv = 1 / (this.gmax || 1);
-      return [st[0] * ao * inv, st[1] * ao * inv, st[2] * ao * inv];
+      return [st[0] * ao[0] * inv, st[1] * ao[1] * inv, st[2] * ao[2] * inv];
     }
     /* the medium's own emission (no glow) — what the cache learns */
     emitDust(x, y, z) {
@@ -275,7 +280,7 @@ window.GRTVOLS = (() => {
         de = this.dGamma ? Math.pow(d, this.dGamma) : d,
         c = this.tf2(d, Math.hypot(x, y, z), x, y, z),
         inv = 1 / (this.gmax || 1);
-      return [de * ao * c[0] * inv, de * ao * c[1] * inv, de * ao * c[2] * inv];
+      return [de * ao[0] * c[0] * inv, de * ao[1] * c[1] * inv, de * ao[2] * c[2] * inv];
     }
     emitAt(x, y, z) {
       const d = this.emitD(x, y, z),
@@ -285,13 +290,13 @@ window.GRTVOLS = (() => {
         de = this.dGamma ? Math.pow(d, this.dGamma) : d,
         c = this.tf2(d, Math.hypot(x, y, z), x, y, z),
         inv = 1 / (this.gmax || 1);
-      let er = de * ao * c[0],
-        eg = de * ao * c[1],
-        eb = de * ao * c[2];
+      let er = de * ao[0] * c[0],
+        eg = de * ao[1] * c[1],
+        eb = de * ao[2] * c[2];
       if (st) {
-        er += st[0] * ao;
-        eg += st[1] * ao;
-        eb += st[2] * ao;
+        er += st[0] * ao[0];
+        eg += st[1] * ao[1];
+        eb += st[2] * ao[2];
       }
       return [er * inv, eg * inv, eb * inv];
     }
@@ -317,7 +322,7 @@ window.GRTVOLS = (() => {
          change re-shades in ~100ms instead of re-evaluating the field */
       if (!this.cDe || this.cDe.length !== n) {
         this.cDe = new Float32Array(n);
-        this.cAo = new Float32Array(n);
+        this.cAo = new Float32Array(n * 3);
         this.cSt = new Float32Array(n * 3);
         for (let k = 0; k < EZ; k++)
           for (let j = 0; j < EY; j++)
@@ -344,7 +349,11 @@ window.GRTVOLS = (() => {
               const x = (-1 + (2 * (i + 0.5)) / EX) * he[0],
                 y = (-1 + (2 * (j + 0.5)) / EY) * he[1],
                 z = (-1 + (2 * (k + 0.5)) / EZ) * he[2];
-              this.cAo[(k * EY + j) * EX + i] = this.aoAt(x, y, z);
+              const ao = this.aoAt(x, y, z),
+                p = ((k * EY + j) * EX + i) * 3;
+              this.cAo[p] = ao[0];
+              this.cAo[p + 1] = ao[1];
+              this.cAo[p + 2] = ao[2];
             }
       }
       let m = 0;
@@ -357,7 +366,9 @@ window.GRTVOLS = (() => {
               p = (k * EY + j) * EX + i,
               o = p * 3;
             const d = this.cDe[p],
-              ao = this.cAo[p],
+              aoR = this.cAo[p * 3],
+              aoG = this.cAo[p * 3 + 1],
+              aoB = this.cAo[p * 3 + 2],
               sr = this.cSt[p * 3],
               sg2 = this.cSt[p * 3 + 1],
               sb2 = this.cSt[p * 3 + 2];
@@ -368,12 +379,12 @@ window.GRTVOLS = (() => {
             const rr = Math.hypot(x, y, z),
               c = this.tf2(d, rr, x, y, z);
             const de = this.dGamma ? Math.pow(d, this.dGamma) : d;
-            let er = de * ao * c[0],
-              eg = de * ao * c[1],
-              eb = de * ao * c[2];
-            er += sr * ao;
-            eg += sg2 * ao;
-            eb += sb2 * ao;
+            let er = de * aoR * c[0],
+              eg = de * aoG * c[1],
+              eb = de * aoB * c[2];
+            er += sr * aoR;
+            eg += sg2 * aoG;
+            eb += sb2 * aoB;
             E[o] = er;
             E[o + 1] = eg;
             E[o + 2] = eb;
@@ -425,7 +436,10 @@ window.GRTVOLS = (() => {
     buildAO() {
       const n = 52,
         he = this.he,
-        A = (this.aoT = this.aoT || new Float32Array(n * n * n)),
+        A = (this.aoT =
+          this.aoT && this.aoT.length === n * n * n * 3
+            ? this.aoT
+            : new Float32Array(n * n * n * 3)),
         step = (2 * he[0]) / this.EX,
         k2 = this.aoK || 1.9;
       this.aoN = n;
@@ -443,7 +457,9 @@ window.GRTVOLS = (() => {
                 this.dget(x, y, z + step) +
                 this.dget(x, y, z - step)) /
               6;
-            A[(k * n + j) * n + i] = Math.exp(-k2 * nb);
+            const v = Math.exp(-k2 * nb),
+              p = ((k * n + j) * n + i) * 3;
+            A[p] = A[p + 1] = A[p + 2] = v;
           }
     }
     /* ray ∩ he box: [t0,t1] or null (IEEE ±Infinity handles axis-parallel) */
@@ -480,7 +496,9 @@ window.GRTVOLS = (() => {
           if (!tr) continue;
           const dt = (tr[1] - tr[0]) / M,
             kap = this.kap || 0;
-          let s = 0,
+          let sr = 0,
+            sg = 0,
+            sb = 0,
             T = 1;
           for (let k2 = 0; k2 < M; k2++) {
             const tt = tr[0] + (k2 + 0.5) * dt,
@@ -492,11 +510,21 @@ window.GRTVOLS = (() => {
               k3 = Math.max(0, Math.min(EZ - 1, (((p2 / he[2] + 1) / 2) * EZ) | 0)),
               o2 = ((k3 * EY + j2) * EX + i2) * 3;
             if (kap) T *= Math.exp(-kap * this.dget(p0, p1, p2) * dt);
-            s += ((E[o2] + E[o2 + 1] + E[o2 + 2]) / 3) * T * dt;
+            sr += E[o2] * T * dt;
+            sg += E[o2 + 1] * T * dt;
+            sb += E[o2 + 2] * T * dt;
           }
+          const s = this.tone ? 0.2126 * sr + 0.7152 * sg + 0.0722 * sb : (sr + sg + sb) / 3;
           if (s > 0) ls.push(s);
         }
       ls.sort((a, b) => a - b);
+      if (this.tone) {
+        /* the reference-figure display policy (gsrc metrics.py): anchor =
+     p99.5 luminance, exposure puts Reinhard(e·anchor) at 0.9 */
+        const a = ls.length ? ls[Math.min(ls.length - 1, Math.floor(ls.length * 0.995))] : 1;
+        this.expo = 9.0 / Math.max(a, 1e-4);
+        return;
+      }
       const p = ls.length ? ls[Math.min(ls.length - 1, Math.floor(ls.length * 0.97))] : 1;
       /* paper display curve 1-exp(-e·L): put p97 at ~.95 (verified offline
    against the research repo's reference figures, heroprobe.py) */
@@ -619,12 +647,21 @@ window.GRTVOLS = (() => {
       he: [0.9, 0.309, 0.322],
       E: [128, 44, 46],
       kap: 48,
+      /* light-march extinction is gentler than the camera ray's: the
+         scene's material carries a 0.2 ambient floor — full κ in the
+         shadow march would blacken the interior parts it keeps lit */
+      kapL: 6,
       orb: 2.0,
       aoK: 3.4,
+      /* the scene's own lights (beautyshots/scene_mechhand.json):
+         [x,y,z, I, r,g,b] — cool-blue key from below, warm fill above */
       lights: [
-        [0.34, -1.21, 0.03, 8.5],
-        [-0.42, 0.815, -0.31, 4.0],
+        [0.34, -1.21, 0.35, 8.5, 0.7, 0.85, 1],
+        [-0.42, 0.815, -0.31, 4.0, 1, 0.75, 0.5],
       ],
+      /* light orbit sweeps pole-to-pole over the hand's long axis —
+         visibly re-shades; a y-orbit would barely move these lights */
+      lax: [1, 0, 0],
       ap: [0, 0.0625, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
       av: [0, 0.057, 0.108, 0.211, 0.335, 0.449, 0.591, 0.701, 0.83, 1],
       cp: [0, 0.0993, 0.2855, 0.442, 0.589, 1],
@@ -642,20 +679,29 @@ window.GRTVOLS = (() => {
       E: [72, 72, 72],
       orb: 1.75,
       kap: 6,
-      lights: [[1.86, 1.48, 1.73, 12.0]],
-      fl: (u) => (u <= 0.05 ? 0 : u >= 0.25 ? 0.05 : (0.05 * (u - 0.05)) / 0.2),
-      ap: [0, 0.586, 0.625, 0.75, 0.875, 1],
-      av: [0, 0, 0.068, 0.243, 0.59, 0.854],
-      cp: [0, 0.0852, 0.1157, 0.2344, 0.5532, 0.6343, 0.7718, 1],
+      kapL: 2.5,
+      gk: 0.5,
+      /* the scene's own warm key light (beautyshots/scene_supernova.json;
+         its second light is 1.4% of the key — dropped) */
+      lights: [[1.86, 1.48, 1.73, 26.0, 1, 0.65, 0.35]],
+      /* the NATIVE transfer function, from the same scene file: three thin
+         opacity tents — nested translucent shells (cyan · green-orange ·
+         red) — replacing an earlier wrong recovery (a dense high-u ramp
+         plus a disclosed opacity floor) that filled the ball with fog */
+      ap: [
+        0, 0.2035, 0.3317, 0.3618, 0.3894, 0.495, 0.505, 0.5402, 0.6156, 0.6784, 0.7299, 0.7726,
+        1,
+      ],
+      av: [0, 0, 0, 0.1072, 0, 0, 0.2261, 0.1166, 0, 0, 0.1096, 0, 0],
+      cp: [0, 0.2487, 0.3744, 0.5, 0.5377, 0.6307, 1],
       cc: [
         [1, 1, 1],
-        [1, 1, 1],
-        [0, 0.365, 1],
-        [0.102, 0.873, 0.503],
-        [0.988, 0.914, 0.31],
-        [0.961, 0.475, 0],
-        [0.937, 0.161, 0.161],
-        [0.937, 0.161, 0.161],
+        [0.294, 0.377, 1],
+        [0.137, 0.543, 1],
+        [0.393, 0.819, 0.456],
+        [0.946, 0.334, 0.079],
+        [0.958, 0.061, 0.061],
+        [1, 0, 0],
       ],
     },
   };
@@ -685,11 +731,14 @@ window.GRTVOLS = (() => {
     buildAO() {
       const n = 40,
         he = this.he,
-        kap = this.kap || 0,
-        Ls = this.T.lights;
+        kap = this.T.kapL || this.kap || 0,
+        Ls = this.T.lights,
+        lax = this.T.lax || [0, 1, 0],
+        gk = this.T.gk || 0.05;
       if (!Ls) return super.buildAO();
       this.aoN = n;
-      if (!this.aoT || this.aoT.length !== n * n * n) this.aoT = new Float32Array(n * n * n);
+      if (!this.aoT || this.aoT.length !== n * n * n * 3)
+        this.aoT = new Float32Array(n * n * n * 3);
       const A = this.aoT,
         K = 16;
       for (let k = 0; k < n; k++)
@@ -698,8 +747,28 @@ window.GRTVOLS = (() => {
             const x = (-1 + (2 * (i + 0.5)) / n) * he[0],
               y = (-1 + (2 * (j + 0.5)) / n) * he[1],
               z = (-1 + (2 * (k + 0.5)) / n) * he[2];
-            let s = 0;
-            for (const L of Ls) {
+            /* the scene material's N·L diffuse term: surface normal from
+               the density gradient, faded out where the field is flat
+               (fuzzy interiors stay isotropically lit) */
+            const gs = he[0] / n,
+              gx = this.dget(x + gs, y, z) - this.dget(x - gs, y, z),
+              gy = this.dget(x, y + gs, z) - this.dget(x, y - gs, z),
+              gz = this.dget(x, y, z + gs) - this.dget(x, y, z - gs),
+              gm = Math.hypot(gx, gy, gz) / (2 * gs),
+              gw = Math.min(1, gm * gk),
+              gi = gm > 1e-6 ? -1 / (gm * 2 * gs) : 0,
+              nX = gx * gi,
+              nY = gy * gi,
+              nZ = gz * gi;
+            let sr = 0,
+              sg = 0,
+              sb = 0;
+            for (const L0 of Ls) {
+              /* the light-orbit control: the whole rig rotates about the
+                 scene's own axis (identity at slider centre) */
+              const L = this.lightAz
+                ? rot3(L0[0], L0[1], L0[2], lax[0], lax[1], lax[2], this.lightAz)
+                : L0;
               let dx = L[0] - x,
                 dy = L[1] - y,
                 dz = L[2] - z;
@@ -718,9 +787,17 @@ window.GRTVOLS = (() => {
                 const tq = (q + 0.5) * dt;
                 tau += kap * this.dget(x + dx * tq, y + dy * tq, z + dz * tq) * dt;
               }
-              s += (L[3] * Math.exp(-tau)) / (dist * dist + 0.35);
+              const lam = 1 - gw + gw * Math.max(0, nX * dx + nY * dy + nZ * dz),
+                w = (lam * L0[3] * Math.exp(-tau)) / (dist * dist + 0.35);
+              sr += w * L0[4];
+              sg += w * L0[5];
+              sb += w * L0[6];
             }
-            A[(k * n + j) * n + i] = s;
+            /* the scene's material terms: 0.2 ambient floor + 0.8 diffuse */
+            const p = ((k * n + j) * n + i) * 3;
+            A[p] = 0.2 + 0.8 * sr;
+            A[p + 1] = 0.2 + 0.8 * sg;
+            A[p + 2] = 0.2 + 0.8 * sb;
           }
     }
     /* LUT accessors for the GL layer's scene-TF texture bake */
@@ -766,6 +843,8 @@ window.GRTVOLS = (() => {
       this.grid = new Float32Array(this.EX * this.EY * this.EZ * 3);
       this.em = 1;
       if (T.tf0 !== undefined) this.tf = T.tf0;
+      this.tone = 1; /* data vols display via the reference-figure pipeline */
+      this.lightAz = 0;
     }
     usamp(x, y, z) {
       return this.samp3(this.dg, x, y, z);
@@ -904,11 +983,14 @@ window.GRTVOLS = (() => {
       const g1 = 0.7 / ((lD * lD + 0.12) * 10),
         e = Math.exp(-lD * lD * lD * 0.09),
         T = lD * 2.3 + 2.6,
-        K = 0.012;
+        K = 0.012,
+        /* the central star itself (the remnant, a bright point in the
+           reference photography): tight 1/r² core, bluish white */
+        g2 = 0.012 / (lD * lD + 0.0012);
       return [
-        K * (Math.max(0, 0.4 + 0.5 * Math.cos(T - 0.785)) * e + 0.57 * g1),
-        K * (Math.max(0, 0.4 + 0.5 * Math.cos(T + 0.079)) * e + 1.85 * g1),
-        K * (Math.max(0, 0.4 + 0.5 * Math.cos(T + 0.785)) * e + 1.0 * g1),
+        K * (Math.max(0, 0.4 + 0.5 * Math.cos(T - 0.785)) * e + 0.57 * g1) + 0.75 * g2,
+        K * (Math.max(0, 0.4 + 0.5 * Math.cos(T + 0.079)) * e + 1.85 * g1) + 0.85 * g2,
+        K * (Math.max(0, 0.4 + 0.5 * Math.cos(T + 0.785)) * e + 1.0 * g1) + 1.0 * g2,
       ];
     }
   }

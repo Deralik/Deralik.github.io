@@ -311,11 +311,17 @@
         M = 16,
         cbr = this.cbr || 1,
         spp = this._spp || 1;
-      /* the research renderer's display curve: 1-exp(-exposure·L), no gamma */
+      /* display: nebulae keep the paper curve 1-exp(-e·L); data volumes
+   use the research reference-figure pipeline (Reinhard then sRGB) */
+      const srgb = (x) => {
+        const m = x / (1 + x);
+        return m <= 0.0031308 ? 12.92 * m : 1.055 * Math.pow(m, 1 / 2.4) - 0.055;
+      };
+      const crv = v.tone ? (x) => srgb(x) : (x) => 1 - Math.exp(-x);
       const tone = (r, g, b, out, q) => {
-        out[q] = 10 + 245 * (1 - Math.exp(-expo * Math.max(0, r)));
-        out[q + 1] = 13 + 242 * (1 - Math.exp(-expo * Math.max(0, g)));
-        out[q + 2] = 17 + 238 * (1 - Math.exp(-expo * Math.max(0, b)));
+        out[q] = 10 + 245 * crv(expo * Math.max(0, r));
+        out[q + 1] = 13 + 242 * crv(expo * Math.max(0, g));
+        out[q + 2] = 17 + 238 * crv(expo * Math.max(0, b));
         out[q + 3] = 255;
       };
       for (let j2 = 0; j2 < RH; j2++) {
@@ -729,10 +735,15 @@
           lin[o + 1] = ag;
           lin[o + 2] = ab;
           if (data) {
+            const srgb = (x) => {
+              const m = x / (1 + x);
+              return m <= 0.0031308 ? 12.92 * m : 1.055 * Math.pow(m, 1 / 2.4) - 0.055;
+            };
+            const crv = v.tone ? srgb : (x) => 1 - Math.exp(-x);
             const q = (j2 * W + i2) * 4;
-            data[q] = 10 + 245 * (1 - Math.exp(-expo * Math.max(0, ar)));
-            data[q + 1] = 13 + 242 * (1 - Math.exp(-expo * Math.max(0, ag)));
-            data[q + 2] = 17 + 238 * (1 - Math.exp(-expo * Math.max(0, ab)));
+            data[q] = 10 + 245 * crv(expo * Math.max(0, ar));
+            data[q + 1] = 13 + 242 * crv(expo * Math.max(0, ag));
+            data[q + 2] = 17 + 238 * crv(expo * Math.max(0, ab));
             data[q + 3] = 255;
           }
         }
@@ -774,6 +785,13 @@
         const v2 = this.pendingAz;
         this.pendingAz = undefined;
         this.vol.tf = v2 / 6.28;
+        this.gtDirty = true;
+        this._azT = t;
+      }
+      if (this.pendingLi !== undefined) {
+        const v3 = this.pendingLi;
+        this.pendingLi = undefined;
+        this.vol.lightAz = v3;
         this.gtDirty = true;
         this._azT = t;
       }
@@ -876,6 +894,7 @@
           seed: this.frameN,
           cbr: this.cbr || 1,
           expo: this.vol.expo,
+          tone: this.vol.tone || 0,
           spp: this._spp,
           S: this.vol.S || 1,
           tf: this.vol.tf,

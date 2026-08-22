@@ -682,3 +682,38 @@ added.
 - **Reset is instant** (18 ms): gaussians seed from the sample pool
   (shellInit ray-casting deleted), and the cache pane refills through
   the sliced bake instead of a synchronous full re-bake.
+
+# Owner rulings — hero round 12 (2026-08-22)
+
+- **"4th time no changes on mech/nova" — the invariant was the display
+  pipeline, not the lighting**: every lighting change was re-normalized
+  by the probe exposure and then crushed by the paper curve (which puts
+  p97 at ~0.95 — the top of every dataset saturates white and the
+  midtones, where all shading lives, disappear). Delivery was verified
+  clean this round (the dev server sends no-store; served bytes carried
+  the edits) — the code changed, the pixels didn't. Data volumes now
+  display through the research repo's own reference-figure pipeline
+  (Reinhard at the p99.5 anchor + sRGB, gsrc metrics.py); nebulae keep
+  the paper curve (approved looks).
+- **The supernova TF recovery was wrong**: the native scene file
+  (data/beautyshots/scene_supernova.json) defines three thin opacity
+  tents (nested translucent shells) and a 7-stop white→blue→green→
+  orange→red palette; the earlier dense high-u ramp + disclosed floor
+  filled the ball with white fog. Native TF now vendored; floor
+  deleted. Mech's TF re-verified against its scene file (alphaArray
+  ramp matches).
+- **Scene lights are COLOURED and the material shades N·L**: mech has a
+  cool-blue key below + warm fill above (the reference's tan top / cool
+  underside is their duet); supernova one warm key I=26. Light field is
+  now RGB with the scene material's 0.2 ambient + 0.8 diffuse and a
+  gradient N·L factor faded by gradient magnitude.
+- **Owner wants light CONTROL**: a "Lights" slider (data volumes only)
+  orbits the scene rig about its natural axis (mech: the hand's long
+  axis; supernova: y). Centre = native. Rebuild rides the TF slider's
+  rest machinery; the cache adapts to the new targets as they come in.
+- **Nebula central stars**: both reference photographs show the remnant
+  as a bright point; added as a tight 1/r² core (bluish-white) in the
+  glow system — analytic in every view, never cached. Butterfly parity
+  improved .23→.15, ring .29→.24.
+- Gate after: super .05 · mech .13 · butterfly .15 · ring .24 (~720
+  spp); trace 16.7ms/0 jank; matrix + check clean.

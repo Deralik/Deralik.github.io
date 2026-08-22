@@ -202,11 +202,18 @@ window.GRT7GL = function () {
         S.pend = null;
       }
       S.kind = vol.kind === 'butterfly' ? 0 : vol.kind === 'ring' ? 1 : 2;
+      /* the light field is RGB (coloured scene lights); pad to RGBA */
       const n = vol.aoN,
-        ao = new Float32Array(vol.aoT.length);
-      ao.set(vol.aoT);
+        n3 = n * n * n,
+        ao = new Float32Array(n3 * 4);
+      for (let i = 0; i < n3; i++) {
+        ao[i * 4] = vol.aoT[i * 3];
+        ao[i * 4 + 1] = vol.aoT[i * 3 + 1];
+        ao[i * 4 + 2] = vol.aoT[i * 3 + 2];
+        ao[i * 4 + 3] = 1;
+      }
       gl.bindTexture(gl.TEXTURE_3D, S.tA);
-      gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, n, n, n, 0, gl.RED, gl.FLOAT, ao);
+      gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA16F, n, n, n, 0, gl.RGBA, gl.FLOAT, ao);
       if (S.kind === 2) {
         /* RG: R = the scalar (colour lookup), G = alpha — pre-classified
            at full res when the vendor carries it, else from the LUT */
@@ -340,6 +347,7 @@ window.GRT7GL = function () {
       gl.uniform1i(U(pB, 'tAccL'), 1);
       gl.uniform1f(U(pB, 'uSu'), o.su);
       gl.uniform1f(U(pB, 'uExpo'), o.expo);
+      gl.uniform1f(U(pB, 'uTone'), o.tone || 0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
 
       /* C: the reference inset — the truth field fully marched */
@@ -355,6 +363,7 @@ window.GRT7GL = function () {
         gl.uniform2f(U(pC, 'uRes'), iw2, ih2);
         gl.uniform2f(U(pC, 'uOff'), ix, vy);
         gl.uniform1f(U(pC, 'uExpo'), o.expo);
+        gl.uniform1f(U(pC, 'uTone'), o.tone || 0);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         gl.disable(gl.SCISSOR_TEST);
       }

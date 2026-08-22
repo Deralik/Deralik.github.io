@@ -159,14 +159,25 @@ behavior, and every demo's label states exactly what is running (owner,
   core-collapse supernova, distributed via Kitware Data by the DOE
   SciDAC Institute for Ultrascale Visualization (vendored 72³,
   js/grt-vol-supernova.js). Both
-  real volumes use the research repo's own scene transfer functions
-  AND its scene lights (recovered from its configs) — they are lit
-  scattering media rendered as single scattering with shadowed
-  transmittance through the known medium, not emissive — and its
-  display curve
-  1−exp(−exposure·L); the supernova adds a small disclosed opacity
-  floor so the shell scattering lights in the real renderer stays
-  visible in this emission-only pipeline. LAUNCH-GATING RIDER (owner decision, 2026-08-22): the supernova's
+  real volumes use the research repo's own scene definitions, read
+  directly from its data/beautyshots scene files (2026-08-22): the
+  native transfer functions (the supernova's is three thin opacity
+  tents — nested translucent shells; an earlier wrong recovery plus a
+  disclosed opacity floor was replaced outright), the scenes' own
+  COLOURED lights (mech: cool-blue key below + warm fill above;
+  supernova: one warm key) and the scene material's terms — 0.2
+  ambient floor, 0.8 diffuse with a gradient N·L factor — rendered as
+  single scattering with shadowed transmittance through the known
+  medium (gentler extinction on the light march than the camera ray,
+  disclosed), lit field baked at 40³. A "Lights" slider orbits each
+  scene's light rig about its natural axis; centre = the native
+  positions. Display: the data volumes use the research repo's own
+  reference-figure pipeline (per-channel Reinhard at the p99.5
+  luminance anchor, then sRGB — gsrc metrics.py policy); the nebula
+  models keep the paper curve 1−exp(−exposure·L). The nebula models
+  also carry their central star as a bright point (the remnant the
+  reference photography shows): a tight 1/r² core in the models' glow
+  system — analytic in every view, never cached. LAUNCH-GATING RIDER (owner decision, 2026-08-22): the supernova's
   reuse terms are UNCONFIRMED — the research repo's own manifest
   records "no explicit license or terms found on the Kitware
   item/collection; retain attribution and confirm reuse terms before
