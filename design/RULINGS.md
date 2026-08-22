@@ -921,3 +921,11 @@ added.
 - Doc entry before the background build lands shows an empty hero for
   a beat (placeholder card covers the morph); adopts the shared field
   the moment it exists.
+
+- Round-19 rider (owner: "after the first training ray the D0 cache
+  goes sparse in a flash"): the deferred-fit path ran finishFit()
+  twice — the second normInit, measuring an already-normalized field,
+  reset the display gain vg from ~12 to ~1 and every splat's draw
+  alpha collapsed. Deferred alloc now builds bins only; normInit runs
+  exactly once in the final finishFit. Verified live: vg 14 stable
+  across training rays (iter 274→634), card stays dense.

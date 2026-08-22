@@ -128,7 +128,15 @@ window.GRTFIELD = (() => {
            chunks instead of one long task (the D0 background build) */
         if (!this.opt.deferFit) for (let i = 0; i < N; i++) this.covFit(i);
       }
-      this.finishFit();
+      if (this.opt.deferFit) {
+        /* structural pieces only — normInit runs ONCE, in the final
+           finishFit(): a second pass on an already-normalized field
+           resets the display gain (vg) to ~1 and every splat goes dim */
+        this.hb(N);
+        this.buildBins();
+      } else {
+        this.finishFit();
+      }
       this.iter = 0;
       this.loss = 1;
     }
