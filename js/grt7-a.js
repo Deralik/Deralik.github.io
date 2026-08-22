@@ -44,22 +44,11 @@
       relocLs: Math.log(0.03),
       ad: true,
     },
-    crab: {
-      s0: 0.038,
-      sv: 0.014,
-      lsMin: -4.0,
-      lsMax: -1.8,
-      sMul: 0.88,
-      relocLs: Math.log(0.048),
-    },
-    bh: { s0: 0.024, sv: 0.009, lsMin: -4.6, lsMax: -2.5, sMul: 0.78, relocLs: Math.log(0.03) },
   };
   const NDEF = {
     butterfly: 12000,
     ring: 12000,
     super: 12000,
-    crab: 3000,
-    bh: 4200,
   };
   class R7 {
     constructor(cv, o = {}) {
@@ -209,11 +198,10 @@
     setVol(kind) {
       this.kind = kind;
       this.field = null;
-      /* the D0 card pre-builds and pre-trains butterfly (mkButterfly) —
-         adopt its volume AND its field: no start delay, and the card's
-         training carries straight into the hero */
-      if (kind === 'butterfly' && !this.vols.butterfly && window.__grtBfly)
-        this.vols.butterfly = window.__grtBfly.vol;
+      /* adopt worker-pre-built volumes (js/grt-skeleton.js queues them
+         under window.__grtVols) — no build cost at entry */
+      if (!this.vols[kind] && window.__grtVols && window.__grtVols[kind])
+        this.vols[kind] = window.__grtVols[kind];
       this.vol =
         this.vols[kind] ||
         (this.vols[kind] =
@@ -225,15 +213,8 @@
       if (this.vol._fresh) this.vol._fresh = false;
       else this.vol.rebuild();
       const n = NDEF[kind];
-      if (this.o.nEl) this.o.nEl.value = n;
       this.st = this.vol._st520 || this.vol.stipple(520);
-      this.field =
-        kind === 'butterfly' &&
-        window.__grtBfly &&
-        window.__grtBfly.vol === this.vol &&
-        window.__grtBfly.field.N === n
-          ? window.__grtBfly.field
-          : new CField(this.vol, n, 9, KO[kind]);
+      this.field = new CField(this.vol, n, 9, KO[kind]);
       this.anim = new RayAnim(this.vol, this.field, 83);
       this.anim.eyeRef = () => this.eyeCur();
       this.anim.lights = () => (this.vol.lightsNow ? this.vol.lightsNow() : null);
@@ -272,13 +253,13 @@
       this.mono = tok('--mono');
     }
     march(iw, ih, t) {
-      /* ONE resolution, ONE integrator, ONE exposure for both panes.
-   Right: a real 1-spp/frame estimate of the emission integral, accumulated
-   in LINEAR radiance, toned at display with the research renderer's curve
-   1-exp(-e·L) at the volume's fixed probe exposure. Left: the same march
-   over the CACHE'S FIELD (gaussians baked to a grid) — a render of what
-   the cache believes, never its splats. The visible differences are
-   genuine: estimator variance right, the cache's residual left. */
+      /* CPU fallback — ONE resolution, ONE integrator, ONE exposure.
+   Both panes take the SAME shared 1-spp sample of the emission
+   integral, accumulated in LINEAR radiance and toned per the volume's
+   display curve; the left pane terminates early into the cache (real
+   prefix + cache-grid remainder, never its splats). The visible
+   differences are genuine: estimator variance right, the cache's
+   residual left. */
       const RW = this.RW || (this.RW = 176),
         RH = Math.max(24, Math.round((RW * ih) / iw));
       if (!this.nzc || this.nzW !== RW || this.nzH !== RH) {
@@ -1136,6 +1117,23 @@
       }
       if (!VW.w) {
         VW.w = new Worker('js/grt-volworker.js');
+        /* a worker failure must never strand the queue: fall back to a
+           synchronous build for the failed job and keep pumping */
+        VW.w.onerror = (ev) => {
+          ev.preventDefault && ev.preventDefault();
+          const j = VW.q.shift();
+          if (j) {
+            const v =
+              j.kind === 'super' && window.GRT_SUPERNOVA
+                ? new DataVol('super', 33, window.GRT_SUPERNOVA)
+                : window.GRTNEB && window.GRTNEB[j.kind]
+                  ? new GaiaVol(j.kind, 33)
+                  : new NebVol(j.kind, 33);
+            v.rebuild();
+            j.res(v);
+          }
+          if (VW.q.length) VW.w.postMessage(VW.q[0].kind);
+        };
         VW.w.onmessage = (e) => {
           const j = VW.q.shift(),
             P = e.data;
@@ -1176,44 +1174,5 @@
       VW.q.push({ kind, res });
       if (VW.q.length === 1) VW.w.postMessage(kind);
     });
-  /* shared butterfly (the D0 card's cache view; the hero adopts it in
-     setVol — one volume, one field, trained continuously across
-     depths). Async: the card shows the pre-generated placeholder until
-     this resolves. */
-  R7.mkButterfly = async () => {
-    if (window.__grtBfly) return window.__grtBfly;
-    const vol = await R7.buildVolAsync('butterfly');
-    if (window.__grtBfly) return window.__grtBfly;
-    /* shape-fitting runs in idle chunks — no single long task */
-    const field = new CField(vol, NDEF.butterfly, 9, { ...KO.butterfly, deferFit: true });
-    const idle = (fn) =>
-      new Promise((r) =>
-        window.requestIdleCallback
-          ? requestIdleCallback(
-              () => {
-                fn();
-                r();
-              },
-              { timeout: 600 },
-            )
-          : setTimeout(() => {
-              fn();
-              r();
-            }, 16),
-      );
-    const CH = 3000;
-    for (let a = 0; a < field.N; a += CH) await idle(() => field.fitSlice(a, a + CH));
-    await idle(() => field.finishFit());
-    /* warm-train in idle slices so the doc's cache pane starts trained
-       (the D0 card never shows this field — it stays on its snapshot) */
-    for (let k = 0; k < 22; k++)
-      await idle(() => {
-        const bt = performance.now();
-        while (performance.now() - bt < 32) field.step(120, 0);
-        field.pulse.fill(-9);
-      });
-    window.__grtBfly = { vol, field };
-    return window.__grtBfly;
-  };
   window.GRT7A = R7;
 })();

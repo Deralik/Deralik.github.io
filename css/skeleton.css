@@ -175,3 +175,13 @@ body.mob .retp .secs{flex-wrap:wrap;row-gap:6px}
 /* doc-cover trend line + mobile tier tag */
 .dh .covq{margin-top:8px;font:400 10.5px/1.7 var(--mono);letter-spacing:.05em;color:var(--absence)}
 .retp .dtier{font:400 var(--fs-floor)/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--absence)}
+
+/* ── under-construction cards: diagonal caution tape in the page's own
+   palette; clicking flashes instead of opening (no dead-end depths) */
+.fl[data-uc]{cursor:not-allowed}
+.fl[data-uc] .slot{background:repeating-linear-gradient(-45deg,transparent 0 12px,color-mix(in srgb,var(--mat) 55%,transparent) 12px 24px)}
+.fl[data-uc] .slot .k{position:relative;padding:7px 18px;background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--mat) 72%,var(--paper)) 0 10px,var(--paper) 10px 20px);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);color:var(--prose)}
+.fl.ucflash .slot{animation:ucdeny .45s ease}
+.fl.ucflash .slot .k{animation:ucdenyk .45s ease}
+@keyframes ucdeny{0%,100%{transform:none}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+@keyframes ucdenyk{0%,100%{filter:none}50%{filter:brightness(1.35)}}

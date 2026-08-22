@@ -18,7 +18,7 @@ ap();d.addEventListener('change',ap);})()</script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&family=Fragment+Mono:ital@0;1&family=Syne:wght@400;600;700&family=Vollkorn:ital,wght@0,400;0,500;1,400&family=Red+Hat+Mono:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="css/skeleton-tokens.css?v=2">
-<link rel="stylesheet" href="css/skeleton.css?v=3">
+<link rel="stylesheet" href="css/skeleton.css?v=4">
 <link rel="stylesheet" href="css/about-skeleton.css?v=3">
 <link rel="stylesheet" href="css/cinr-skeleton.css?v=4">
 <link rel="stylesheet" href="css/grt-skeleton.css?v=3">
@@ -256,7 +256,7 @@ body{display:block;height:auto;overflow:auto}
             <i>02</i><div class="qq">NEE re-examined: the machinery improved, but NEE-only samples target direct light — a different quantity than the cache learns. They may be fundamentally incompatible with the method.</div>
             <i>03</i><div class="qq">The MCMC relocate-and-add heuristic (3DGRUT-inspired) assumes pre-training from images; for live training it may be the wrong rule — under investigation.</div>
             <i>04</i><div class="qq">Extending past single volumes: VDB datasets and multi-object scenes.</div>
-            <i>05</i><div class="qq">A possible new story for the paper — an application exploiting what an explicit, world-space cache can do that implicit ones can't.</div>
+            <i>05</i><div class="qq">A possible new story for the paper — an application exploiting what an explicit, world-space cache can do that existing caches can't.</div>
           </div>
         </div>
         <div class="dsec"><div class="sech">Reference</div>
@@ -266,7 +266,7 @@ body{display:block;height:auto;overflow:auto}
               <p class="refm">submitted to HPG '26 — not accepted · under revision</p>
               <p class="refm">no public artefact yet — numbers are the manuscript's</p>
               <p class="refm">Angela Zhou &amp; Daniel Zavorotny — equal contribution; mentored by David Bauer &amp; Qi Wu; lab of Kwan-Liu Ma</p>
-              <p class="refm">second author, equal weight — more of the code, less of the writing</p></div>
+              <p class="refm">second author, equal weight — more of the code early on, less of the writing</p></div>
             <div><p class="refk">Not claimed</p>
               <p class="refm">GSCache (Bauer et al.) is the lab's — compared against, not authored.</p>
               <p class="refm">The NRC comparison is our implementation, consistent with Müller et al. 2021.</p>
@@ -277,10 +277,10 @@ body{display:block;height:auto;overflow:auto}
               <p class="refm">Training regresses the known radiance field with the method's optimization loop — not the paper's ray-estimated targets, renderer, or scale.</p></div>
           </div>
         </div>
-        <div class="foot"><span data-slot="foot">demo: nebula models (Gaia Sky, credited) + real CT and supernova volumes, computed here · measurements: the manuscript's, one RTX 4090</span><span class="sp"></span><span>depth is scroll</span></div>
+        <div class="foot"><span data-slot="foot">demo: nebula models (Gaia Sky, credited) + a real supernova volume, computed here · measurements: the manuscript's, one RTX 4090</span><span class="sp"></span><span>depth is scroll</span></div>
       </div>
     </div>
-    <div class="fl" data-k="f3" data-label="MelioraOS" tabindex="0" aria-label="MelioraOS">
+    <div class="fl" data-k="f3" data-label="MelioraOS" tabindex="0" aria-label="MelioraOS — under construction" data-uc aria-disabled="true">
       <div class="face face-panel">
         <div class="head"><h3 data-slot="title">MelioraOS</h3><span class="tier" data-slot="tier">under construction</span></div>
         <div class="slot grow" data-slot="figure" data-empty><span class="k">Under construction</span><span class="n">Awaiting real material.</span></div>
@@ -294,7 +294,7 @@ body{display:block;height:auto;overflow:auto}
         <div class="foot"><span class="sp"></span><span>depth is scroll</span></div>
       </div>
     </div>
-    <div class="fl" data-k="f4" data-label="Okibi" tabindex="0" aria-label="Okibi">
+    <div class="fl" data-k="f4" data-label="Okibi" tabindex="0" aria-label="Okibi — under construction" data-uc aria-disabled="true">
       <div class="face face-panel">
         <div class="head"><h3 data-slot="title">Okibi</h3><span class="tier" data-slot="tier">under construction</span></div>
         <div class="slot grow" data-slot="figure" data-empty><span class="k">Under construction</span><span class="n">Awaiting real material.</span></div>
@@ -308,7 +308,7 @@ body{display:block;height:auto;overflow:auto}
         <div class="foot"><span class="sp"></span><span>depth is scroll</span></div>
       </div>
     </div>
-    <div class="fl" data-k="f5" data-label="SPLAT" tabindex="0" aria-label="SPLAT">
+    <div class="fl" data-k="f5" data-label="SPLAT" tabindex="0" aria-label="SPLAT — under construction" data-uc aria-disabled="true">
       <div class="face face-panel">
         <div class="head"><h3 data-slot="title">SPLAT</h3><span class="tier" data-slot="tier">under construction</span></div>
         <div class="slot grow" data-slot="figure" data-empty><span class="k">Under construction</span><span class="n">Awaiting real material.</span></div>
@@ -326,8 +326,8 @@ body{display:block;height:auto;overflow:auto}
   <div class="cwrap"><i class="cbar" id="cbar"></i></div>
 </div>
 
-<script defer src="js/skeleton.js?v=2"></script>
-<script defer src="js/about-skeleton.js?v=2"></script>
+<script defer src="js/skeleton.js?v=3"></script>
+<script defer src="js/about-skeleton.js?v=3"></script>
 <script defer src="js/bunny-grid.js?v=2"></script>
 <script defer src="js/cinr-trace.js?v=2"></script>
 <script defer src="js/cinr-figs.js?v=2"></script>
@@ -339,13 +339,13 @@ body{display:block;height:auto;overflow:auto}
 <script defer src="js/grt2-core.js?v=2"></script>
 <script defer src="js/grt6-core.js?v=5"></script>
 <script defer src="js/grt-vols.js?v=12"></script>
-<script defer src="js/grt-field.js?v=9"></script>
+<script defer src="js/grt-field.js?v=11"></script>
 <script defer src="js/grt7-core.js?v=7"></script>
-<script defer src="js/grt-gl-shaders.js?v=8"></script>
+<script defer src="js/grt-gl-shaders.js?v=9"></script>
 <script defer src="js/grt7-gl.js?v=8"></script>
-<script defer src="js/grt7-a.js?v=20"></script>
+<script defer src="js/grt7-a.js?v=22"></script>
 <script defer src="js/grt8-core.js?v=2"></script>
-<script defer src="js/grt8-b.js?v=4"></script>
+<script defer src="js/grt8-b.js?v=5"></script>
 <script defer src="js/grt9-a.js?v=3"></script>
-<script defer src="js/grt-skeleton.js?v=13"></script>
+<script defer src="js/grt-skeleton.js?v=15"></script>
 </body></html>

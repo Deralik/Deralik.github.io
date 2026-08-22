@@ -672,3 +672,11 @@ volume — license rider is THE launch gate). D0 card shows the
 pre-trained butterfly cache (ray anim, rotation, drag) and the hero
 adopts the same vol+field — no start delay, training continuous
 across depths. Butterfly parity .11. Gates green.
+
+### Round 20 (2026-08-22): review acted on; release-prep riders
+Worker transfer crash (super) + dead-controls window (async build had
+swallowed the wiring) — both fixed and verified; gates re-read true.
+Copy: real-CT foot, implicit-vs-existing, authorship qualifier.
+Comparison figure stacks on mobile. About figures re-theme (window
+resize + load race). Heatmap snapshot refreshed (ruled vendored).
+UC cards: caution tape + flash-not-open. LAN server for owner mobile.

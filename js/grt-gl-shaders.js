@@ -184,7 +184,7 @@ vec3 emissionD(vec3 p,float d){
 uniform float uExpo,uTone;
 /* two display curves, both the research repo's own: the nebulae keep the
    paper curve 1-exp(-e·L); the data volumes use the reference-figure
-   pipeline (per-channel Reinhard at the p99.5 anchor, then sRGB) — the
+   pipeline (per-channel Reinhard at the p90 midtone anchor, then sRGB) — the
    curve the researchers actually stare at, with the midtones intact */
 vec4 tone(vec3 L){
   vec3 x=uExpo*max(L,vec3(0.)),d;

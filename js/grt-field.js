@@ -124,26 +124,11 @@ window.GRTFIELD = (() => {
       for (let i = 0; i < N; i++) this.seed(i);
       if (this.opt.ad) {
         this.buildSBins();
-        /* deferFit: the caller runs fitSlice()/finishFit() across idle
-           chunks instead of one long task (the D0 background build) */
-        if (!this.opt.deferFit) for (let i = 0; i < N; i++) this.covFit(i);
+        for (let i = 0; i < N; i++) this.covFit(i);
       }
-      if (this.opt.deferFit) {
-        /* structural pieces only — normInit runs ONCE, in the final
-           finishFit(): a second pass on an already-normalized field
-           resets the display gain (vg) to ~1 and every splat goes dim */
-        this.hb(N);
-        this.buildBins();
-      } else {
-        this.finishFit();
-      }
+      this.finishFit();
       this.iter = 0;
       this.loss = 1;
-    }
-    fitSlice(a, b) {
-      if (!this.opt.ad || !this.sbOff) return;
-      const e = Math.min(this.N, b);
-      for (let i = a; i < e; i++) this.covFit(i);
     }
     finishFit() {
       this.bMaxG = 1;
@@ -655,7 +640,17 @@ window.GRTFIELD = (() => {
     step(B, now) {
       let L = 0;
       const dk = 1 / (1 + this.iter / 2200);
-      if (this.iter % 30 === 0) this.buildBins();
+      if (this.iter % 30 === 0) {
+        this.buildBins();
+        /* SELF-HEALING display gain: derive vg from the field's CURRENT
+           mean splat luminance instead of trusting one init-time
+           measurement — any ordering that mis-measures cs (the bimodal
+           dark-card sessions) corrects itself within 30 iterations */
+        let ml = 0;
+        for (let i = 0; i < this.N; i++) ml += (this.cr[i] + this.cg[i] + this.cb[i]) / 3;
+        ml /= this.N;
+        if (ml > 1e-5) this.vg = Math.min(14, Math.max(1, 0.32 / ml));
+      }
       for (let b = 0; b < B; b++) {
         const u = this.rand(),
           pool = u < 0.5 ? this.lit : u < 0.75 ? this.S : this.dark,

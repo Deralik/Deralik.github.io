@@ -176,7 +176,7 @@
     },
   };
 
-  fetch('data/about-record.json?v=2')
+  fetch('data/about-record.json?v=3')
     .then((r) => r.json())
     .then((rec) => {
       const S = {};
@@ -232,6 +232,22 @@
         const m1 = document.getElementById('about-vrec');
         if (m1) ro.observe(m1);
       }
+      /* the theme toggle re-themes canvases via a synthetic WINDOW
+         resize — ResizeObserver never fires for it (element sizes are
+         unchanged), so listen to both; and redraw once at load in case
+         the first draw raced the token stylesheet */
+      let q2;
+      addEventListener('resize', () => {
+        clearTimeout(q2);
+        q2 = setTimeout(() => {
+          rndr();
+          mcr();
+        }, 60);
+      });
+      addEventListener('load', () => {
+        rndr();
+        mcr();
+      });
     })
     .catch((err) => {
       const e = document.getElementById('about-tl');
@@ -1459,7 +1475,7 @@
   (function gh() {
     const grids = [...document.querySelectorAll('.ghgrid')];
     if (!grids.length) return;
-    fetch('data/about-record.json?v=2')
+    fetch('data/about-record.json?v=3')
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((rec) => {
         const snap = rec.contributions;

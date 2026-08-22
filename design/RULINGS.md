@@ -939,3 +939,54 @@ added.
   TRAINS LIVE IN THE DEMO"); the real field builds and warm-trains in
   background idle slices purely for the doc's hero to adopt (verified:
   adopted at iter ~190, training continues in the demo).
+
+# Round 20 — adversarial review acted on + owner riders (2026-08-22)
+
+Review findings (reviewer agent; each re-verified first-hand):
+- FIXED (was live-breaking): the volume worker threw on every load —
+  DataVol.D is the scalar 1 and its non-buffer hit the transfer list;
+  the supernova never prewarmed and the queue wedged. Guard on
+  .buffer + a worker onerror fallback that sync-builds and keeps
+  pumping. All three volumes now prewarm; zero page errors at 12s.
+- FIXED (worse than reported): R7 construction AND all control wiring
+  had moved behind the async build — every grt button was dead for
+  the first ~4-5s (this also made herogate/lumgate measure butterfly
+  under super's reference — the "regression" was mis-measurement).
+  Controls now wire at init with a queued-click fallback; R7 waits
+  only for the worker volume; warm training runs after, against R7's
+  own field; the shared-field machinery (mkButterfly/deferFit) is
+  deleted. Early click verified: super active at 2.5s.
+- FIXED: doc foot claimed "real CT" (MechHand gone) → "a real
+  supernova volume". "implicit ones" → "existing caches" (GSCache is
+  explicit; HPG Review 4 flagged exactly this framing). Authorship
+  line restored the owner's qualifier: "more of the code early on".
+- FIXED: comparison figure at ≤560px stacks into three rows (was
+  unreadable slivers with colliding labels); drag gating follows.
+- FIXED: three stale source comments (march() header, p99.5 anchor,
+  card-field note) — this audience reads source.
+- REMOVED: dead config (KO/NDEF crab+bh, nEl plumbing, tfr branch).
+- Gates after: butterfly .12 · ring .27 · super .07; lumgate super
+  .76/.911 green; matrix + check clean.
+- OPEN (owner decisions): supernova license (THE launch gate);
+  "QUERIABLE" spelling in the comparison figure (ruled verbatim r13 —
+  reviewer notes it may read as a typo to GPU readers).
+
+Owner riders this round:
+- Card label trimmed to "THE CACHE — BAKED SNAPSHOT"; card rotation
+  self-recovers after a drag (Cam2 zeroes auto on grab; ramp added).
+- Theme-toggle hole: the toggle re-themes canvases via a synthetic
+  WINDOW resize, but the About figures redrew only via
+  ResizeObserver (sizes unchanged on toggle → stale colors;
+  "sometimes" = the load race with the token stylesheet). Both fixed
+  (window-resize listener + redraw at load); audit of every other
+  figure: per-frame token reads or window-resize redraws — covered.
+- GitHub heatmap is a VENDORED SNAPSHOT by ruling (2026-08-19, no
+  reader IPs to third parties) — not live by design; snapshot
+  refreshed to 2026-08-22 (521 contributions; the sweep owns future
+  refreshes).
+- Under-construction cards (MelioraOS/Okibi/SPLAT): diagonal caution
+  tape in the page's own palette; clicks/Enter flash the card (shake +
+  band pulse) instead of opening — no dead-end depths. aria-disabled
+  set; mobile strip behaviour unchanged.
+- Owner mobile check: LAN server at http://192.168.1.93:8001 (same
+  no-store handler, 0.0.0.0 bind; phone on the same Wi-Fi).

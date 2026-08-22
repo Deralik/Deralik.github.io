@@ -44,7 +44,9 @@
       if (!this.solo) {
         this.cam.gate = (e) => {
           const b = cv.getBoundingClientRect(),
-            mx = e.clientX - b.left;
+            mx = e.clientX - b.left,
+            my = e.clientY - b.top;
+          if (this._vertY) return !(my >= this._vertY);
           return !(this._p3 && mx >= this._p3);
         };
         this.st = this.vol.stipple(240);
@@ -209,6 +211,29 @@
       }
       g.fillStyle = this.cw;
       g.fillRect(0, 0, w, h);
+      /* narrow screens: three ROWS — the side-by-side panes collapse
+         into unreadable slivers below ~560px (mobile is its own design) */
+      if (w < 560) {
+        const ph = (h - 16) / 3;
+        this._p3 = null;
+        this._vertY = 2 * (ph + 8);
+        const rows = [this.nrc, this.gsc, this.ours];
+        for (let i = 0; i < 3; i++) {
+          g.save();
+          g.translate(0, i * (ph + 8));
+          g.beginPath();
+          g.rect(0, 0, w, ph);
+          g.clip();
+          rows[i].call(this, g, 0, w, ph, t);
+          g.restore();
+          if (i < 2) {
+            g.fillStyle = GRT.alpha(GRT.figPaper, 0.18);
+            g.fillRect(0, (i + 1) * (ph + 8) - 4, w, 1);
+          }
+        }
+        return;
+      }
+      this._vertY = null;
       const gap = 10,
         pw = (w - 2 * gap) / 3;
       this._p3 = 2 * (pw + gap);

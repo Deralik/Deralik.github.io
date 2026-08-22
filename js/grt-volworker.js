@@ -52,7 +52,9 @@ self.onmessage = (e) => {
     ctr: vol.ctr,
   };
   const bufs = [];
+  /* DataVol.D is the scalar 1 (its density lives in the vendored grid) —
+     transfer only real typed arrays or postMessage throws */
   for (const k of ['D', 'grid', 'cDe', 'cAo', 'cSt', 'aoT', 'S3', 'T520', 'T240'])
-    if (P[k] && bufs.indexOf(P[k].buffer) < 0) bufs.push(P[k].buffer);
+    if (P[k] && P[k].buffer && bufs.indexOf(P[k].buffer) < 0) bufs.push(P[k].buffer);
   postMessage(P, bufs);
 };

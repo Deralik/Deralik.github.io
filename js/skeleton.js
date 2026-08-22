@@ -346,6 +346,14 @@
     { passive: false },
   );
 
+  /* under-construction cards don't open — they flash (owner: playful
+     caution tape, no dead-end navigation) */
+  const ucFlash = (fl) => {
+    fl.classList.remove('ucflash');
+    void fl.offsetWidth;
+    fl.classList.add('ucflash');
+    setTimeout(() => fl.classList.remove('ucflash'), 500);
+  };
   pbody.addEventListener('click', (e) => {
     const fl = e.target.closest('.fl');
     if (!fl || isMob()) return;
@@ -354,6 +362,10 @@
       return;
     } /* one level up, as labelled */
     if (e.target.closest('.face-doc')) return;
+    if (fl.dataset.uc !== undefined) {
+      ucFlash(fl);
+      return;
+    }
     open = fl.dataset.k;
     depth = 1;
     apply();
@@ -372,6 +384,10 @@
       tg.dataset.face !== 'doc'
     ) {
       e.preventDefault();
+      if (tg.dataset.uc !== undefined) {
+        ucFlash(tg);
+        return;
+      }
       open = tg.dataset.k;
       depth = 1;
       apply();

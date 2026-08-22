@@ -73,6 +73,8 @@
       g.fillStyle = GRT.tok('--well');
       g.fillRect(0, 0, w, h);
       pc = pc || cardData();
+      /* rotation self-recovers after a drag (Cam2 zeroes auto on grab) */
+      if (!cam.dr) cam.auto += (0.18 - cam.auto) * Math.min(1, dt * 0.8);
       cam.step(dt);
       const pr = cam.proj(),
         S = h * 0.46,
@@ -179,13 +181,8 @@
       }
       g.fillStyle = GRT.tok('--absence');
       g.font = '500 8.5px ' + GRT.tok('--mono');
-      /* honest label: the card is a baked snapshot; training runs in
-         the doc's demo */
-      g.fillText(
-        GRT.elide(g, 'THE CACHE — BAKED SNAPSHOT · TRAINS LIVE IN THE DEMO', w - 12),
-        6,
-        h - 6,
-      );
+      /* honest label: the card is a baked snapshot */
+      g.fillText(GRT.elide(g, 'THE CACHE — BAKED SNAPSHOT', w - 12), 6, h - 6);
     });
     const chip = $('grt-chip');
     if (chip)
@@ -232,55 +229,59 @@
    it off the first paint (the site never waits on a demo); its loop only
    draws once visible anyway */
     if (hero) {
-      const build = () => {
-        const R7 = new GRT7A(hero, { ui: $('grt-ro'), nEl: null });
-        window.__grt = R7;
-        const vb = [
-          ['grt-v0', 'butterfly'],
-          ['grt-v1', 'ring'],
-          ['grt-v3', 'super'],
-        ];
-        const azw = $('grt-az') ? $('grt-az').parentElement : null;
-        const azv = () => {
-          if (azw) azw.style.display = R7.vol.tfr === false ? 'none' : '';
-          const az2 = $('grt-az');
-          if (az2) az2.value = R7.vol.tf * 6.28;
-          /* the light-orbit slider exists only for the lit data volumes */
-          const liw = $('grt-liw');
-          if (liw) liw.style.display = R7.vol.T && R7.vol.T.lights ? '' : 'none';
-          const li = $('grt-li');
-          if (li) li.value = R7.vol.lightAz || 0;
-        };
-        for (const [id, k] of vb) {
-          const el = $(id);
-          if (el)
-            el.onclick = () => {
-              R7.setVol(k);
-              azv();
-              for (const [id2] of vb) $(id2).classList.toggle('on', id2 === id);
-            };
-        }
-        azv();
-        const rs = $('grt-reset');
-        if (rs) rs.onclick = () => R7.resetField();
-        const ob = $('grt-orbit');
-        if (ob) {
-          const IC = {
-            /* pause bars while orbiting, play triangle while paused */
-            on: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="5.6" y1="3.5" x2="5.6" y2="12.5"/><line x1="10.4" y1="3.5" x2="10.4" y2="12.5"/></g></svg>',
-            off: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M5.2 3.4v9.2L13 8z" fill="currentColor"/></svg>',
-          };
-          ob.onclick = () => {
-            R7.setOrbit(!R7.orbitOn);
-            const k = R7.orbitOn ? 'on' : 'off';
-            ob.innerHTML = IC[k] + 'Orbit · ' + k;
-          };
-        }
-        const az = $('grt-az');
-        if (az) az.oninput = (e) => (R7.pendingAz = +e.target.value);
-        const li2 = $('grt-li');
-        if (li2) li2.oninput = (e) => (R7.pendingLi = +e.target.value);
+      /* controls are wired IMMEDIATELY — a click before the hero exists
+         queues and applies the moment it lands (buttons must never be
+         dead while the background build runs) */
+      const pend = { kind: null };
+      const vb = [
+        ['grt-v0', 'butterfly'],
+        ['grt-v1', 'ring'],
+        ['grt-v3', 'super'],
+      ];
+      const azv = () => {
+        const R7 = window.__grt;
+        if (!R7) return;
+        const az2 = $('grt-az');
+        if (az2) az2.value = R7.vol.tf * 6.28;
+        /* the light-orbit slider exists only for the lit data volumes */
+        const liw = $('grt-liw');
+        if (liw) liw.style.display = R7.vol.T && R7.vol.T.lights ? '' : 'none';
+        const li = $('grt-li');
+        if (li) li.value = R7.vol.lightAz || 0;
       };
+      const pick = (id, k) => {
+        const R7 = window.__grt;
+        if (R7) {
+          R7.setVol(k);
+          azv();
+        } else pend.kind = k;
+        for (const [id2] of vb) $(id2) && $(id2).classList.toggle('on', id2 === id);
+      };
+      for (const [id, k] of vb) {
+        const el = $(id);
+        if (el) el.onclick = () => pick(id, k);
+      }
+      const rs = $('grt-reset');
+      if (rs) rs.onclick = () => window.__grt && window.__grt.resetField();
+      const ob = $('grt-orbit');
+      if (ob) {
+        const IC = {
+          /* pause bars while orbiting, play triangle while paused */
+          on: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="5.6" y1="3.5" x2="5.6" y2="12.5"/><line x1="10.4" y1="3.5" x2="10.4" y2="12.5"/></g></svg>',
+          off: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M5.2 3.4v9.2L13 8z" fill="currentColor"/></svg>',
+        };
+        ob.onclick = () => {
+          const R7 = window.__grt;
+          if (!R7) return;
+          R7.setOrbit(!R7.orbitOn);
+          const k = R7.orbitOn ? 'on' : 'off';
+          ob.innerHTML = IC[k] + 'Orbit · ' + k;
+        };
+      }
+      const az = $('grt-az');
+      if (az) az.oninput = (e) => window.__grt && (window.__grt.pendingAz = +e.target.value);
+      const li2 = $('grt-li');
+      if (li2) li2.oninput = (e) => window.__grt && (window.__grt.pendingLi = +e.target.value);
       const warmAll = () => {
         const rest = ['ring', 'super'];
         const one = () => {
@@ -296,19 +297,45 @@
           ? requestIdleCallback(one, { timeout: 4000 })
           : setTimeout(one, 800);
       };
-      const buildThenWarm = () => {
-        /* the shared butterfly builds IN THE WORKER; the hero constructs
-           only once it lands (adopting it), then the remaining volumes
-           warm through the same worker — no main-thread build freezes */
+      const buildIt = () => {
+        /* the butterfly volume builds IN THE WORKER; the hero constructs
+           the moment it lands (fast — the volume is pre-built), applies
+           any queued click, warm-trains its field at idle, and the
+           remaining volumes warm through the same worker */
         const done = () => {
-          build();
+          const R7 = new GRT7A(hero, { ui: $('grt-ro') });
+          window.__grt = R7;
+          if (pend.kind && pend.kind !== 'butterfly') {
+            R7.setVol(pend.kind);
+            pend.kind = null;
+          }
+          azv();
+          /* idle warm: the doc's cache pane starts trained even if the
+             user waits on D0 */
+          let wl = 20;
+          const warm1 = () => {
+            if (wl-- <= 0 || !R7.field || R7.field.iter > 900) return;
+            const bt = performance.now();
+            while (performance.now() - bt < 30) R7.field.step(120, 0);
+            R7.field.pulse.fill(-9);
+            window.requestIdleCallback
+              ? requestIdleCallback(warm1, { timeout: 1500 })
+              : setTimeout(warm1, 120);
+          };
+          window.requestIdleCallback
+            ? requestIdleCallback(warm1, { timeout: 1500 })
+            : setTimeout(warm1, 120);
           warmAll();
         };
-        if (window.GRT7A && GRT7A.mkButterfly) GRT7A.mkButterfly().then(done, done);
+        if (window.GRT7A && GRT7A.buildVolAsync)
+          GRT7A.buildVolAsync('butterfly').then((v) => {
+            window.__grtVols = { butterfly: v };
+            done();
+          }, done);
         else done();
       };
-      if (window.requestIdleCallback) requestIdleCallback(buildThenWarm, { timeout: 400 });
-      else setTimeout(buildThenWarm, 50);
+      if (window.requestIdleCallback) requestIdleCallback(buildIt, { timeout: 400 });
+      else setTimeout(buildIt, 50);
     }
     if ($('grt-cv-three')) new GRT8T($('grt-cv-three'));
     if ($('grt-cv-pipe')) new GRT9A($('grt-cv-pipe'));
