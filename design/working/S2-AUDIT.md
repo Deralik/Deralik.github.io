@@ -649,3 +649,11 @@ ramp). Button icons + trimmed dataset titles. Gates green.
 κ 48→420 from the native per-voxel-opacity compositing law — solid +
 un-milky in one change; luminance stats matched to the reference
 figure. Vertical drag re-flipped. mech parity .41 (disclosed, gate ok).
+
+### Owner round 16 (2026-08-22): lumgate born; aniso + cached glow land
+Recurring brightness failure answered with machinery (lumgate: live-
+pane display stats vs the reference figures, hard gate) + root cause
+(exact per-segment compositing everywhere; probe couldn't resolve
+κ=420). Anisotropic kernels (covariance-fitted, geo-normalized, iso-
+equivalent identity); cache learns stars+halos (dead glowTerm removed);
+coverage-aware relocation; perf profiled → 16.7ms/0 restored ×4 sets.

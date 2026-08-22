@@ -116,18 +116,6 @@ float density(vec3 p){
   }
   return (uKind==0?sigButterfly(p):sigRing(p))*3.2;
 }
-/* the known glow alone — computed along cache suffixes, never cached */
-vec3 glowTerm(vec3 p){
-  if(uKind==2)return vec3(0.);
-  vec3 tc=(p/uHe+1.)*.5;
-  vec3 ao=texture(tA,tc).rgb;
-  float lD=length(p)*uS,lDs=max(.03,lD);
-  float g1=.7/((lDs*lDs+.12)*10.),e2=exp(-lDs*lDs*lDs*.09),T=lDs*2.3+2.6;
-  /* the central star itself — the remnant the photos show as a bright
-     point: a tight 1/r² core on top of the broad halo */
-  float g2=.012/(lDs*lDs+.0012);
-  return (.012*(max(vec3(0.),.4+.5*cos(vec3(T-.785,T+.079,T+.785)))*e2+vec3(.57,1.85,1.)*g1)+vec3(.75,.85,1.)*g2)*ao*uInvG;
-}
 vec3 emissionD(vec3 p,float d){
   vec3 tc=(p/uHe+1.)*.5;
   vec3 ao=texture(tA,tc).rgb;
@@ -319,8 +307,10 @@ void main(){
     for(float k=0.;k<64.;k++){
       vec3 p=uEye+d*(tt.x+(k+.5)*dt);
       float dd=density(p);
-      Tr*=exp(-uKap*dd*dt);
-      s+=emissionD(p,dd)*Tr*dt;
+      /* exact per-segment compositing — stable at optically thick κ */
+      float st=uKap*dd*dt,Tn=exp(-st);
+      s+=emissionD(p,dd)*Tr*(st>1e-5?(1.-Tn)/st*dt:dt);
+      Tr*=Tn;
     }
   }
   o=tone(s);

@@ -510,10 +510,21 @@ window.GRTVOLS = (() => {
               j2 = Math.max(0, Math.min(EY - 1, (((p1 / he[1] + 1) / 2) * EY) | 0)),
               k3 = Math.max(0, Math.min(EZ - 1, (((p2 / he[2] + 1) / 2) * EZ) | 0)),
               o2 = ((k3 * EY + j2) * EX + i2) * 3;
-            if (kap) T *= Math.exp(-kap * this.dget(p0, p1, p2) * dt);
-            sr += E[o2] * T * dt;
-            sg += E[o2 + 1] * T * dt;
-            sb += E[o2 + 2] * T * dt;
+            /* EXACT per-segment compositing: at high κ a step can span
+               many optical depths — E·T·dt under-resolves and the probe
+               (hence the exposure) collapses. (1-e^-στ)/στ is exact for
+               piecewise-constant properties at ANY κ. */
+            let fac = dt,
+              Tn = 1;
+            if (kap) {
+              const stau = kap * this.dget(p0, p1, p2) * dt;
+              Tn = Math.exp(-stau);
+              fac = stau > 1e-5 ? ((1 - Tn) / stau) * dt : dt;
+            }
+            sr += E[o2] * T * fac;
+            sg += E[o2 + 1] * T * fac;
+            sb += E[o2 + 2] * T * fac;
+            T *= Tn;
           }
           const s = this.tone ? 0.2126 * sr + 0.7152 * sg + 0.0722 * sb : (sr + sg + sb) / 3;
           if (s > 0) ls.push(s);
@@ -526,7 +537,9 @@ window.GRTVOLS = (() => {
      a flat distribution pushes the whole object into the Reinhard
      shoulder and it washes white (owner rounds 4–5) */
         const a = ls.length ? ls[Math.min(ls.length - 1, Math.floor(ls.length * 0.9))] : 1;
-        this.expo = 1.5 / Math.max(a, 1e-4);
+        /* expoK: measured trim against the reference figure's display
+           stats (scripts/lumgate.mjs is the gate that owns this) */
+        this.expo = (1.5 / Math.max(a, 1e-4)) * ((this.T && this.T.expoK) || 1);
         return;
       }
       const p = ls.length ? ls[Math.min(ls.length - 1, Math.floor(ls.length * 0.97))] : 1;
@@ -690,6 +703,7 @@ window.GRTVOLS = (() => {
       kap: 6,
       kapL: 2.5,
       gk: 0.5,
+      expoK: 2.5,
       /* the scene's own warm key light (beautyshots/scene_supernova.json;
          its second light is 1.4% of the key — dropped) */
       lights: [[1.86, 1.48, 1.73, 26.0, 1, 0.65, 0.35]],
@@ -980,10 +994,35 @@ window.GRTVOLS = (() => {
     emitD(x, y, z) {
       return this.sig(x, y, z);
     }
-    /* training targets: the medium's CONTINUOUS emission only — the
-       glow is a known analytic term the renderer computes, not caches */
+    /* training targets: the FULL continuous emission — dust AND the
+       star + halo (owner 2026-08-22: the cache learns the whole field;
+       the cache view shows gaussians on the star) */
     gtc(p) {
-      return this.emitDust(p[0], p[1], p[2]);
+      return this.emitAt(p[0], p[1], p[2]);
+    }
+    /* the density pool never lands on the star (no dust there) — blend
+       in star/halo samples so kernels are allocated where the glow is */
+    samples(n) {
+      const base = super.samples(Math.round(n * 0.92)),
+        m = n - base.length,
+        S = this.S || 1;
+      for (let i = 0; i < m; i++) {
+        const core = this.r() < 0.35,
+          rr = core ? (0.02 + 0.1 * this.r()) / (S / 3.4) : 0.12 + 0.45 * this.r(),
+          th = this.r() * 6.283,
+          ph = Math.acos(2 * this.r() - 1);
+        base.push([
+          rr * Math.sin(ph) * Math.cos(th),
+          rr * Math.cos(ph),
+          rr * Math.sin(ph) * Math.sin(th),
+        ]);
+      }
+      return base;
+    }
+    /* the training pool thins near the star: a tiny bright ball needs a
+       handful of kernels, not a pile that overloads its bin cells */
+    litThin(p) {
+      return p[0] * p[0] + p[1] * p[1] + p[2] * p[2] < 0.018 ? 0.2 : 1;
     }
     /* after the shader's computeColor, radius in ITS units (lD = r·S):
    blue-white centre dust -> amber edge dust (edge colour matched to the
@@ -1040,7 +1079,9 @@ window.GRTVOLS = (() => {
         K = 0.012,
         /* the central star itself (the remnant, a bright point in the
            reference photography): tight 1/r² core, bluish white */
-        g2 = 0.012 / (lD * lD + 0.0012);
+        g2 =
+          (this.kind === 'butterfly' ? 0.02 : 0.012) /
+          (lD * lD + (this.kind === 'butterfly' ? 0.003 : 0.0012));
       return [
         K * (Math.max(0, 0.4 + 0.5 * Math.cos(T - 0.785)) * e + 0.57 * g1) + 0.75 * g2,
         K * (Math.max(0, 0.4 + 0.5 * Math.cos(T + 0.079)) * e + 1.85 * g1) + 0.85 * g2,

@@ -795,3 +795,39 @@ added.
   answer.
 - **Vertical drag flipped back** (owner: only the vertical direction
   was wrong after round 14's double flip).
+
+# Owner rulings — hero round 16 (2026-08-22)
+
+- **"You made the hand even brighter — 7th or 8th time" (owner, justly)**:
+  the recurring failure was verifying brightness OFF-TARGET (offline
+  renders, eyeballed shots) while the live pane drifted. Two standing
+  fixes: (a) ROOT CAUSE — the κ=420 change broke the exposure probe,
+  whose 22-step march cannot resolve an optically thick medium (per-
+  step optical depth ~6): every march in the pipeline now uses EXACT
+  per-segment compositing ((1−e^-στ)/στ — stable at any κ); (b)
+  MACHINERY — scripts/lumgate.mjs, a hard gate that reads the LIVE
+  pane's accumulation, applies the dataset's own display transform,
+  and fails unless object-pixel display-luminance stats sit inside the
+  reference figure's envelope (mech .74/.84 vs ref .82/.93 ok; super
+  trimmed by a measured expoK=2.5 to .75/.91 vs ref .86/.91 ok).
+  Brightness claims without a green lumgate don't ship.
+- **Anisotropic gaussians land** (the queued structural answer to
+  "cached is softer"): per-gaussian frame + shape ratios fitted from
+  the local sample covariance (Jacobi eigen), geo-normalized so the
+  trained scale/bounds/relocation/normalized-SGD machinery is
+  untouched; identity shape ≡ the old isotropic math (panel figures
+  unchanged). Elongation capped at 1.25 (flattening free, elongation
+  inflates every query); tight per-axis bake extents.
+- **The cache learns the stars and halos** (owner ruling): gaia targets
+  are the FULL emission now; the pool blends 8% star/halo samples; the
+  dead analytic glow add-ons were removed (the GL suffix had silently
+  lost its glow term — the cached pane's missing halo was real).
+  Relocation is coverage-aware (skips already-covered lit points —
+  the star had been swallowing every relocation). Butterfly's core
+  widened (K2 .02, e2c .003).
+- **Perf saga, measured not guessed**: profiling showed F.step at 78%
+  — the star's packed bin cells. Fixes: core pool share 2.8%, lit-pool
+  thinning near the star (litThin), EXPL LUT in the training loops,
+  B 140→120. All four datasets back to 16.7ms/0 jank.
+- Gate: butterfly .23 · ring .28 · mech .41 · super .07 (the nebulae's
+  resid now includes the halo-learning burden); lumgate green both.

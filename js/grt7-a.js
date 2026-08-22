@@ -432,11 +432,10 @@
                 const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
                   j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
                   k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
-                const o3 = ((k3 * EY + j3) * EX + i3) * 3,
-                  gw = v.glowAt ? v.glowAt(x, y, z) : null;
-                cr2 += (C[o3] * cbr + (gw ? gw[0] : 0)) * Ts * dts;
-                cg2 += (C[o3 + 1] * cbr + (gw ? gw[1] : 0)) * Ts * dts;
-                cb2 += (C[o3 + 2] * cbr + (gw ? gw[2] : 0)) * Ts * dts;
+                const o3 = ((k3 * EY + j3) * EX + i3) * 3;
+                cr2 += C[o3] * cbr * Ts * dts;
+                cg2 += C[o3 + 1] * cbr * Ts * dts;
+                cb2 += C[o3 + 2] * cbr * Ts * dts;
               }
             }
             const fr = 1 - w + w * (tt < sTerm ? 1 : 0);
@@ -600,9 +599,13 @@
                 x = e[0] + dx * tk,
                 y = e[1] + dy * tk,
                 z = e[2] + dz * tk;
+              /* exact per-segment compositing — stable at thick κ */
+              let fac = dt;
               if (kap) {
-                tau += kap * v.dget(x, y, z) * dt;
+                const st = kap * v.dget(x, y, z) * dt;
                 T = Math.exp(-tau);
+                fac = st > 1e-5 ? ((1 - Math.exp(-st)) / st) * dt : dt;
+                tau += st;
               }
               let er2, eg2, eb2;
               if (useGrid) {
@@ -619,28 +622,22 @@
                 eg2 = c2[1];
                 eb2 = c2[2];
               }
-              tfr += er2 * T * dt;
-              tfg += eg2 * T * dt;
-              tfb += eb2 * T * dt;
+              tfr += er2 * T * fac;
+              tfg += eg2 * T * fac;
+              tfb += eb2 * T * fac;
               if (!crossed && tau > TAU0) crossed = true;
               if (!crossed) {
-                tpr += er2 * T * dt;
-                tpg += eg2 * T * dt;
-                tpb += eb2 * T * dt;
+                tpr += er2 * T * fac;
+                tpg += eg2 * T * fac;
+                tpb += eb2 * T * fac;
               } else {
                 const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
                   j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
                   k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
                 const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-                csr += C[o3] * T * dt;
-                csg += C[o3 + 1] * T * dt;
-                csb += C[o3 + 2] * T * dt;
-                const gw = v.glowAt ? v.glowAt(x, y, z) : null;
-                if (gw) {
-                  tpr += gw[0] * T * dt;
-                  tpg += gw[1] * T * dt;
-                  tpb += gw[2] * T * dt;
-                }
+                csr += C[o3] * T * fac;
+                csg += C[o3 + 1] * T * fac;
+                csb += C[o3 + 2] * T * fac;
               }
             }
           }
@@ -720,22 +717,30 @@
                 x = e[0] + dx * tk,
                 y = e[1] + dy * tk,
                 z = e[2] + dz * tk;
-              if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dt);
+              /* exact per-segment compositing — stable at thick κ */
+              let fac = dt,
+                Tn = 1;
+              if (kap) {
+                const st = kap * v.dget(x, y, z) * dt;
+                Tn = Math.exp(-st);
+                fac = st > 1e-5 ? ((1 - Tn) / st) * dt : dt;
+              }
               if (GR) {
                 const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
                   j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
                   k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
                 const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-                ar += GR[o3] * T * dt;
-                ag += GR[o3 + 1] * T * dt;
-                ab += GR[o3 + 2] * T * dt;
+                ar += GR[o3] * T * fac;
+                ag += GR[o3 + 1] * T * fac;
+                ab += GR[o3 + 2] * T * fac;
               } else {
                 /* GR = null → the CONTINUOUS truth (what the panes show) */
                 const c = v.emitAt(x, y, z);
-                ar += c[0] * T * dt;
-                ag += c[1] * T * dt;
-                ab += c[2] * T * dt;
+                ar += c[0] * T * fac;
+                ag += c[1] * T * fac;
+                ab += c[2] * T * fac;
               }
+              T *= Tn;
             }
           }
           const o = (j2 * W + i2) * 3;
@@ -772,7 +777,7 @@
       if (!this.cam.dr)
         this.cam.auto += ((this.orbitOn ? 0.12 : 0) - this.cam.auto) * Math.min(1, dt * 1.2);
       this.cam.step(dt);
-      const B = 140;
+      const B = 120;
       F.step(B, t);
       if (dt < 0.022) F.step(B, t);
       /* cache pane source: sliced re-bake, 1/14 of the gaussians per frame,
