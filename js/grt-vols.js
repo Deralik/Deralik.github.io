@@ -327,21 +327,24 @@ window.GRTVOLS = (() => {
                 z = (-1 + (2 * (k + 0.5)) / EZ) * he[2],
                 p = (k * EY + j) * EX + i;
               this.cDe[p] = this.emitD(x, y, z);
-              const nb =
-                (this.dget(x + step, y, z) +
-                  this.dget(x - step, y, z) +
-                  this.dget(x, y + step, z) +
-                  this.dget(x, y - step, z) +
-                  this.dget(x, y, z + step) +
-                  this.dget(x, y, z - step)) /
-                6;
-              this.cAo[p] = Math.exp(-(this.aoK || 1.9) * nb);
               const st = this.star(x, y, z);
               if (st) {
                 this.cSt[p * 3] = st[0];
                 this.cSt[p * 3 + 1] = st[1];
                 this.cSt[p * 3 + 2] = st[2];
               }
+            }
+        /* ONE lighting source of truth: buildAO fills aoT (plain AO for
+           the nebulae, the scenes' shadowed LIGHT FIELD for the real
+           volumes); the grid samples it, so panes and grid share units */
+        this.buildAO();
+        for (let k = 0; k < EZ; k++)
+          for (let j = 0; j < EY; j++)
+            for (let i = 0; i < EX; i++) {
+              const x = (-1 + (2 * (i + 0.5)) / EX) * he[0],
+                y = (-1 + (2 * (j + 0.5)) / EY) * he[1],
+                z = (-1 + (2 * (k + 0.5)) / EZ) * he[2];
+              this.cAo[(k * EY + j) * EX + i] = this.aoAt(x, y, z);
             }
       }
       let m = 0;
@@ -416,7 +419,6 @@ window.GRTVOLS = (() => {
               ];
       }
       this.calibrate();
-      this.buildAO();
     }
     /* AO field as a small grid the GL shader samples trilinearly — same
        formula the EMIT bake uses (6-tap local density, exp falloff) */
@@ -591,41 +593,6 @@ window.GRTVOLS = (() => {
       }
       return a;
     }
-    shellInit() {
-      const he = this.he,
-        R = 1.25 * Math.hypot(he[0], he[1], he[2]);
-      for (let t = 0; t < 4; t++) {
-        const th = this.r() * 6.283,
-          ph = Math.acos(2 * this.r() - 1),
-          o = [
-            R * Math.sin(ph) * Math.cos(th),
-            R * Math.cos(ph),
-            R * Math.sin(ph) * Math.sin(th),
-          ],
-          tg = [
-            (this.r() * 2 - 1) * 0.7 * he[0],
-            (this.r() * 2 - 1) * 0.7 * he[1],
-            (this.r() * 2 - 1) * 0.7 * he[2],
-          ];
-        const d = [tg[0] - o[0], tg[1] - o[1], tg[2] - o[2]],
-          L = Math.hypot(d[0], d[1], d[2]);
-        for (let s = 0; s < 60; s++) {
-          const u = (s / 60) * L,
-            p = [o[0] + (d[0] / L) * u, o[1] + (d[1] / L) * u, o[2] + (d[2] / L) * u];
-          if (this.sig(p[0], p[1], p[2]) > 0.07)
-            return [
-              p[0] + (this.r() - 0.5) * 0.05,
-              p[1] + (this.r() - 0.5) * 0.05,
-              p[2] + (this.r() - 0.5) * 0.05,
-            ];
-        }
-      }
-      return [
-        (this.r() * 2 - 1) * 0.5 * this.he[0],
-        (this.r() * 2 - 1) * 0.5 * this.he[1],
-        (this.r() * 2 - 1) * 0.5 * this.he[2],
-      ];
-    }
   }
   /* DataVol — the vendored REAL datasets (js/grt-vol-*.js carry provenance
    headers). Opacity and colour are the research repo's own scene transfer
@@ -651,9 +618,13 @@ window.GRTVOLS = (() => {
     mech: {
       he: [0.9, 0.309, 0.322],
       E: [128, 44, 46],
-      kap: 10,
+      kap: 48,
       orb: 2.0,
       aoK: 3.4,
+      lights: [
+        [0.34, -1.21, 0.03, 8.5],
+        [-0.42, 0.815, -0.31, 4.0],
+      ],
       ap: [0, 0.0625, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
       av: [0, 0.057, 0.108, 0.211, 0.335, 0.449, 0.591, 0.701, 0.83, 1],
       cp: [0, 0.0993, 0.2855, 0.442, 0.589, 1],
@@ -671,7 +642,6 @@ window.GRTVOLS = (() => {
       E: [72, 72, 72],
       orb: 1.75,
       kap: 6,
-      tf0: 0.3,
       lights: [[1.86, 1.48, 1.73, 12.0]],
       fl: (u) => (u <= 0.05 ? 0 : u >= 0.25 ? 0.05 : (0.05 * (u - 0.05)) / 0.2),
       ap: [0, 0.586, 0.625, 0.75, 0.875, 1],
@@ -865,7 +835,7 @@ window.GRTVOLS = (() => {
       this.grid = new Float32Array(88 * 88 * 88 * 3);
       this.DR = 64;
       this.S = GS[kind];
-      this.tf = 0; /* t=0 = the colourway matched to the shaders' output */
+      this.tf = 0.5; /* centre = the colourway matched to the shaders' output */
       this.orb = kind === 'ring' ? 2.45 : 2.2;
       this.dGamma = 2.0;
       this.kap = 9;
@@ -887,7 +857,8 @@ window.GRTVOLS = (() => {
    shaders' rendered output rather than their raw constants — their td
    accumulation warms it); the tf slider moves the mix radius */
     tf2(d, r, x, y, z) {
-      const t = this.tf,
+      const t = Math.abs(2 * this.tf - 1),
+        swp = this.tf < 0.5,
         res = 1 - 0.5 * Math.min(1, d * 1.2);
       if (this.kind === 'ring') {
         /* colour keyed to the DATA's own geometry: distance from the
@@ -903,10 +874,11 @@ window.GRTVOLS = (() => {
         const gasR = 2.3 + (1.0 - 2.3) * t,
           gasG = 1.45 + (1.55 - 1.45) * t,
           gasB = 0.75 + (2.7 - 0.75) * t;
+        const w2 = swp ? 1 - w : w;
         return [
-          res * (ringR + (gasR - ringR) * w),
-          res * (ringG + (gasG - ringG) * w),
-          res * (ringB + (gasB - ringB) * w),
+          res * (ringR + (gasR - ringR) * w2),
+          res * (ringG + (gasG - ringG) * w2),
+          res * (ringB + (gasB - ringB) * w2),
         ];
       }
       const P = GP[this.kind],
@@ -917,10 +889,11 @@ window.GRTVOLS = (() => {
         c1r = P.a1[0] + (P.b1[0] - P.a1[0]) * t,
         c1g = P.a1[1] + (P.b1[1] - P.a1[1]) * t,
         c1b = P.a1[2] + (P.b1[2] - P.a1[2]) * t;
+      const m2 = swp ? 1 - m : m;
       return [
-        res * (c0r + (c1r - c0r) * m),
-        res * (c0g + (c1g - c0g) * m),
-        res * (c0b + (c1b - c0b) * m),
+        res * (c0r + (c1r - c0r) * m2),
+        res * (c0g + (c1g - c0g) * m2),
+        res * (c0b + (c1b - c0b) * m2),
       ];
     }
     /* the shader's additive glow, density-independent: green-cyan 1/r² core +

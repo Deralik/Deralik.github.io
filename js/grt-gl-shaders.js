@@ -131,6 +131,8 @@ vec3 emissionD(vec3 p,float d){
   }
   float res=1.-.5*min(1.,d*1.2);
   float lD=length(p)*uS;
+  float tt2=abs(2.*uTf-1.);
+  float swp=uTf<.5?1.:0.;
   vec3 dust;
   if(uKind==1){
     /* ring: colour keyed to the torus distance — ring pops vs gas */
@@ -138,13 +140,15 @@ vec3 emissionD(vec3 p,float d){
     pr=rotAA(pr,vec3(0.,1.,0.),1.5707963);
     float dT=length(vec2(length(pr.xy)-2.2,pr.z));
     float w=clamp((dT-.45)/.8,0.,1.);
-    vec3 ringC=mix(vec3(7.,7.4,7.8),vec3(7.,4.2,6.6),uTf);
-    vec3 gasC=mix(vec3(2.3,1.45,.75),vec3(1.,1.55,2.7),uTf);
+    w=mix(w,1.-w,swp);
+    vec3 ringC=mix(vec3(7.,7.4,7.8),vec3(7.,4.2,6.6),tt2);
+    vec3 gasC=mix(vec3(2.3,1.45,.75),vec3(1.,1.55,2.7),tt2);
     dust=res*mix(ringC,gasC,w);
   } else {
     float m=min(lD/2.6,1.);
-    vec3 c0=mix(vec3(5.6,6.3,7.),vec3(7.,3.4,1.6),uTf);
-    vec3 c1=mix(vec3(1.5,1.2,.7),vec3(.7,1.5,2.8),uTf);
+    m=mix(m,1.-m,swp);
+    vec3 c0=mix(vec3(5.6,6.3,7.),vec3(7.,3.4,1.6),tt2);
+    vec3 c1=mix(vec3(1.5,1.2,.7),vec3(.7,1.5,2.8),tt2);
     dust=res*mix(c0,c1,m);
   }
   float lDs=max(.03,lD);

@@ -238,8 +238,11 @@
    and new gaussians for a few frames */
     resetField() {
       this.field.alloc(this.field.N);
-      this.field.bakeTo(this.CG, this.vol);
+      /* no synchronous full bake: clear and let the sliced bake refill
+         over the next cycle — reset is instant */
+      this.CG.fill(0);
       this._bkPh = 0;
+      this._bkN = (this._bkN | 0) + 1;
     }
     retok() {
       this.cw = tok('--well');

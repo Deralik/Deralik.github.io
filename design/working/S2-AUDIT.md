@@ -607,3 +607,12 @@ converges downward. Version-bump hard gate added to check.mjs after
 shipping grt-vols twice under one ?v= (owner saw no lights). Gate:
 butterfly .18 · mech .22 (lit field is harder to fit — honest) ·
 super .30 · ring .34; traces locked; matrix clean.
+
+### Owner round 11 (2026-08-22): the silent no-op edits + lights land
+Owner correct again: κ edits and mech lights never landed (un-asserted
+replaces; κ was 10). All re-applied with asserts + LIVE eval proof
+(kap 48, 2 lights, aoT .14–8.9, reset 18ms). Lighting units unified
+(grid samples buildAO's field → supernova parity .026, best ever).
+TF sliders default centred; reset instant via pool seeding; shellInit
+deleted. Gate: super .03 · mech .12 · butterfly .23 · ring .29;
+traces locked; matrix/check clean.

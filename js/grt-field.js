@@ -180,7 +180,7 @@ window.GRTFIELD = (() => {
       this.cMax = Math.min(2, Math.max(0.04, 14 * ml));
     }
     seed(i) {
-      const p = this.vol.shellInit();
+      const p = this.S.length ? this.S[(this.rand() * this.S.length) | 0] : [0, 0, 0];
       this.gx[i] = p[0];
       this.gy[i] = p[1];
       this.gz[i] = p[2];
