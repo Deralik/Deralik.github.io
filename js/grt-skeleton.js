@@ -48,13 +48,17 @@
       }
       g.globalAlpha = 1;
       F.draw(g, px, S, t);
-      /* the training ray, as in the hero's cache view */
+      /* the training ray, as in the hero's cache view — update() culls
+         finished paths, advances the bounces, and fires the micro-
+         training pulses; without it the first ray freezes forever */
       const cp = Math.cos(cam.pitch),
         eye = [
           cam.dist * cp * Math.cos(cam.yaw),
           cam.dist * Math.sin(cam.pitch),
           cam.dist * cp * Math.sin(cam.yaw),
         ];
+      anim.update(t);
+      if (!anim.paths.length) anim.next = Math.min(anim.next, t + 1.1);
       anim.maybeFire(t, eye);
       anim.draw(g, px, S, t, false, GRT.tok('--onwell'), GRT.figWarm, 'TRAINING RAY');
       g.fillStyle = GRT.tok('--absence');

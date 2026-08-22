@@ -884,3 +884,10 @@ added.
   timing bug. D0 = no goto step.
 - Gate after removal: butterfly .11 (best yet) · ring .27 · super .07;
   lumgate super green; 16.7ms/0 jank; matrix + check clean.
+
+- Round-18 rider (owner): the card's training ray was frozen — the
+  card loop never called RayAnim.update(t) (which culls finished
+  paths, advances bounces, fires the micro-training pulses); the first
+  ray therefore lived forever and blocked new fires. update() wired
+  in; card cadence capped at ~1.1s between rays (livelier than the
+  hero's 2.4–3.8s); bounces + pulse flashes now visible on the card.
