@@ -498,3 +498,27 @@ added.
 - Perf at 12–13k with the dual estimator: cache texture streamed in 5
   slabs, bake in 14 slices — butterfly/ring/mech/mobile locked 16.7 ms,
   supernova 16.9 ms with 1–2 isolated spikes.
+
+# Owner rulings — hero round 6 (2026-08-22)
+
+- **The volumes spilled the box — owner's diagnosis, confirmed in the
+  density math.** The butterfly's cones extend to |p|≈1.45 and the
+  ring's gas shell past 1.1, while every grid, pool, and march ended at
+  ±1: the extremities were amputated everywhere and the cache thinned
+  toward the faces. The gaia box is now the TRUE extent (he 1.45, grids
+  64³, shell seeding he-scaled); nothing may bound a volume tighter
+  than its content.
+- **Cache termination follows the MEDIUM, not the ray**: the fixed
+  ray-fraction prefix made some regions super-noisy and others smooth
+  (owner's report). Termination now fires where accumulated optical
+  depth crosses ~0.15 — at the first interaction, like the research
+  heuristic — so the prefix is near-empty everywhere (uniform, tiny
+  variance) and the cache supplies everything from the surface inward.
+  (τ0=0.8 was tried first and rejected: it pushed the bright crust into
+  the stochastic prefix and the cached pane collapsed into speckle.)
+
+## Model notes (advisory, same round)
+
+- Frozen-camera parity re-verified at the new extent: the image is
+  continuous across the seam and matches the reference inset.
+- Perf: all four datasets + mobile at 16.7–16.8 ms, ≤1 isolated spike.

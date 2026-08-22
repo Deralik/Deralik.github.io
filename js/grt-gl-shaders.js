@@ -145,7 +145,7 @@ vec4 tone(vec3 L){
 precision highp float;precision highp sampler3D;
 uniform sampler2D tPrevR,tPrevL;
 uniform sampler3D tC;
-uniform float uSeed,uN,uCbr,uTerm;
+uniform float uSeed,uN,uCbr,uTau;
 ${CAM}
 ${FIELD}
 layout(location=0) out vec4 oR;
@@ -168,8 +168,16 @@ void main(){
     }
     vec3 p=uEye+d*t;
     radR=emissionD(p,density(p))*(tt.y-tt.x)*Tr;
-    /* left: real prefix (one stratified sample), then the cache */
-    float sTerm=mix(tt.x,tt.y,uTerm);
+    /* left: the same estimator, terminated where the medium reaches
+       optical depth uTau — like the research heuristic, termination
+       follows the FIRST INTERACTION, so every surface's skin is sampled
+       for real and the cache supplies everything behind it */
+    float MS=32.,dq=(tt.y-tt.x)/MS,tau=0.,sTerm=tt.y;
+    for(float k=0.;k<32.;k++){
+      float tk=tt.x+(k+.5)*dq;
+      tau+=uKap*density(uEye+d*tk)*dq;
+      if(tau>uTau){sTerm=tt.x+(k+1.)*dq;break;}
+    }
     float tp=tt.x+h3*(sTerm-tt.x);
     float dtp=(sTerm-tt.x)/8.;
     float T=1.,Tp=1.;
@@ -182,12 +190,13 @@ void main(){
     if(!got)Tp=T;
     vec3 pp=uEye+d*tp;
     radL=emissionD(pp,density(pp))*(sTerm-tt.x)*Tp;
-    /* the cache supplies the rest of the sample */
-    float dts=(tt.y-sTerm)/20.;
-    for(float k=0.;k<20.;k++){
-      vec3 q=uEye+d*(sTerm+(k+.5)*dts);
-      T*=exp(-uKap*density(q)*dts);
-      radL+=texture(tC,(q/uHe+1.)*.5).rgb*uCbr*T*dts;
+    if(sTerm<tt.y){
+      float dts=(tt.y-sTerm)/20.;
+      for(float k=0.;k<20.;k++){
+        vec3 q=uEye+d*(sTerm+(k+.5)*dts);
+        T*=exp(-uKap*density(q)*dts);
+        radL+=texture(tC,(q/uHe+1.)*.5).rgb*uCbr*T*dts;
+      }
     }
   }
   vec3 pR=texture(tPrevR,uv).rgb,pL=texture(tPrevL,uv).rgb;

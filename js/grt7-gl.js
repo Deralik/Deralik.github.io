@@ -291,7 +291,7 @@ window.GRT7GL = function () {
       gl.uniform1f(U(pA, 'uSeed'), o.seed % 997);
       gl.uniform1f(U(pA, 'uN'), Math.max(1, o.spp || 1));
       gl.uniform1f(U(pA, 'uCbr'), o.cbr);
-      gl.uniform1f(U(pA, 'uTerm'), 0.25);
+      gl.uniform1f(U(pA, 'uTau'), 0.15);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 

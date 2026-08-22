@@ -499,15 +499,21 @@ window.GRTVOLS = (() => {
       return a;
     }
     shellInit() {
+      const he = this.he,
+        R = 1.25 * Math.hypot(he[0], he[1], he[2]);
       for (let t = 0; t < 4; t++) {
         const th = this.r() * 6.283,
           ph = Math.acos(2 * this.r() - 1),
           o = [
-            1.6 * Math.sin(ph) * Math.cos(th),
-            1.6 * Math.cos(ph),
-            1.6 * Math.sin(ph) * Math.sin(th),
+            R * Math.sin(ph) * Math.cos(th),
+            R * Math.cos(ph),
+            R * Math.sin(ph) * Math.sin(th),
           ],
-          tg = [(this.r() * 2 - 1) * 0.5, (this.r() * 2 - 1) * 0.5, (this.r() * 2 - 1) * 0.5];
+          tg = [
+            (this.r() * 2 - 1) * 0.7 * he[0],
+            (this.r() * 2 - 1) * 0.7 * he[1],
+            (this.r() * 2 - 1) * 0.7 * he[2],
+          ];
         const d = [tg[0] - o[0], tg[1] - o[1], tg[2] - o[2]],
           L = Math.hypot(d[0], d[1], d[2]);
         for (let s = 0; s < 60; s++) {
@@ -521,7 +527,11 @@ window.GRTVOLS = (() => {
             ];
         }
       }
-      return [(this.r() * 2 - 1) * 0.4, (this.r() * 2 - 1) * 0.4, (this.r() * 2 - 1) * 0.4];
+      return [
+        (this.r() * 2 - 1) * 0.5 * this.he[0],
+        (this.r() * 2 - 1) * 0.5 * this.he[1],
+        (this.r() * 2 - 1) * 0.5 * this.he[2],
+      ];
     }
   }
   /* DataVol — the vendored REAL datasets (js/grt-vol-*.js carry provenance
@@ -671,7 +681,13 @@ window.GRTVOLS = (() => {
     constructor(kind, seed) {
       super(kind, seed);
       this.fn = window.GRTNEB[kind];
-      this.DR = 56;
+      /* the density models spill past the unit cube (butterfly cones to
+         |p|≈1.45, the ring's gas shell past 1.1) — the box must hold the
+         whole volume or the extremities are amputated everywhere */
+      this.he = [1.45, 1.45, 1.45];
+      this.EX = this.EY = this.EZ = 64;
+      this.grid = new Float32Array(64 * 64 * 64 * 3);
+      this.DR = 64;
       this.S = GS[kind];
       this.dGamma = 2.0;
       this.kap = 9;

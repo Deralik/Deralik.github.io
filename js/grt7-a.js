@@ -366,10 +366,23 @@
               eg = E[o2 + 1] * w;
               eb = E[o2 + 2] * w;
             }
-            /* left: the SAME estimator terminated early into the cache —
-               a real prefix sample, then the cache supplies the rest */
-            const sT = t0 + 0.25 * (t1 - t0),
-              tp = t0 + Math.random() * (sT - t0),
+            /* left: the SAME estimator, terminated where the medium
+               reaches optical depth 0.15 — the first skin is sampled for
+               real, the cache supplies everything behind it */
+            let sT = t1;
+            if (kap) {
+              const dq = (t1 - t0) / 16;
+              let tau = 0;
+              for (let k = 0; k < 16; k++) {
+                const tk = t0 + (k + 0.5) * dq;
+                tau += kap * v.dget(e[0] + dx * tk, e[1] + dy * tk, e[2] + dz * tk) * dq;
+                if (tau > 0.15) {
+                  sT = t0 + (k + 1) * dq;
+                  break;
+                }
+              }
+            }
+            const tp = t0 + Math.random() * (sT - t0),
               dtp = (sT - t0) / 6;
             let T = 1,
               Tp = 1,
@@ -399,21 +412,22 @@
               ag = E[o3 + 1] * w2;
               ab = E[o3 + 2] * w2;
             }
-            const dts = (t1 - sT) / 12;
-            for (let k = 0; k < 12; k++) {
-              const tk = sT + (k + 0.5) * dts,
-                x = e[0] + dx * tk,
-                y = e[1] + dy * tk,
-                z = e[2] + dz * tk;
-              if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dts);
-              const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
-                j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
-                k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
-              const o3 = ((k3 * EY + j3) * EX + i3) * 3;
-              ar += C[o3] * cbr * T * dts;
-              ag += C[o3 + 1] * cbr * T * dts;
-              ab += C[o3 + 2] * cbr * T * dts;
-            }
+            const dts = Math.max(1e-6, t1 - sT) / 12;
+            if (sT < t1)
+              for (let k = 0; k < 12; k++) {
+                const tk = sT + (k + 0.5) * dts,
+                  x = e[0] + dx * tk,
+                  y = e[1] + dy * tk,
+                  z = e[2] + dz * tk;
+                if (kap) T *= Math.exp(-kap * v.dget(x, y, z) * dts);
+                const i3 = Math.max(0, Math.min(X1, ((x + hx) * kx) | 0)),
+                  j3 = Math.max(0, Math.min(Y1, ((y + hy) * ky) | 0)),
+                  k3 = Math.max(0, Math.min(Z1, ((z + hz) * kz) | 0));
+                const o3 = ((k3 * EY + j3) * EX + i3) * 3;
+                ar += C[o3] * cbr * T * dts;
+                ag += C[o3 + 1] * cbr * T * dts;
+                ab += C[o3 + 2] * cbr * T * dts;
+              }
           }
           A[o] += (er - A[o]) / spp;
           A[o + 1] += (eg - A[o + 1]) / spp;

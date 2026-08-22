@@ -538,3 +538,14 @@ speckle right; 541 held samples = continuous image across the seam,
 matching the inset. Labels/chipline/BRIEF now read "1 spp per frame,
 per side". Blob regression caught live by owner (σ 1.0×spacing) →
 1.3× overlap. Perf: 5-slab texture stream, 14-slice bake.
+
+### Owner round 6 (2026-08-22): the box, the patchiness, the blur
+Owner diagnosed the cache cut-off as a seeding box — confirmed deeper:
+the DENSITY spills the unit box (butterfly |p|≈1.45, ring shell >1.1);
+everything clipped at ±1. Gaia he→1.45, grids 64³, shellInit he-scaled
+(origin shell 1.25·|he|, targets ·0.7he, fallback ·0.5he). Patchy
+noise: fixed-fraction termination → optical-depth termination
+(τ0=.15, first interaction; τ0=.8 rejected — crust landed in the
+prefix). Verified: cones complete corner-to-corner, ring web rendered
+by the cache, uniform grain, frozen-camera parity across the seam,
+traces locked. Blur now rests on cache capacity alone (N slider).
