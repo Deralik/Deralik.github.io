@@ -3,7 +3,7 @@
 One short entry per release (a push the owner makes to the live branch).
 Newest first. Pre-launch work is tracked in design/ROADMAP.md, not here.
 
-## Unreleased
+## 2026-08-22 — first public release (deralik.github.io)
 
 - GRTCache section rebuilt for release: live hero (two 1-spp estimators
   vs a full-march reference; butterfly · ring · supernova), anisotropic
@@ -14,4 +14,4 @@ Newest first. Pre-launch work is tracked in design/ROADMAP.md, not here.
   blocking time 724ms → ~70ms; fonts direct-linked; scripts deferred.
 - MechHand dataset removed (owner call); supernova carries the
   real-data story — its reuse terms remain the launch gate.
-- (site not yet live — port and launch tracked in design/ROADMAP.md)
+- Résumé PDF follows in the next release (placeholder self-activates).
