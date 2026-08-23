@@ -1006,3 +1006,17 @@ Owner riders this round:
   model, training targets/scale, the brightness scalar) plus data
   credits. "What runs" lives on the figure labels, which is where the
   honesty rule always pointed.
+
+# Round 21 — launch items land (2026-08-22)
+
+- SUPERNOVA LICENSE GATE CLOSED: owner confirms permission to use the
+  data ("I do have permission to use the data"); live-source check on
+  record in BRIEF (no license text exists; hosting administered under
+  the owner's lab). Credit unchanged on-page.
+- S16 bio: the About D2 bio replaced with the owner's own words,
+  verbatim (June 11th 2026 completion, graphics-lab mentorship framing,
+  EGPGV 2025 Honorable Mention, two products, R&D ask). The D0 card
+  line and lede unchanged (owner supplied only the bio).
+- Résumé: the permission system (correctly) blocked this session from
+  copying out of ../employment-hunter — the owner runs the copy; the
+  placeholders self-activate and check.mjs's PDF scan gates the file.
