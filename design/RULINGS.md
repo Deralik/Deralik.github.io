@@ -1020,3 +1020,14 @@ Owner riders this round:
 - Résumé: the permission system (correctly) blocked this session from
   copying out of ../employment-hunter — the owner runs the copy; the
   placeholders self-activate and check.mjs's PDF scan gates the file.
+
+# Round 22 — contributions snapshot automated (owner, 2026-08-31)
+
+- The heatmap stays a VENDORED snapshot (privacy ruling 2026-08-19
+  intact: readers load only this repo's JSON), but the refresh is now
+  a daily GitHub Action (.github/workflows/contributions.yml +
+  scripts/ghsnap.mjs — GitHub's own GraphQL API from the runner, with
+  a public-API fallback; commits ONLY data/about-record.json).
+  Owner-sanctioned carve-out from "the owner pushes": a scoped bot
+  commit for this one data file. Manual refresh remains
+  `node scripts/ghsnap.mjs`.

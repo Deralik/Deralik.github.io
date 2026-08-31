@@ -1,0 +1,32 @@
+# Refreshes the vendored contributions snapshot daily and commits ONLY
+# data/about-record.json (owner-sanctioned automation carve-out,
+# 2026-08-31). Readers still load this repo's own JSON — the privacy
+# ruling (no reader IPs to third parties) is untouched; the fetch runs
+# on GitHub's infrastructure against GitHub's own API.
+name: contributions-snapshot
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refresh snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/ghsnap.mjs
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- data/about-record.json; then
+            echo "snapshot unchanged"
+            exit 0
+          fi
+          git config user.name "contributions-snapshot[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/about-record.json
+          git commit -m "Contributions snapshot: $(date -u +%F)"
+          git push
