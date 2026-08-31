@@ -229,7 +229,8 @@
 
   /* ── mobile: locked at depth 2, strip on top, one document at a time ───── */
   function mobile() {
-    if (!open) open = proj()[0].k;
+    /* mobile lands on About (owner 2026-08-22) */
+    if (!open) open = 'about';
     fields().forEach((f) => {
       const el = F[f.k];
       el.style.cssText = '';
